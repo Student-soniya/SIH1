@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { translations } from '../translations';
 import { 
   ArrowRight, 
@@ -26,12 +26,22 @@ export default function ConversationalOnboarding({
   const [isOtherSelected, setIsOtherSelected] = useState(false);
 
   const [extractedJson, setExtractedJson] = useState({
-    preferred_language: profile.preferredLanguage || lang,
-    business_type: profile.businessType,
-    location: profile.location,
-    required_amount: profile.requiredLoanAmount,
-    user_type: profile.userType
+    preferred_language: profile?.preferredLanguage || lang,
+    business_type: profile?.businessType || '',
+    location: profile?.location || '',
+    required_amount: profile?.requiredLoanAmount || 0,
+    user_type: profile?.userType || 'new_entrepreneur'
   });
+
+  useEffect(() => {
+    setExtractedJson({
+      preferred_language: profile?.preferredLanguage || lang,
+      business_type: profile?.businessType || '',
+      location: profile?.location || '',
+      required_amount: profile?.requiredLoanAmount || 0,
+      user_type: profile?.userType || 'new_entrepreneur'
+    });
+  }, [profile, lang]);
 
   // Comprehensive localized questions
   const questions = [
@@ -154,7 +164,7 @@ export default function ConversationalOnboarding({
       options: [
         { label: isHindi ? '₹1.5 लाख से कम (बीपीएल प्राथमिकता)' : 'Under ₹1.5 Lakh (BPL Priority)', value: 150000 },
         { label: isHindi ? '₹2.5 लाख' : '₹2.5 Lakh', value: 250000 },
-        { label: isHindi ? '₹3.6 लाख (रवि कुमार प्रोफाइल)' : '₹3.6 Lakh (Ravi Kumar Persona)', value: 360000 },
+        { label: isHindi ? '₹3.6 लाख (मानक मध्यम आय)' : '₹3.6 Lakh (Standard Medium Income)', value: 360000 },
         { label: isHindi ? '₹4.5 लाख (पात्र सीमा)' : '₹4.5 Lakh (Eligible)', value: 450000 },
         { label: isHindi ? '₹5.0 लाख से अधिक (सामान्य एमएसएमई)' : 'Above ₹5.0 Lakh (General MSME)', value: 550000 }
       ]

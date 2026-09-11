@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   GraduationCap, 
@@ -11,7 +11,8 @@ import {
   AlertCircle,
   MapPin,
   HeartHandshake,
-  ArrowRight
+  ArrowRight,
+  RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { translations } from '../translations';
@@ -20,17 +21,26 @@ export default function BeneficiaryProfileView({
   lang = 'en',
   profile, 
   setProfile, 
-  onSaveDone 
+  onSaveDone,
+  onResetFresh
 }) {
   const t = translations[lang] || translations.en;
   const tProf = t.profile || {};
   const [formData, setFormData] = useState({ 
-    cibilScore: profile.cibilScore || 745,
-    businessScale: profile.businessScale || 'Micro (Up to ₹5 Lakhs)',
-    casteCertificateNo: profile.casteCertificateNo || 'RD0038921029-SC',
-    digilockerVerified: profile.digilockerVerified !== undefined ? profile.digilockerVerified : true,
+    cibilScore: profile?.cibilScore || 720,
+    businessScale: profile?.businessScale || 'Micro (Up to ₹5 Lakhs)',
+    casteCertificateNo: profile?.casteCertificateNo || '',
+    digilockerVerified: profile?.digilockerVerified || false,
     ...profile 
   });
+
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      ...profile
+    }));
+  }, [profile]);
+
   const [saved, setSaved] = useState(false);
   const [digilockerLoading, setDigilockerLoading] = useState(false);
 
@@ -94,12 +104,26 @@ export default function BeneficiaryProfileView({
           </p>
         </div>
 
-        {saved && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-4 py-2 rounded-xl font-bold flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
-            <span>{tProf.updatedBadge || "Profile Updated & Re-matched!"}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {onResetFresh && (
+            <button
+              type="button"
+              onClick={onResetFresh}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 transition-all cursor-pointer"
+              title={lang === 'hi' ? 'सभी फ़ील्ड साफ़ करके नया प्रोफ़ाइल शुरू करें' : 'Clear all fields and start fresh'}
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>{lang === 'hi' ? 'नया प्रोफ़ाइल शुरू करें' : 'Start Fresh Profile'}</span>
+            </button>
+          )}
+
+          {saved && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-4 py-2 rounded-xl font-bold flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <span>{tProf.updatedBadge || "Profile Updated & Re-matched!"}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

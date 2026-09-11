@@ -55,17 +55,8 @@ export default function EntrepreneurLanding({
           </div>
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={onLoadPersona}
-              className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 bg-amber-950/60 hover:bg-amber-900/80 px-2.5 py-0.5 rounded border border-amber-500/40 transition-all cursor-pointer"
-              title="Auto-load Ravi Kumar demo persona (Bengaluru SC entrepreneur, Mobile repair shop, ₹1.8L cost)"
-            >
-              <UserCheck className="w-3 h-3 text-amber-400" />
-              <span>{isHindi ? 'रवि प्रोफाइल लोड करें (₹1.8 लाख लैब)' : 'Load Ravi Persona (₹1.8L Lab)'}</span>
-            </button>
-
             {/* Language Selector */}
-            <div className="flex items-center space-x-1 text-slate-400 border-l border-slate-700 pl-3">
+            <div className="flex items-center space-x-1 text-slate-400">
               <Globe2 className="w-3 h-3 text-slate-400" />
               <select
                 value={lang}

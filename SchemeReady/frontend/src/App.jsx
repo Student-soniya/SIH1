@@ -38,17 +38,57 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('onboarding');
   const [authPanelNotice, setAuthPanelNotice] = useState(null);
 
-  const [profile, setProfile] = useState({
-    id: 'APP-2026-BLR-0941', fullName: 'Ravi Kumar', parentsName: 'Shri M. Venkataram & Smt. Lakshmi', gender: 'Male',
-    businessType: 'mobile repair', businessScale: 'Micro (Up to ₹5 Lakhs)',
-    projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
-    location: 'Bengaluru', state: 'Karnataka', estimatedProjectCost: 180000, annualFamilyIncome: 360000,
-    householdAnnualIncome: 360000, cibilScore: 745, userType: 'new_entrepreneur', category: 'SC', hasCasteCertificate: false,
-    casteCertificateNo: 'RD0038921029-SC', digilockerVerified: false, hasIncomeCertificate: true, hasFiledItr: true,
-    itrAckNumber: 'ITR-V-2025-8891042', tenthMarksPercentage: 84.5, tenthSchoolName: 'Government High School, Malleshwaram',
-    twelfthMarksPercentage: 79.2, twelfthSchoolName: 'Government PU College, Rajajinagar', requiredLoanAmount: 150000,
-    supportPreference: 'offline', preferredLanguage: 'kn', age: 28, uploadedDocs: ['Aadhaar/KYC', 'Income certificate']
+  const createCleanProfile = (user = {}) => ({
+    id: user?.userId || `APP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    fullName: user?.displayName || user?.fullName || '',
+    phoneNumber: user?.phoneNumber || user?.phone || '',
+    email: user?.email || '',
+    parentsName: '',
+    gender: '',
+    businessType: '',
+    businessScale: 'Micro (Up to ₹5 Lakhs)',
+    projectDescription: '',
+    location: '',
+    state: '',
+    estimatedProjectCost: 0,
+    annualFamilyIncome: 0,
+    householdAnnualIncome: 0,
+    cibilScore: 720,
+    userType: 'new_entrepreneur',
+    category: 'SC',
+    hasCasteCertificate: false,
+    casteCertificateNo: '',
+    digilockerVerified: false,
+    hasIncomeCertificate: false,
+    hasFiledItr: false,
+    itrAckNumber: '',
+    tenthMarksPercentage: '',
+    tenthSchoolName: '',
+    twelfthMarksPercentage: '',
+    twelfthSchoolName: '',
+    requiredLoanAmount: 0,
+    supportPreference: 'online',
+    preferredLanguage: 'hi',
+    age: 25,
+    uploadedDocs: []
   });
+
+  const [profile, setProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('schemeready_profile');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch (e) {}
+    return createCleanProfile();
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('schemeready_profile', JSON.stringify(profile));
+    } catch (e) {}
+  }, [profile]);
 
   const [selectedScheme, setSelectedScheme] = useState({
     schemeId: 'NSFDC-MCS-01', schemeName: 'Micro Credit Scheme (MCS)', schemeType: 'Micro Credit',
@@ -63,11 +103,19 @@ function AppShell() {
     applicationMode: 'Offline', lastVerifiedDate: '2026-09-10T00:00:00Z'
   });
 
-  const readinessScore = profile.hasCasteCertificate
-    ? (profile.uploadedDocs.includes('Business quotation') ? 100 : 92) : 72;
+  const readinessScore = profile?.hasCasteCertificate
+    ? (profile?.uploadedDocs?.includes('Business quotation') ? 100 : 92) : 72;
+
+  const handleResetFresh = () => {
+    const clean = createCleanProfile();
+    setProfile(clean);
+    try {
+      localStorage.setItem('schemeready_profile', JSON.stringify(clean));
+    } catch (e) {}
+  };
 
   const handleLoadPersona = () => {
-    setProfile({
+    const demoProfile = {
       id: 'APP-2026-BLR-0941', fullName: 'Ravi Kumar', parentsName: 'Shri M. Venkataram & Smt. Lakshmi', gender: 'Male',
       businessType: 'mobile repair', businessScale: 'Micro (Up to ₹5 Lakhs)',
       projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
@@ -77,10 +125,27 @@ function AppShell() {
       itrAckNumber: 'ITR-V-2025-8891042', tenthMarksPercentage: 84.5, tenthSchoolName: 'Government High School, Malleshwaram',
       twelfthMarksPercentage: 79.2, twelfthSchoolName: 'Government PU College, Rajajinagar', requiredLoanAmount: 150000,
       supportPreference: 'offline', preferredLanguage: 'kn', age: 28, uploadedDocs: ['Aadhaar/KYC', 'Income certificate']
-    });
+    };
+    setProfile(demoProfile);
+    try {
+      localStorage.setItem('schemeready_profile', JSON.stringify(demoProfile));
+    } catch (e) {}
     setLang('kn');
     setActiveTab('profile');
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
+  };
+
+  const handleAuthSuccess = (authUser) => {
+    if (authUser?.isDemo) {
+      handleLoadPersona();
+    } else if (authUser) {
+      const fresh = createCleanProfile(authUser);
+      setProfile(fresh);
+      try {
+        localStorage.setItem('schemeready_profile', JSON.stringify(fresh));
+      } catch (e) {}
+    }
+    setActiveTab(requiresAdmin ? 'admin' : 'profile');
   };
 
   if (portalView === 'landing') {
@@ -166,9 +231,7 @@ function AppShell() {
             lang={lang}
             notice={authPanelNotice || authMessage}
             initialMode={activeTab === 'login' ? 'login' : 'signup'}
-            onSuccess={() => {
-              setActiveTab(requiresAdmin ? 'admin' : 'profile');
-            }}
+            onSuccess={handleAuthSuccess}
             onBackToPortal={() => {
               setPortalView('landing');
               setActiveTab('profile');
@@ -191,7 +254,15 @@ function AppShell() {
         onGoToHome={() => setPortalView('landing')}
       />
       <main className="flex-1 pb-16">
-        {effectiveTab === 'profile' && <BeneficiaryProfileView lang={lang} profile={profile} setProfile={setProfile} onSaveDone={() => navigate('onboarding')} />}
+        {effectiveTab === 'profile' && (
+          <BeneficiaryProfileView 
+            lang={lang} 
+            profile={profile} 
+            setProfile={setProfile} 
+            onSaveDone={() => navigate('onboarding')} 
+            onResetFresh={handleResetFresh}
+          />
+        )}
         {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} setLang={setLang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
         {effectiveTab === 'schemes' && <ExplainableSchemeResults lang={lang} profile={profile} selectedScheme={selectedScheme} setSelectedScheme={setSelectedScheme} onProceedToReadiness={(s) => { setSelectedScheme(s); navigate('readiness'); }} />}
         {effectiveTab === 'readiness' && <ReadinessDashboard lang={lang} profile={profile} setProfile={setProfile} onProceedToBusinessPlan={() => navigate('businessPlan')} />}

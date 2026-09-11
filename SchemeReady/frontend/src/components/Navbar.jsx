@@ -49,7 +49,10 @@ export default function Navbar({
 
   const handleLogout = async () => {
     await logout();
-    setActiveTab('profile');
+    try {
+      localStorage.removeItem('schemeready_profile');
+    } catch (e) {}
+    setActiveTab('login');
   };
 
   return (
@@ -102,19 +105,8 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Demo persona, then the session control in the top-right corner */}
+        {/* Header Actions & Session Control */}
         <div className="flex items-center space-x-3 ml-auto">
-
-          <button
-            onClick={onLoadPersona}
-            className="flex items-center space-x-2 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-xl transition-all shadow-xs active:scale-95"
-            title="Auto-fill Ravi's persona (Bengaluru SC entrepreneur, Mobile repair shop, ₹1.8L cost)"
-          >
-            <UserCheck className="w-4 h-4 text-emerald-600" />
-            <span className="hidden sm:inline">{t.demoPersonaBtn}</span>
-            <span className="sm:hidden">{t.navbar?.raviPersonaMobile || "Ravi Persona"}</span>
-          </button>
-
           {onGoToHome && (
             <button
               onClick={onGoToHome}

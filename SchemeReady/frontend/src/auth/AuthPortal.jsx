@@ -19,7 +19,9 @@ import {
   Check, 
   KeyRound,
   UserPlus,
-  LogIn
+  LogIn,
+  Smartphone,
+  Key
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { translations } from '../translations';
@@ -43,10 +45,20 @@ export default function AuthPortal({
 }) {
   const t = translations[lang] || translations.en;
   const tAuth = t.auth || {};
-  const { login, signup, authMessage } = useAuth();
+  const isHindi = lang === 'hi';
+  const { login, signup, sendOtp, loginWithOtp, authMessage } = useAuth();
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
+  const [authMethod, setAuthMethod] = useState('otp'); // 'otp' | 'password'
 
-  // Form Fields
+  // Phone & OTP states
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [demoOtpHint, setDemoOtpHint] = useState(null);
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  // Form Fields (Password mode)
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,6 +72,19 @@ export default function AuthPortal({
   const [formMessage, setFormMessage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+
+  // OTP Countdown timer
+  useEffect(() => {
+    let timer = null;
+    if (otpCountdown > 0) {
+      timer = setInterval(() => {
+        setOtpCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [otpCountdown]);
 
   // Password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -128,7 +153,70 @@ export default function AuthPortal({
     setTimeout(() => setIsShaking(false), 450);
   };
 
-  // Demo Beneficiary Login shortcut for evaluators - Instant 1-Click
+  // OTP Handlers
+  const handleSendOtp = async () => {
+    setFormMessage(null);
+    setServerErrors([]);
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10 || !['6', '7', '8', '9'].includes(cleanPhone[0])) {
+      setErrors(prev => ({ ...prev, phoneNumber: tAuth.enterValidMobile || 'Please enter a valid 10-digit Indian mobile number' }));
+      triggerShake();
+      return;
+    }
+    setErrors(prev => ({ ...prev, phoneNumber: null }));
+    setSendingOtp(true);
+
+    const result = await sendOtp(cleanPhone);
+    setSendingOtp(false);
+    if (!result.ok) {
+      setFormMessage(result.message);
+      triggerShake();
+      return;
+    }
+
+    setOtpSent(true);
+    setOtpCountdown(30);
+    setDemoOtpHint(result.otp);
+    setFormMessage(`${tAuth.otpSentMsg || 'OTP sent successfully to +91'} ${cleanPhone}`);
+  };
+
+  const handleVerifyOtp = async (e) => {
+    if (e) e.preventDefault();
+    setFormMessage(null);
+    setServerErrors([]);
+
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setErrors(prev => ({ ...prev, phoneNumber: tAuth.enterValidMobile || 'Please enter a valid 10-digit mobile number' }));
+      triggerShake();
+      return;
+    }
+
+    if (mode === 'signup' && !displayName.trim()) {
+      setErrors(prev => ({ ...prev, displayName: isHindi ? 'कृपया अपना पूरा नाम दर्ज करें' : 'Please enter your full name' }));
+      triggerShake();
+      return;
+    }
+
+    if (!otp || otp.trim().length < 4) {
+      setErrors(prev => ({ ...prev, otp: tAuth.enterValidOtp || 'Please enter the 6-digit OTP' }));
+      triggerShake();
+      return;
+    }
+
+    setSubmitting(true);
+    const result = await loginWithOtp(cleanPhone, otp.trim(), displayName.trim(), mode === 'signup');
+    setSubmitting(false);
+
+    if (!result.ok) {
+      triggerShake();
+      setFormMessage(result.message || 'Invalid OTP. Please try again.');
+    } else if (onSuccess) {
+      onSuccess(result.user);
+    }
+  };
+
+  // Demo user login if explicitly invoked
   const handleLoadDemoUser = async (demoRole = 'beneficiary') => {
     setFormMessage(null);
     setServerErrors([]);
@@ -141,11 +229,11 @@ export default function AuthPortal({
     const res = await login(demoEmail, demoPassword);
     setSubmitting(false);
     if (res.ok && onSuccess) {
-      onSuccess();
+      onSuccess(res.user);
     }
   };
 
-  // Handle Form Submit
+  // Handle Password Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormMessage(null);
@@ -198,7 +286,7 @@ export default function AuthPortal({
         setServerErrors(result.fieldErrors || []);
         refreshCaptcha();
       } else if (onSuccess) {
-        onSuccess();
+        onSuccess(result.user);
       }
     } else {
       const result = await login(email.trim(), password);
@@ -209,7 +297,7 @@ export default function AuthPortal({
         setFormMessage(result.message || 'Invalid email or password. Please try again.');
         refreshCaptcha();
       } else if (onSuccess) {
-        onSuccess();
+        onSuccess(result.user);
       }
     }
   };
@@ -373,6 +461,35 @@ export default function AuthPortal({
               </button>
             </div>
 
+            {/* Auth Method Selector: Mobile OTP vs Email/Password */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => { setAuthMethod('otp'); setFormMessage(null); setErrors({}); }}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                  authMethod === 'otp'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{tAuth.phoneTab || 'Mobile Number & OTP'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setAuthMethod('password'); setFormMessage(null); setErrors({}); }}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                  authMethod === 'password'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{tAuth.passwordTab || 'Email & Password'}</span>
+              </button>
+            </div>
+
             {/* Header Description */}
             <div className="space-y-1 mb-5 text-left">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -405,336 +522,461 @@ export default function AuthPortal({
               </div>
             )}
 
-            {/* Main Form */}
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              
-              {/* Full Name (Sign Up only) */}
-              {mode === 'signup' && (
+            {/* FORM 1: Mobile Phone Number + OTP Authentication */}
+            {authMethod === 'otp' ? (
+              <form onSubmit={handleVerifyOtp} className="space-y-4" noValidate>
+                
+                {/* Full Name (Sign Up only) */}
+                {mode === 'signup' && (
+                  <div className="space-y-1 text-left">
+                    <div className="flex justify-between items-center text-xs">
+                      <label htmlFor="otp-signup-name" className="font-bold text-slate-700">
+                        {tAuth.fullNameLabel || "Full Name (as on Aadhaar)"} <span className="text-rose-500">*</span>
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        id="otp-signup-name"
+                        type="text"
+                        placeholder={isHindi ? "जैसे: अनिकेत शर्मा" : "e.g. Shri Aniket Sharma"}
+                        value={displayName}
+                        maxLength={DISPLAY_NAME_MAX}
+                        onChange={(e) => { setDisplayName(e.target.value); setErrors(prev => ({ ...prev, displayName: null })); }}
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
+                          errors.displayName 
+                            ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
+                            : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
+                        }`}
+                      />
+                    </div>
+                    {errors.displayName && (
+                      <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.displayName}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* 10-Digit Mobile Number Input & Send OTP Button */}
                 <div className="space-y-1 text-left">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="signup-name" className="font-bold text-slate-700">
-                      {tAuth.fullNameLabel || "Full Name (as on Aadhaar)"} <span className="text-rose-500">*</span>
+                    <label htmlFor="otp-phone" className="font-bold text-slate-700">
+                      {tAuth.mobileLabel || "Mobile Number (10 Digits)"} <span className="text-rose-500">*</span>
                     </label>
-                    {touched.displayName && !errors.displayName && (
+                    {phoneNumber.length === 10 && (
                       <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
                         <Check className="w-3 h-3" />
-                        <span>{tAuth.validName || "Valid Name"}</span>
+                        <span>{isHindi ? 'मान्य मोबाइल' : 'Valid Mobile'}</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center space-x-1 border-r border-slate-200 pr-2 pointer-events-none">
+                        <span className="text-xs font-black text-slate-700">🇮🇳 +91</span>
+                      </div>
+                      <input
+                        id="otp-phone"
+                        type="tel"
+                        placeholder="98765 43210"
+                        value={phoneNumber}
+                        maxLength={10}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          setPhoneNumber(val);
+                          setErrors(prev => ({ ...prev, phoneNumber: null }));
+                        }}
+                        className={`w-full pl-20 pr-3.5 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none transition-all ${
+                          errors.phoneNumber 
+                            ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
+                            : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
+                        }`}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={sendingOtp || (otpSent && otpCountdown > 0)}
+                      className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0 active:scale-95"
+                    >
+                      {sendingOtp ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : otpSent && otpCountdown > 0 ? (
+                        <span>{isHindi ? `पुनः भेजें (${otpCountdown}s)` : `Resend (${otpCountdown}s)`}</span>
+                      ) : otpSent ? (
+                        <span>{tAuth.resendOtpBtn || 'Resend OTP'}</span>
+                      ) : (
+                        <span>{tAuth.sendOtpBtn || 'Send OTP'}</span>
+                      )}
+                    </button>
+                  </div>
+                  {errors.phoneNumber && (
+                    <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.phoneNumber}</p>
+                  )}
+                </div>
+
+                {/* Simulated SMS Notification Banner */}
+                {otpSent && demoOtpHint && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left space-y-1.5 animate-in fade-in">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-emerald-900 flex items-center space-x-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{tAuth.quickDemoOtp || "Security OTP (Test Mode):"}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setOtp(demoOtpHint)}
+                        className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-bold px-2 py-0.5 rounded cursor-pointer transition-all"
+                      >
+                        {isHindi ? 'स्वतः भरें' : 'Auto-fill'}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between font-mono">
+                      <span className="font-black text-emerald-800 tracking-widest text-lg">{demoOtpHint}</span>
+                      <span className="text-[10px] text-emerald-700 font-medium">
+                        {tAuth.otpExpiresIn || "Valid for"} {otpCountdown > 0 ? `${otpCountdown} ${tAuth.seconds || 'seconds'}` : '10 mins'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6-Digit OTP Field */}
+                {otpSent && (
+                  <div className="space-y-1 text-left">
+                    <div className="flex justify-between items-center text-xs">
+                      <label htmlFor="otp-digit-input" className="font-bold text-slate-700">
+                        {tAuth.otpLabel || "Enter 6-Digit OTP"} <span className="text-rose-500">*</span>
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        id="otp-digit-input"
+                        type="text"
+                        autoFocus
+                        placeholder="• • • • • •"
+                        value={otp}
+                        maxLength={6}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          setOtp(val);
+                          setErrors(prev => ({ ...prev, otp: null }));
+                        }}
+                        className={`w-full pl-10 pr-3.5 py-3 bg-slate-50/70 border rounded-xl text-center text-base font-mono font-black tracking-widest text-slate-900 focus:outline-none transition-all ${
+                          errors.otp 
+                            ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
+                            : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
+                        }`}
+                      />
+                    </div>
+                    {errors.otp && (
+                      <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.otp}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={submitting || (!otpSent && phoneNumber.length !== 10)}
+                  className="w-full py-3.5 rounded-xl bg-[#0D2A4A] hover:bg-[#133b66] disabled:bg-slate-300 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-slate-950/15 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+                      <span>{tAuth.processing || "Processing securely…"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>
+                        {!otpSent 
+                          ? (tAuth.sendOtpBtn || 'Send OTP to Mobile')
+                          : mode === 'login' 
+                          ? (tAuth.verifySignInBtn || 'Verify OTP & Sign In') 
+                          : (tAuth.verifySignUpBtn || 'Verify OTP & Create Account')}
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-amber-300" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* FORM 2: Password / Email Authentication */
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                
+                {/* Full Name (Sign Up only) */}
+                {mode === 'signup' && (
+                  <div className="space-y-1 text-left">
+                    <div className="flex justify-between items-center text-xs">
+                      <label htmlFor="signup-name" className="font-bold text-slate-700">
+                        {tAuth.fullNameLabel || "Full Name (as on Aadhaar)"} <span className="text-rose-500">*</span>
+                      </label>
+                      {touched.displayName && !errors.displayName && (
+                        <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
+                          <Check className="w-3 h-3" />
+                          <span>{tAuth.validName || "Valid Name"}</span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        id="signup-name"
+                        type="text"
+                        placeholder={isHindi ? "जैसे: अनिकेत शर्मा" : "e.g. Shri Aniket Sharma"}
+                        value={displayName}
+                        maxLength={DISPLAY_NAME_MAX}
+                        onChange={(e) => { setDisplayName(e.target.value); setErrors(prev => ({ ...prev, displayName: null })); }}
+                        onBlur={() => handleBlur('displayName')}
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
+                          errors.displayName 
+                            ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
+                            : touched.displayName && !errors.displayName 
+                            ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
+                            : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
+                        }`}
+                      />
+                    </div>
+                    {errors.displayName && (
+                      <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.displayName}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Email Address */}
+                <div className="space-y-1 text-left">
+                  <div className="flex justify-between items-center text-xs">
+                    <label htmlFor="auth-email" className="font-bold text-slate-700">
+                      {tAuth.emailLabel || "Email Address or Mobile"} <span className="text-rose-500">*</span>
+                    </label>
+                    {touched.email && !errors.email && (
+                      <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
+                        <Check className="w-3 h-3" />
+                        <span>{tAuth.validEmail || "Valid Entry"}</span>
                       </span>
                     )}
                   </div>
                   <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
-                      id="signup-name"
+                      id="auth-email"
                       type="text"
-                      placeholder="Shri Ravi Kumar"
-                      value={displayName}
-                      maxLength={DISPLAY_NAME_MAX}
-                      onChange={(e) => { setDisplayName(e.target.value); setErrors(prev => ({ ...prev, displayName: null })); }}
-                      onBlur={() => handleBlur('displayName')}
+                      placeholder="citizen@gov.in"
+                      value={email}
+                      maxLength={EMAIL_MAX}
+                      onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: null })); }}
+                      onBlur={() => handleBlur('email')}
                       className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
-                        errors.displayName 
+                        errors.email 
                           ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
-                          : touched.displayName && !errors.displayName 
+                          : touched.email && !errors.email 
                           ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
                           : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
                       }`}
                     />
                   </div>
-                  {errors.displayName && (
-                    <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.displayName}</p>
+                  {errors.email && (
+                    <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.email}</p>
                   )}
                 </div>
-              )}
 
-              {/* Email Address */}
-              <div className="space-y-1 text-left">
-                <div className="flex justify-between items-center text-xs">
-                  <label htmlFor="auth-email" className="font-bold text-slate-700">
-                    {tAuth.emailLabel || "Email Address"} <span className="text-rose-500">*</span>
-                  </label>
-                  {touched.email && !errors.email && (
-                    <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
-                      <Check className="w-3 h-3" />
-                      <span>{tAuth.validEmail || "Valid Email"}</span>
-                    </span>
-                  )}
-                </div>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="auth-email"
-                    type="email"
-                    placeholder="you@example.com or mobile"
-                    value={email}
-                    maxLength={EMAIL_MAX}
-                    onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: null })); }}
-                    onBlur={() => handleBlur('email')}
-                    className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
-                      errors.email 
-                        ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
-                        : touched.email && !errors.email 
-                        ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
-                        : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
-                    }`}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.email}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1 text-left">
-                <div className="flex justify-between items-center text-xs">
-                  <label htmlFor="auth-password" className="font-bold text-slate-700">
-                    {tAuth.passwordLabel || "Password"} <span className="text-rose-500">*</span>
-                  </label>
-                  {mode === 'login' && (
-                    <button
-                      type="button"
-                      onClick={() => setFormMessage('Password recovery instructions will be dispatched to your registered mobile/email.')}
-                      className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
-                    >
-                      {tAuth.forgotPassword || "Forgot password?"}
-                    </button>
-                  )}
-                </div>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="auth-password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={mode === 'signup' ? (tAuth.passwordPlaceholder || 'Create a secure password (8+ chars)') : (tAuth.passwordLoginPlaceholder || 'Enter your password')}
-                    value={password}
-                    maxLength={PASSWORD_MAX}
-                    onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: null })); }}
-                    onBlur={() => handleBlur('password')}
-                    className={`w-full pl-10 pr-10 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
-                      errors.password 
-                        ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
-                        : touched.password && !errors.password 
-                        ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
-                        : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.password}</p>
-                )}
-
-                {/* Real-Time Password Strength Meter (Sign Up only) */}
-                {mode === 'signup' && password.length > 0 && (
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center justify-between text-[10px] font-bold">
-                      <span className="text-slate-500">{tAuth.securityStrength || "Security Strength:"}</span>
-                      <span className={`font-mono ${strengthScore >= 3 ? 'text-[#138808]' : strengthScore === 2 ? 'text-blue-600' : 'text-amber-600'}`}>
-                        {strengthLabels[strengthScore]}
-                      </span>
-                    </div>
-                    {/* 4-Segment Bar */}
-                    <div className="grid grid-cols-4 gap-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
-                      {[1, 2, 3, 4].map((seg) => (
-                        <div
-                          key={seg}
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            strengthScore >= seg ? strengthColors[strengthScore] : 'bg-slate-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Requirements Checklist that dynamically turns green */}
-                    <div className="grid grid-cols-2 gap-1.5 pt-1.5 text-[11px]">
-                      <div className={`flex items-center space-x-1.5 transition-colors ${hasMinLength ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
-                        {hasMinLength ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>{tAuth.ruleLength || "8+ Characters"}</span>
-                      </div>
-
-                      <div className={`flex items-center space-x-1.5 transition-colors ${hasNumber ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
-                        {hasNumber ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>{tAuth.ruleNumber || "1+ Number (0-9)"}</span>
-                      </div>
-
-                      <div className={`flex items-center space-x-1.5 transition-colors ${hasSpecial ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
-                        {hasSpecial ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>{tAuth.ruleSpecial || "1+ Special Symbol"}</span>
-                      </div>
-
-                      <div className={`flex items-center space-x-1.5 transition-colors ${hasMatch ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
-                        {hasMatch ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>{tAuth.ruleMatch || "Passwords Match"}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Confirm Password (Sign Up only) */}
-              {mode === 'signup' && (
+                {/* Password Field */}
                 <div className="space-y-1 text-left">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="signup-confirmation" className="font-bold text-slate-700">
-                      {tAuth.confirmPasswordLabel || "Confirm Password"} <span className="text-rose-500">*</span>
+                    <label htmlFor="auth-password" className="font-bold text-slate-700">
+                      {tAuth.passwordLabel || "Password"} <span className="text-rose-500">*</span>
                     </label>
-                    {hasMatch && (
-                      <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
-                        <Check className="w-3 h-3" />
-                        <span>{tAuth.ruleMatch || "Matches Password"}</span>
-                      </span>
+                    {mode === 'login' && (
+                      <button 
+                        type="button" 
+                        onClick={() => alert(isHindi ? "पासवर्ड रीसेट लिंक आपके पंजीकृत ईमेल पर भेजा गया है।" : "Password reset instructions sent to registered address.")}
+                        className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+                      >
+                        {tAuth.forgotPassword || "Forgot password?"}
+                      </button>
                     )}
                   </div>
                   <div className="relative">
-                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
-                      id="signup-confirmation"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder={tAuth.confirmPlaceholder || "Retype your password"}
-                      value={confirmation}
+                      id="auth-password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={mode === 'signup' ? (tAuth.passwordPlaceholder || "Create a secure password (8+ chars)") : (tAuth.passwordLoginPlaceholder || "Enter your password")}
+                      value={password}
                       maxLength={PASSWORD_MAX}
-                      onChange={(e) => { setConfirmation(e.target.value); setErrors(prev => ({ ...prev, confirmation: null })); }}
-                      onBlur={() => handleBlur('confirmation')}
+                      onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: null })); }}
+                      onBlur={() => handleBlur('password')}
                       className={`w-full pl-10 pr-10 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
-                        errors.confirmation 
+                        errors.password 
                           ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
-                          : hasMatch 
-                          ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
                           : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
                       }`}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  {errors.confirmation && (
-                    <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.confirmation}</p>
+                  {errors.password && (
+                    <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.password}</p>
+                  )}
+
+                  {/* Password Strength Checklist (Sign Up) */}
+                  {mode === 'signup' && password.length > 0 && (
+                    <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-left">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-bold text-slate-600">{tAuth.securityStrength || "Security Strength:"}</span>
+                        <span className="font-black text-slate-800 font-mono">
+                          {strengthLabels[strengthScore] || 'Good'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-5 gap-1 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        {[0, 1, 2, 3, 4].map((step) => (
+                          <div
+                            key={step}
+                            className={`h-full transition-all duration-300 ${
+                              step <= strengthScore ? strengthColors[strengthScore] : 'bg-transparent'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
+                        <div className={`flex items-center space-x-1.5 transition-colors ${hasMinLength ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
+                          {hasMinLength ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
+                          <span>{tAuth.ruleLength || "8+ Characters"}</span>
+                        </div>
+                        <div className={`flex items-center space-x-1.5 transition-colors ${hasNumber ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
+                          {hasNumber ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
+                          <span>{tAuth.ruleNumber || "1+ Number (0-9)"}</span>
+                        </div>
+                        <div className={`flex items-center space-x-1.5 transition-colors ${hasSpecial ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
+                          {hasSpecial ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
+                          <span>{tAuth.ruleSpecial || "1+ Special Symbol"}</span>
+                        </div>
+                        <div className={`flex items-center space-x-1.5 transition-colors ${hasMatch ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
+                          {hasMatch ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
+                          <span>{tAuth.ruleMatch || "Passwords Match"}</span>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              )}
 
-              {/* Dynamic GovTech Math Captcha Challenge */}
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2 text-left">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-700 flex items-center space-x-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{tAuth.captchaLabel || "Security Verification (Captcha)"} <span className="text-rose-500">*</span></span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={refreshCaptcha}
-                    className="text-[10px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center space-x-1 cursor-pointer"
-                    title="Generate New Question"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>{tAuth.refresh || "Refresh"}</span>
-                  </button>
+                {/* Confirm Password (Sign Up only) */}
+                {mode === 'signup' && (
+                  <div className="space-y-1 text-left">
+                    <div className="flex justify-between items-center text-xs">
+                      <label htmlFor="signup-confirmation" className="font-bold text-slate-700">
+                        {tAuth.confirmPasswordLabel || "Confirm Password"} <span className="text-rose-500">*</span>
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        id="signup-confirmation"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder={tAuth.confirmPlaceholder || "Retype your password"}
+                        value={confirmation}
+                        maxLength={PASSWORD_MAX}
+                        onChange={(e) => { setConfirmation(e.target.value); setErrors(prev => ({ ...prev, confirmation: null })); }}
+                        onBlur={() => handleBlur('confirmation')}
+                        className={`w-full pl-10 pr-10 py-2.5 bg-slate-50/70 border rounded-xl text-xs font-semibold text-slate-900 focus:outline-none transition-all ${
+                          errors.confirmation 
+                            ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-200' 
+                            : hasMatch 
+                            ? 'border-[#138808] focus:ring-2 focus:ring-emerald-200'
+                            : 'border-slate-300 focus:border-[#0D2A4A] focus:ring-2 focus:ring-slate-200'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {errors.confirmation && (
+                      <p className="text-[11px] font-semibold text-rose-600 pl-1">{errors.confirmation}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Math Captcha Challenge */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2 text-left">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 flex items-center space-x-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{tAuth.captchaLabel || "Security Verification (Captcha)"} <span className="text-rose-500">*</span></span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={refreshCaptcha}
+                      className="text-[10px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center space-x-1 cursor-pointer"
+                      title="Generate New Question"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>{tAuth.refresh || "Refresh"}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-slate-200 text-slate-900 font-mono font-black text-sm px-4 py-2 rounded-xl tracking-widest select-none shadow-inner border border-slate-300">
+                      {captchaNum1} + {captchaNum2} = ?
+                    </div>
+                    <input
+                      type="number"
+                      placeholder={tAuth.captchaPlaceholder || "Enter sum"}
+                      value={captchaAnswer}
+                      onChange={(e) => { setCaptchaAnswer(e.target.value); setCaptchaError(null); }}
+                      className={`flex-1 px-3.5 py-2 bg-white border rounded-xl text-xs font-bold text-slate-900 focus:outline-none ${
+                        captchaError ? 'border-rose-400 ring-2 ring-rose-200' : 'border-slate-300 focus:ring-2 focus:ring-slate-200'
+                      }`}
+                    />
+                  </div>
+                  {captchaError && (
+                    <p className="text-[11px] font-semibold text-rose-600">{captchaError}</p>
+                  )}
                 </div>
 
-                <div className="flex items-center space-x-3">
-                  <div className="bg-slate-200 text-slate-900 font-mono font-black text-sm px-4 py-2 rounded-xl tracking-widest select-none shadow-inner border border-slate-300">
-                    {captchaNum1} + {captchaNum2} = ?
-                  </div>
-                  <input
-                    type="number"
-                    placeholder={tAuth.captchaPlaceholder || "Enter sum"}
-                    value={captchaAnswer}
-                    onChange={(e) => { setCaptchaAnswer(e.target.value); setCaptchaError(null); }}
-                    className={`flex-1 px-3.5 py-2 bg-white border rounded-xl text-xs font-bold text-slate-900 focus:outline-none ${
-                      captchaError ? 'border-rose-400 ring-2 ring-rose-200' : 'border-slate-300 focus:ring-2 focus:ring-slate-200'
-                    }`}
-                  />
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3.5 rounded-xl bg-[#0D2A4A] hover:bg-[#133b66] disabled:bg-slate-300 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-slate-950/15 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+                      <span>{tAuth.processing || "Processing securely…"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{mode === 'login' ? (tAuth.signInBtn || 'Sign In to SchemeReady') : (tAuth.signUpBtn || 'Create Citizen Account')}</span>
+                      <ArrowRight className="w-4 h-4 text-amber-300" />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* Optional Test Credentials Info (Collapsed, clean) */}
+            <div className="mt-4 pt-3 border-t border-slate-100 text-left">
+              <details className="text-[11px] text-slate-400 group">
+                <summary className="cursor-pointer hover:text-slate-600 font-medium select-none list-none flex items-center justify-between">
+                  <span>{isHindi ? 'परीक्षण हेतु क्रेडेंशियल (वैकल्पिक)' : 'Test credentials info (Optional)'}</span>
+                  <span className="text-[10px] text-emerald-700 font-mono">OTP: 482910</span>
+                </summary>
+                <div className="mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600 space-y-1">
+                  <p>• {isHindi ? 'किसी भी 10-अंकीय मोबाइल नंबर पर ओटीपी 482910 दर्ज कर सकते हैं।' : 'Use any 10-digit mobile number with universal test OTP 482910.'}</p>
+                  <p>• {isHindi ? 'डेमो खाता: ravi.kumar@schemeready.gov.in / Ravi@2026Secure!' : 'Demo account: ravi.kumar@schemeready.gov.in / Ravi@2026Secure!'}</p>
                 </div>
-                {captchaError && (
-                  <p className="text-[11px] font-semibold text-rose-600">{captchaError}</p>
-                )}
-              </div>
-
-              {/* Remember Me Checkbox (Sign In) or Terms Checkbox (Sign Up) */}
-              <div className="flex items-center justify-between text-xs text-slate-600 text-left pt-1">
-                <label className="flex items-center space-x-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 accent-emerald-600 rounded cursor-pointer"
-                  />
-                  <span>
-                    {mode === 'login' 
-                      ? (tAuth.rememberMe || 'Keep me signed in for 30 days')
-                      : (tAuth.incomeCertification || 'I certify that my annual family income is within ₹5.00 Lakhs.')}
-                  </span>
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3.5 rounded-xl bg-[#0D2A4A] hover:bg-[#133b66] disabled:bg-slate-300 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-slate-950/15 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
-                    <span>{tAuth.processing || "Processing securely…"}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{mode === 'login' ? (tAuth.signInBtn || 'Sign In to SchemeReady') : (tAuth.signUpBtn || 'Create Citizen Account')}</span>
-                    <ArrowRight className="w-4 h-4 text-amber-300" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Evaluator 1-Click Fast Fill Demo Buttons */}
-            <div className="mt-6 pt-4 border-t border-slate-100 space-y-2 text-left">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="font-bold text-slate-400 uppercase tracking-wider">
-                  {tAuth.evaluatorFast || "Evaluator Fast-Access"}
-                </span>
-                <span className="text-emerald-700 font-mono text-[10px] font-bold">{tAuth.oneClick || "1-Click Sign In"}</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleLoadDemoUser('beneficiary')}
-                  className="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-left transition-colors cursor-pointer flex items-center space-x-2"
-                >
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <div>
-                    <span className="block font-bold text-xs">{tAuth.evalRavi || "Ravi Kumar (Beneficiary)"}</span>
-                    <span className="text-[10px] text-emerald-700 font-mono">{tAuth.evalRaviDesc || "SC Micro Lab (₹1.8L)"}</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleLoadDemoUser('officer')}
-                  className="p-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-left transition-colors cursor-pointer flex items-center space-x-2"
-                >
-                  <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                  <div>
-                    <span className="block font-bold text-xs">{tAuth.evalOfficer || "SCA Officer (Admin)"}</span>
-                    <span className="text-[10px] text-amber-700 font-mono">{tAuth.evalOfficerDesc || "Dr. B.R. Ambedkar Corp"}</span>
-                  </div>
-                </button>
-              </div>
+              </details>
             </div>
-
           </div>
 
           {/* Card Footer Switcher */}
