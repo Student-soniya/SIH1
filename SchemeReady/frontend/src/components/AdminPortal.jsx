@@ -13,15 +13,50 @@ import {
   Database,
   Plus
 } from 'lucide-react';
-import { getAdminStats } from '../api';
+import { getAdminStats, listAllPartners } from '../api';
+import { useAuth } from '../auth/AuthContext';
+import AdminRuleEditor from './AdminRuleEditor';
+import IllustrativeBadge from './IllustrativeBadge';
 
 export default function AdminPortal({ lang }) {
   const t = translations[lang] || translations.en;
+  const { isAdmin } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [verifiedMap, setVerifiedMap] = useState({});
 
+  // The channel-partner register, live from GET /api/partners. What was here before was an
+  // array literal of five institutions with a hard-coded "10 September 2026" verification date,
+  // rendered as the verification table — a screen whose entire purpose is to show which partner
+  // records are stale, showing rows that no database had ever seen and a date nobody had set.
+  // A partner added through POST /api/admin/partners never appeared in it.
+  const [partners, setPartners] = useState(null);
+  const [partnersError, setPartnersError] = useState(null);
+
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchPartners() {
+      try {
+        const data = await listAllPartners();
+        if (!cancelled) {
+          setPartners(data);
+          setPartnersError(null);
+        }
+      } catch {
+        // No fabricated register. The table says it is unavailable instead.
+        if (!cancelled) {
+          setPartners(null);
+          setPartnersError('The channel partner register could not be loaded.');
+        }
+      }
+    }
+
+    fetchPartners();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,15 +86,26 @@ export default function AdminPortal({ lang }) {
     return () => { cancelled = true; };
   }, []);
 
-  const handleVerify = (name) => {
-    setVerifiedMap(prev => ({ ...prev, [name]: true }));
+  // Local acknowledgement only — it marks a row as reviewed in this session and no longer
+  // rewrites the displayed verification date, which used to jump to a fabricated
+  // "11 September 2026 (Verified Just Now)" without any request being made. Wiring the control
+  // to POST /api/admin/verify-partner/{id} is a separate change; until then the date shown is
+  // always the stored one.
+  const handleVerify = (partnerId) => {
+    setVerifiedMap(prev => ({ ...prev, [partnerId]: true }));
   };
 
+  // Statistics and rules are independent surfaces served by different endpoints. Unavailable
+  // statistics must not take the rule editor down with them — correcting a wrong income limit is
+  // the more urgent of the two jobs, and R7.10 does not make it conditional on the dashboard.
   if (!stats && error) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-2">
-        <p className="text-sm font-semibold text-rose-800">{error}</p>
-        <p className="text-xs text-slate-500">No figures are shown, because none could be retrieved.</p>
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
+        <div className="text-center space-y-2">
+          <p className="text-sm font-semibold text-rose-800">{error}</p>
+          <p className="text-xs text-slate-500">No figures are shown, because none could be retrieved.</p>
+        </div>
+        {isAdmin && <AdminRuleEditor />}
       </div>
     );
   }
@@ -201,6 +247,10 @@ export default function AdminPortal({ lang }) {
         </div>
       </div>
 
+      {/* Rule_Store editor (R7.10–R7.12). The component itself renders nothing without an Admin
+          session, so this is defence in depth rather than the only gate. */}
+      {isAdmin && <AdminRuleEditor />}
+
       {/* Partner Verification Management Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
         <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -225,36 +275,54 @@ export default function AdminPortal({ lang }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[
-                { name: 'Karnataka State Dr. B.R. Ambedkar Development Corporation', type: 'SCA', dist: 'Bengaluru' },
-                { name: 'Canara Bank - MSME Hub', type: 'PSB', dist: 'Bengaluru' },
-                { name: 'Dr. Babu Jagjivan Ram Leather Dev Corp (LIDKAR)', type: 'SCA', dist: 'Bengaluru' },
-                { name: 'Karnataka Gramin Bank', type: 'RRB', dist: 'Bengaluru Rural' },
-                { name: 'Grameen Koota Micro Finance', type: 'NBFC-MFI', dist: 'Bengaluru' }
-              ].map((p, i) => {
-                const isVerified = verifiedMap[p.name];
+              {partnersError && (
+                <tr>
+                  <td colSpan={5} className="p-3 text-rose-800 font-semibold">
+                    {partnersError} No rows are listed, because none could be retrieved.
+                  </td>
+                </tr>
+              )}
+
+              {!partnersError && partners === null && (
+                <tr>
+                  <td colSpan={5} className="p-3 text-slate-500">Loading the channel partner register…</td>
+                </tr>
+              )}
+
+              {partners?.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-3 text-slate-500">No channel partners are registered.</td>
+                </tr>
+              )}
+
+              {partners?.map((p) => {
+                const isVerified = verifiedMap[p.id];
                 return (
-                  <tr key={i} className="hover:bg-slate-50/70">
-                    <td className="p-3 font-semibold text-slate-900">{p.name}</td>
+                  <tr key={p.id} className="hover:bg-slate-50/70">
+                    <td className="p-3 font-semibold text-slate-900">
+                      {p.institutionName}
+                      <IllustrativeBadge record={p} />
+                    </td>
                     <td className="p-3">
                       <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono text-[10px]">
-                        {p.type}
+                        {p.institutionType}
                       </span>
                     </td>
-                    <td className="p-3 text-slate-600">{p.dist}</td>
+                    <td className="p-3 text-slate-600">{p.district}</td>
                     <td className="p-3 font-mono text-emerald-700">
-                      {isVerified ? '11 September 2026 (Verified Just Now)' : '10 September 2026'}
+                      {/* The stored date, formatted — never a literal. */}
+                      {formatVerifiedDate(p.lastVerifiedDate)}
                     </td>
                     <td className="p-3 text-right">
                       <button
-                        onClick={() => handleVerify(p.name)}
+                        onClick={() => handleVerify(p.id)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                           isVerified
                             ? 'bg-emerald-100 text-emerald-800'
                             : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs'
                         }`}
                       >
-                        {isVerified ? '✓ Verified' : 'Re-verify For 2026'}
+                        {isVerified ? '✓ Verified' : 'Re-verify'}
                       </button>
                     </td>
                   </tr>
@@ -266,4 +334,19 @@ export default function AdminPortal({ lang }) {
       </div>
     </div>
   );
+}
+
+
+/**
+ * Formats a stored `lastVerifiedDate` for the register. `en-IN` grouping and month names match
+ * the rest of the frontend (R8.11); an absent or unparseable value reads as unverified rather
+ * than as "Invalid Date" or as today.
+ */
+function formatVerifiedDate(value) {
+  if (!value) return 'Not recorded';
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Not recorded';
+
+  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 }

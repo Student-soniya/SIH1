@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SchemeReady.Api.Auth;
 using SchemeReady.Api.Data;
+using SchemeReady.Api.Models;
 using SchemeReady.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,8 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Documented in docs/local-build-and-migrations.md.
 bool seedOnly = args.Contains("--seed-only");
 
-// Add Controllers
-builder.Services.AddControllers();
+// Add Controllers.
+//
+// The Rule_Store exception filter is registered globally so every action that reaches the
+// matching engine turns an unreadable store into 503 and invalid rule data into a named 500 —
+// never into a score computed from a substituted default (R7.5).
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<RuleStoreExceptionFilter>();
+});
 
 // ---------------------------------------------------------------------- CORS
 //
@@ -172,6 +180,10 @@ builder.Services.AddSingleton<IAuditWriter, AuditWriter>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IApplicationPackAccessService, ApplicationPackAccessService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IRuleStore, EfRuleStore>();
+// Singleton: the 60-second cache of R7.4 has to outlive a request to be a cache at all. It
+// resolves its own scope per load rather than capturing the scoped DbContext.
+builder.Services.AddSingleton<IRuleSetProvider, RuleSetProvider>();
 builder.Services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
 builder.Services.AddScoped<ISchemeMatchingService, SchemeMatchingService>();
 builder.Services.AddScoped<IBusinessPlanService, BusinessPlanService>();
@@ -193,6 +205,41 @@ using (var scope = app.Services.CreateScope())
     // The three roles of R4.14–R4.16. No user account is seeded — see IdentitySeeder.
     var identitySeeder = scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
     await identitySeeder.SeedRolesAsync();
+}
+
+// ------------------------------------------------------------ Rule_Store startup gate
+//
+// R7.8. Load and validate the Rule_Store once, now, and refuse to start on any of the three
+// stated conditions: an unreachable store, a missing weight component, or weights not summing to
+// 100. The alternative — discovering it on the first beneficiary's matching request — means the
+// process reports itself healthy while being incapable of doing the one thing it exists for.
+//
+// This runs after Migrate + Seed, so a first-ever start finds the baseline rows the seeder just
+// inserted rather than an empty table.
+try
+{
+    var ruleProvider = app.Services.GetRequiredService<IRuleSetProvider>();
+    var startupRules = await ruleProvider.LoadAndValidateAsync();
+
+    app.Logger.LogInformation(
+        "Rule store validated: {SchemeCount} scheme rule row(s); weights {Weights} summing to {Sum}.",
+        startupRules.BySchemeId.Count,
+        string.Join(", ", startupRules.Weights.AsDictionary().Select(kv => $"{kv.Key}={kv.Value}")),
+        startupRules.Weights.Sum());
+}
+catch (RuleStoreUnavailableException ex)
+{
+    app.Logger.LogCritical(ex,
+        "FATAL: the rule store is unreachable. Scheme matching cannot be served and no hard-coded " +
+        "threshold or weight will be substituted. The API will not start.");
+    throw;
+}
+catch (RuleDataInvalidException ex)
+{
+    app.Logger.LogCritical(ex,
+        "FATAL: the rule store holds invalid data for {Target}, field {Field}: {Message} The API will not start.",
+        ex.SchemeIdOrComponent, ex.FieldName, ex.Message);
+    throw;
 }
 
 if (seedOnly)

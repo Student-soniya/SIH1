@@ -1,3 +1,4 @@
+using SchemeReady.Api.Matching;
 using SchemeReady.Api.Models;
 
 namespace SchemeReady.Api.Data;
@@ -16,7 +17,7 @@ namespace SchemeReady.Api.Data;
 /// every property read so a caller that mutates a returned entity — or an EF change
 /// tracker that attaches one — can never corrupt the baseline for a later seeder run.
 /// </summary>
-public static class SeedData
+public static partial class SeedData
 {
     public static IReadOnlyList<Scheme> Schemes => new List<Scheme>
     {
@@ -313,5 +314,119 @@ public static class SeedData
             Longitude = 76.6552,
             IsIllustrative = true
         }
+    };
+}
+
+
+/// <summary>
+/// Rule_Store baseline rows (R7.9). Split into its own partial so the scheme and partner
+/// initialisers above stay a verbatim carry-over that is easy to diff.
+///
+/// THE WHOLE POINT OF THIS FILE. R3.7 freezes <c>tests/baseline/MatchingBaseline.json</c>
+/// against the behaviour of the pre-Phase-E engine, and R7.9 requires the seeded rules to
+/// equal the literals that engine used. Rather than retype those numbers — where a single
+/// transposed digit would be a silent behaviour change that only the baseline test could
+/// catch — every threshold below is *projected from the very same
+/// <see cref="SeedData.Schemes"/> object initialiser the engine used to read*, and every
+/// weight is projected from <c>SeededWeights</c>, which is the class Phase B moved those
+/// literals into. Equality is therefore structural, not transcribed.
+/// </summary>
+public static partial class SeedData
+{
+    /// <summary>
+    /// The applicant categories the engine previously hard-coded as
+    /// <c>Category == "SC" || Category == "Safai Karamchari"</c> — one list, applied to every
+    /// scheme, exactly as the deleted expression was applied to every scheme.
+    /// </summary>
+    private static readonly string[] SeededEligibleCategories = { "SC", "Safai Karamchari" };
+
+    /// <summary>
+    /// One <see cref="SchemeRuleRow"/> per seeded <see cref="Scheme"/>, thresholds copied
+    /// field-for-field off the scheme row.
+    ///
+    /// ONE DEVIATION, and it is deliberate. <c>NSFDC-SLS-06</c> declares
+    /// <c>MinimumAge = 17</c>, which lies outside R7.1's 18–75 bound and would be rejected by
+    /// the <c>CHECK</c> constraint this phase adds. The value is clamped to the bound here
+    /// rather than the bound being widened to fit the data. That is safe to assert rather than
+    /// hope: no eligibility check, no score component and no reason string in
+    /// <c>SchemeMatchingService</c> reads <c>MinimumAge</c> or <c>MaximumAge</c> at all — the
+    /// engine has never scored age — so the clamp cannot move a <c>MatchScore</c> or a reason
+    /// string, and <c>MatchingBaseline.json</c> is unaffected. <see cref="Scheme.MinimumAge"/>
+    /// on the scheme row keeps its 17 for display.
+    /// </summary>
+    public static IReadOnlyList<SchemeRuleRow> MatchingRules => Schemes
+        .Select(s => new SchemeRuleRow
+        {
+            SchemeId = s.Id,
+
+            MinimumAge = Math.Clamp(s.MinimumAge, RuleBounds.MinAge, RuleBounds.MaxAge),
+            MaximumAge = Math.Clamp(s.MaximumAge, RuleBounds.MinAge, RuleBounds.MaxAge),
+
+            // Read by the eligibility component.
+            IncomeLimit = s.IncomeLimit,
+
+            // Read by the project-cost-fit component.
+            MinimumProjectCost = s.MinimumProjectCost,
+            MaximumProjectCost = s.MaximumProjectCost,
+
+            // Read by the business-type-preference component. A copy, not the same list
+            // instance: an EF change tracker attaching this row must not be able to reach the
+            // scheme's collection.
+            EligibleBusinessTypes = new List<string>(s.EligibleBusinessTypes),
+
+            EligibleCategories = new List<string>(SeededEligibleCategories),
+
+            // Carried from the scheme row at seed time; from here on the Rule_Store is the
+            // authority the engine reads (see SchemeRuleRow's remarks). "Female" for
+            // NSFDC-MSY-03, "Any" for the rest.
+            GenderRestriction = s.GenderRestriction,
+
+            // Not scoring inputs — the EMI projection attached to each result.
+            InterestRate = s.InterestRate,
+            MaximumTenureMonths = s.MaximumTenureMonths,
+            MoratoriumMonths = s.MoratoriumMonths
+        })
+        .ToList();
+
+    /// <summary>
+    /// The five weight rows of R7.2, seeded 40/25/15/10/10 — taken from <c>SeededWeights</c>,
+    /// the class Phase B extracted those literals into, so the seeded value and the
+    /// pre-Phase-E literal are the same declaration and cannot drift apart.
+    /// </summary>
+    public static IReadOnlyList<ScoringWeight> MatchingWeights => new List<ScoringWeight>
+    {
+        new() { ComponentName = ScoringWeights.Components.Eligibility,            Weight = SeededWeights.Eligibility },
+        new() { ComponentName = ScoringWeights.Components.ProjectCostFit,         Weight = SeededWeights.ProjectCost },
+        new() { ComponentName = ScoringWeights.Components.DocumentReadiness,      Weight = SeededWeights.Documents },
+        new() { ComponentName = ScoringWeights.Components.PartnerAvailability,    Weight = SeededWeights.Partner },
+        new() { ComponentName = ScoringWeights.Components.BusinessTypePreference, Weight = SeededWeights.BusinessType }
+    };
+
+    /// <summary>
+    /// The stored sample profile the admin rule editor previews against (R7.11). A checked-in
+    /// constant rather than an arbitrary live dossier, so two admins comparing a pending edit
+    /// are comparing the same thing, and so the preview reveals nobody's application data.
+    ///
+    /// These are the <see cref="BeneficiaryProfile"/> property defaults — the profile the
+    /// baseline recorder's "typical applicant" case uses.
+    /// </summary>
+    public static BeneficiaryProfile SamplePreviewProfile => new()
+    {
+        Id = "SAMPLE01",
+        FullName = "Sample Applicant",
+        BusinessType = "tailoring",
+        Location = "Bengaluru",
+        EstimatedProjectCost = 120000,
+        AnnualFamilyIncome = 250000,
+        UserType = "new_entrepreneur",
+        Category = "SC",
+        HasCasteCertificate = false,
+        HasIncomeCertificate = true,
+        RequiredLoanAmount = 120000,
+        SupportPreference = "offline",
+        PreferredLanguage = "en",
+        Age = 28,
+        UploadedDocs = new() { "Aadhaar/KYC", "Income certificate" },
+        Gender = "Any"
     };
 }

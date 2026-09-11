@@ -91,7 +91,15 @@ public class BaselineEqualityTests
                 JsonSerializer.Serialize(expectedProfile!.Profile, BaselineJson.Options),
                 JsonSerializer.Serialize(baselineCase!.Profile, BaselineJson.Options));
 
-            var service = new SchemeMatchingService(new SeedDataSchemeRepository(), new EmiCalculatorService());
+            // Phase E completion gate. The rule set is the one SeedData produces (R7.9), so this
+            // assertion is precisely "externalising the rules changed no behaviour": if any
+            // seeded threshold or weight differs from the literal it replaced, a match score, a
+            // reason string or an ordering below will differ and this test says which.
+            var service = new SchemeMatchingService(
+                new SeedDataSchemeRepository(),
+                new EmiCalculatorService(),
+                StaticRuleSetProvider.FromSeedData());
+
             var actual = await service.MatchSchemesAsync(baselineCase.Profile);
 
             var expected = expectedProfile.Results;

@@ -414,3 +414,52 @@ export async function uploadDocument(file, docKey, applicationPackId = null) {
 export async function listMyDocuments() {
   return tokenFetchJson('documents/mine');
 }
+
+
+// ---------------------------------------------------------------------------- Rule_Store
+//
+// Admin_Role only (R4.14), so every call goes through tokenFetchJson and throws ApiError on
+// failure. There is deliberately no fallback: a rule editor that silently showed compiled-in
+// numbers when the API was unreachable would invite an administrator to "correct" a value that
+// was never loaded, and to believe the save landed.
+
+/** The stored rule rows, the five weights, the declared bounds, and the preview sample profile. */
+export async function getAdminRules() {
+  return tokenFetchJson('admin/rules');
+}
+
+/**
+ * Saves a rule row, a weight set, or both. Rejects with `ApiError` carrying the server's message
+ * on a bounds, cross-field or weight-sum violation (R7.6, R7.7) — the message names the field and
+ * the submitted value, so it is shown verbatim rather than replaced with a generic one.
+ */
+export async function saveAdminRules({ rule = null, weights = null }) {
+  return tokenFetchJson('admin/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rule, weights })
+  });
+}
+
+/**
+ * Scores the stored sample profile against pending values and against stored values, without
+ * persisting (R7.11). The comparison is computed by the one server-side matching engine, so the
+ * preview cannot disagree with what saving would produce.
+ */
+export async function previewAdminRules({ rule = null, weights = null }) {
+  return tokenFetchJson('admin/rules/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rule, weights })
+  });
+}
+
+/**
+ * Every channel partner, live from `GET /api/partners` — the endpoint is anonymous, so no bearer
+ * header is attached. Unlike `getPartners` above this has no offline fallback by design: it backs
+ * the admin verification table, where a hard-coded row list was previously displayed as though it
+ * were the register (R2.9 applies to beneficiary-facing fallbacks, not to an audit surface).
+ */
+export async function listAllPartners() {
+  return tokenFetchJson('partners');
+}

@@ -45,16 +45,40 @@ public class DatabaseSeeder
             }
         }
 
-        // Phase E adds the identical loop over SeedData.MatchingRules here.
+        // Rule_Store baseline (R7.9). Same rule as above — insert only when the primary key is
+        // absent — which is what lets an admin correct an IncomeLimit through
+        // POST /api/admin/rules and keep the correction across every restart (R1.13, R7.6).
+        int rulesAdded = 0;
+        int weightsAdded = 0;
 
-        if (schemesAdded == 0 && partnersAdded == 0)
+        foreach (var seed in SeedData.MatchingRules)                             // 6 rows, one per scheme
+        {
+            if (!await _db.SchemeRules.AnyAsync(r => r.SchemeId == seed.SchemeId, ct))
+            {
+                _db.SchemeRules.Add(seed);
+                rulesAdded++;
+            }
+        }
+
+        foreach (var seed in SeedData.MatchingWeights)                           // exactly 5 rows (R7.2)
+        {
+            if (!await _db.ScoringWeights.AnyAsync(w => w.ComponentName == seed.ComponentName, ct))
+            {
+                _db.ScoringWeights.Add(seed);
+                weightsAdded++;
+            }
+        }
+
+        if (schemesAdded == 0 && partnersAdded == 0 && rulesAdded == 0 && weightsAdded == 0)
         {
             _logger.LogInformation("Seeder: database already seeded; no rows inserted, no rows modified.");
             return;
         }
 
         await _db.SaveChangesAsync(ct);
-        _logger.LogInformation("Seeder: inserted {Schemes} scheme row(s) and {Partners} channel partner row(s).",
-            schemesAdded, partnersAdded);
+        _logger.LogInformation(
+            "Seeder: inserted {Schemes} scheme row(s), {Partners} channel partner row(s), " +
+            "{Rules} scheme rule row(s) and {Weights} scoring weight row(s).",
+            schemesAdded, partnersAdded, rulesAdded, weightsAdded);
     }
 }

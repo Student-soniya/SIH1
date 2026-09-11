@@ -4,11 +4,19 @@ namespace SchemeReady.Api.Models;
 /// Rule_Store row holding the eligibility thresholds for one scheme, one row per
 /// <see cref="Scheme"/>.
 ///
-/// Phase A declares only the persistence shape so the initial migration can create the
-/// table (R1.6). Seeding, the CHECK constraints for the declared bounds, the cached
-/// provider and the removal of the literals from <c>Services.cs</c> arrive in Phase E
-/// (tasks 15.1–15.4). Nothing in Phase A reads this table, and
-/// <c>SchemeMatchingService</c> still reads its thresholds from <see cref="Scheme"/>.
+/// Phase A declared the persistence shape so the initial migration could create the table
+/// (R1.6). Phase E added the <c>CHECK</c> constraints for the bounds of R7.1 (migration
+/// <c>20260103000000_RuleStoreCheckConstraints</c>), the seed rows in
+/// <see cref="Data.SeedData.MatchingRules"/>, and every read: <c>SchemeMatchingService</c>
+/// now takes every threshold from here through <see cref="MatchingRuleSet"/>.
+///
+/// SINGLE SOURCE OF TRUTH. <see cref="Scheme"/> still carries columns with the same names
+/// (<c>IncomeLimit</c>, <c>MaximumProjectCost</c>, <c>GenderRestriction</c>, …) because they
+/// are part of the scheme's published description and of the unchanged
+/// <c>GET /api/schemes</c> response schema. From Phase E onward **this row is what matching
+/// reads** and those columns are descriptive only. The seeder derives this row from the
+/// <see cref="Scheme"/> object initialisers so the two agree on the day they are created;
+/// afterwards an admin edits rules here, through <c>POST /api/admin/rules</c>.
 /// </summary>
 public class SchemeRuleRow
 {

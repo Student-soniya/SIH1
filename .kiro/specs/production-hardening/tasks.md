@@ -252,26 +252,26 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
 
 ### Phase E — Database-driven rules and the admin rule editor (R7)
 
-- [ ] 15. Rule store and cache
-  - [ ] 15.1 Add the `SchemeRules` and `ScoringWeights` entities and seed them
+- [x] 15. Rule store and cache
+  - [x] 15.1 Add the `SchemeRules` and `ScoringWeights` entities and seed them
     - New `Models/SchemeRuleRow.cs`, `Models/ScoringWeight.cs` + `SchemeReadyDbContext` mapping with `CHECK` constraints per the declared bounds; exactly five weight rows keyed by component name
     - `Data/SeedData.cs`: add `MatchingRules` holding threshold and weight values equal to the pre-change literals in `Services/Services.cs` (weights 40/25/15/10/10, categories `["SC","Safai Karamchari"]` per scheme); `DatabaseSeeder` inserts them only when absent
     - _Requirements: 7.1, 7.2, 7.9_
 
-  - [ ] 15.2 Implement `IRuleStore` and the 60-second `RuleSetProvider`
+  - [x] 15.2 Implement `IRuleStore` and the 60-second `RuleSetProvider`
     - New `Data/EfRuleStore.cs` implementing `GetSchemeRulesAsync`, `GetWeightsAsync`, `SaveSchemeRuleAsync`, `SaveWeightsAsync`
     - New `Services/RuleSetProvider.cs` (singleton): `SemaphoreSlim`-gated double-checked 60 s cache, `Invalidate()`, and `LoadAndValidateAsync` that throws `RuleStoreUnavailableException` rather than serving stale or default values
     - New `Models/MatchingRuleSet.cs` — a record of named fields (`MinimumAge`, `MaximumAge`, `IncomeLimit`, `MinimumProjectCost`, `MaximumProjectCost`, `EligibleBusinessTypes`, `EligibleCategories`, `GenderRestriction`, `InterestRate`, `MaximumTenureMonths`, `MoratoriumMonths`, `Weights`); no reflection, no attribute lookup, no DSL
     - `Program.cs`: call `LoadAndValidateAsync` at startup and refuse to start on an unreachable store, a missing weight component, or a weight sum ≠ 100, logging the condition or the missing names with the computed sum
     - _Requirements: 7.4, 7.5, 7.8_
 
-  - [ ] 15.3 Replace the remaining literals in `Services.cs` with rule-set reads
+  - [x] 15.3 Replace the remaining literals in `Services.cs` with rule-set reads
     - `Services/Services.cs`: read each threshold and weight from `MatchingRuleSet` by name at the five component call sites via `Awards.*`; category matching becomes `rules.EligibleCategories.Contains(profile.Category, OrdinalIgnoreCase)`; preserve the bidirectional `Contains` business-type match and every reason string byte-for-byte; the file must contain no eligibility-threshold or weight literal afterwards
     - Missing or out-of-bounds rule values fail the request naming the scheme and field, substitute no default and return no partial results; an unreachable store with a stale cache returns 503
     - **Completion gate: `BaselineEqualityTests` from task 7.1 must pass byte-for-byte with `Rule_Store` seeded from `SeedData.MatchingRules`. This task is not complete until that test is green.** **[dev machine]**
     - _Requirements: 3.7, 3.8, 7.3, 7.5_
 
-  - [ ] 15.4 Implement the admin rules endpoints with validation, invalidation and per-field audit
+  - [x] 15.4 Implement the admin rules endpoints with validation, invalidation and per-field audit
     - New `Controllers/AdminRulesController.cs` (`Admin` role): `GET`/`POST /api/admin/rules`; reject out-of-bounds or cross-field violations (min age > max age, min cost > max cost, moratorium > tenure) with 400 naming field and submitted value, leaving the row unchanged; reject a weight set whose sum ≠ 100 with 400 stating the computed sum, leaving every weight unchanged
     - Save in a single transaction, then call `RuleSetProvider.Invalidate()` **before** writing the 200; record one audit event per field whose value actually changed, carrying previous and new values
     - _Requirements: 7.6, 7.7, 7.4, 7.13_
@@ -280,7 +280,7 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
     - **Property 24** bounds and cross-field validation, weight-sum biconditional, first-request-after-save uses saved values, audit count equals changed-field count (R7.1, 7.2, 7.4, 7.6, 7.7, 7.10, 7.13); **Property 12** invalid or missing rule data fails loudly with no defaults and no partial results (R3.8, 7.5)
     - **Validates: Requirements 3.8, 7.1, 7.2, 7.4, 7.5, 7.6, 7.7, 7.10, 7.13**
 
-  - [ ] 15.6 Build the admin rule editor with live preview
+  - [x] 15.6 Build the admin rule editor with live preview
     - `src/components/AdminPortal.jsx`: replace the hard-coded five-row partner table with live `/api/partners` data; add inputs for every rule field and all five weights, the running weight sum recomputed after each keystroke, the save control disabled while the sum ≠ 100 or any value is out of bounds, and a preview panel showing pending-vs-stored `MatchScore` and full explanation side by side for one stored sample profile without persisting
     - Render no rule input, weight input or save control without an Admin session
     - _Requirements: 7.10, 7.11, 7.12_

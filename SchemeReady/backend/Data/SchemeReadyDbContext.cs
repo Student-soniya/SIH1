@@ -205,11 +205,53 @@ public class SchemeReadyDbContext : IdentityDbContext<ApplicationUser>
 
     private static void ConfigureRuleStore(ModelBuilder b)
     {
-        // Phase A creates these tables because R1.6 requires the initial migration to do so.
-        // Seeding, the CHECK constraints for the declared bounds, and every read of these
-        // tables arrive in Phase E (tasks 15.1–15.4).
+        // Phase A created these tables because R1.6 requires the initial migration to do so.
+        // Phase E added the CHECK constraints below, the seed rows, and every read.
+        //
+        // WHY DATABASE CONSTRAINTS AS WELL AS CONTROLLER VALIDATION. AdminRulesController
+        // already rejects an out-of-bounds submission with a 400 naming the field (R7.7), and
+        // RuleSetProvider rejects an out-of-bounds row again on load (R3.8) — so these
+        // constraints are the third line, not the first. They exist because the API is not the
+        // only way a row can change: a psql session, a restore from a mis-edited dump or a
+        // future batch script all bypass the controller entirely. A negative income limit that
+        // reaches the table would otherwise silently score every applicant as over the limit.
+        // The bounds come from RuleBounds, interpolated, so the three enforcement points cannot
+        // disagree about a number.
         var rule = b.Entity<SchemeRuleRow>();
-        rule.ToTable("SchemeRules");
+        rule.ToTable("SchemeRules", t =>
+        {
+            t.HasCheckConstraint("ck_scheme_rules_min_age",
+                $"\"MinimumAge\" >= {RuleBounds.MinAge} AND \"MinimumAge\" <= {RuleBounds.MaxAge}");
+            t.HasCheckConstraint("ck_scheme_rules_max_age",
+                $"\"MaximumAge\" >= {RuleBounds.MinAge} AND \"MaximumAge\" <= {RuleBounds.MaxAge}");
+            t.HasCheckConstraint("ck_scheme_rules_age_order",
+                "\"MinimumAge\" <= \"MaximumAge\"");
+            t.HasCheckConstraint("ck_scheme_rules_income_limit",
+                $"\"IncomeLimit\" >= {RuleBounds.MinIncomeLimit} AND \"IncomeLimit\" <= {RuleBounds.MaxIncomeLimit}");
+            t.HasCheckConstraint("ck_scheme_rules_min_project_cost",
+                $"\"MinimumProjectCost\" >= {RuleBounds.MinProjectCost} AND \"MinimumProjectCost\" <= {RuleBounds.MaxProjectCost}");
+            t.HasCheckConstraint("ck_scheme_rules_max_project_cost",
+                $"\"MaximumProjectCost\" >= {RuleBounds.MinProjectCost} AND \"MaximumProjectCost\" <= {RuleBounds.MaxProjectCost}");
+            t.HasCheckConstraint("ck_scheme_rules_project_cost_order",
+                "\"MinimumProjectCost\" <= \"MaximumProjectCost\"");
+            t.HasCheckConstraint("ck_scheme_rules_interest_rate",
+                $"\"InterestRate\" >= {RuleBounds.MinInterestRate} AND \"InterestRate\" <= {RuleBounds.MaxInterestRate}");
+            t.HasCheckConstraint("ck_scheme_rules_tenure",
+                $"\"MaximumTenureMonths\" >= {RuleBounds.MinTenureMonths} AND \"MaximumTenureMonths\" <= {RuleBounds.MaxTenureMonths}");
+            t.HasCheckConstraint("ck_scheme_rules_moratorium",
+                $"\"MoratoriumMonths\" >= {RuleBounds.MinMoratoriumMonths} AND \"MoratoriumMonths\" <= {RuleBounds.MaxMoratoriumMonths}");
+            t.HasCheckConstraint("ck_scheme_rules_moratorium_within_tenure",
+                "\"MoratoriumMonths\" <= \"MaximumTenureMonths\"");
+            t.HasCheckConstraint("ck_scheme_rules_gender_restriction",
+                "\"GenderRestriction\" IN ('Any', 'Female', 'Male')");
+
+            // jsonb cardinality. jsonb_array_length also rejects a value that is not an array,
+            // which the converter cannot produce but a hand-written UPDATE can.
+            t.HasCheckConstraint("ck_scheme_rules_business_types_count",
+                $"jsonb_array_length(\"EligibleBusinessTypes\") BETWEEN {RuleBounds.MinEligibleBusinessTypes} AND {RuleBounds.MaxEligibleBusinessTypes}");
+            t.HasCheckConstraint("ck_scheme_rules_categories_count",
+                $"jsonb_array_length(\"EligibleCategories\") BETWEEN {RuleBounds.MinEligibleCategories} AND {RuleBounds.MaxEligibleCategories}");
+        });
         rule.HasKey(r => r.SchemeId);
         rule.Property(r => r.SchemeId).HasColumnType("text").HasMaxLength(64).IsRequired();
         rule.Property(r => r.IncomeLimit).HasColumnType("numeric(12,2)");
@@ -228,7 +270,21 @@ public class SchemeReadyDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Cascade);
 
         var weight = b.Entity<ScoringWeight>();
-        weight.ToTable("ScoringWeights");
+        weight.ToTable("ScoringWeights", t =>
+        {
+            t.HasCheckConstraint("ck_scoring_weights_range",
+                $"\"Weight\" >= {RuleBounds.MinWeight} AND \"Weight\" <= {RuleBounds.MaxWeight}");
+
+            // The component name is closed (R7.2). The "sum equals 100" invariant deliberately
+            // is *not* a constraint: a row-level CHECK cannot see the other four rows, and a
+            // trigger enforcing it would make any legitimate multi-row update impossible to
+            // sequence. It is enforced instead inside the single transaction that writes all
+            // five (AdminRulesController), and again on every load and at startup
+            // (RuleSetProvider) — R7.6, R7.8.
+            t.HasCheckConstraint("ck_scoring_weights_component_name",
+                "\"ComponentName\" IN ('Eligibility', 'ProjectCostFit', 'DocumentReadiness', " +
+                "'PartnerAvailability', 'BusinessTypePreference')");
+        });
         weight.HasKey(w => w.ComponentName);
         weight.Property(w => w.ComponentName).HasColumnType("text").HasMaxLength(64).IsRequired();
     }

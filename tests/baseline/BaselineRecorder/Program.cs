@@ -32,7 +32,14 @@ public static class Program
 
         var outputPath = args.Length > 0 ? args[0] : ResolveDefaultOutputPath();
 
-        var service = new SchemeMatchingService(new SeedDataSchemeRepository(), new EmiCalculatorService());
+        // Phase E: the engine takes its thresholds and weights from the Rule_Store. The recorder
+        // supplies the snapshot a freshly seeded database yields — SeedData.MatchingRules and
+        // SeedData.MatchingWeights, through the API's own validation and projection — so the
+        // recorded numbers remain the numbers the API produces after seeding (R7.9).
+        var service = new SchemeMatchingService(
+            new SeedDataSchemeRepository(),
+            new EmiCalculatorService(),
+            StaticRuleSetProvider.FromSeedData());
 
         var document = new BaselineDocument
         {
