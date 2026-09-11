@@ -169,11 +169,11 @@ builder.Services.AddAuditingAuthorizationResultHandler();
 // Resolved once, at startup, so a missing root fails the process rather than the first upload.
 builder.Services.AddSingleton(DocumentStorage.FromConfigurationOrThrow(builder.Configuration));
 
-// DigiLocker OAuth2 client. ClientId and ClientSecret are supplied through user-secrets or
+// Decentro's DigiLocker session APIs. Credentials are supplied through user-secrets or
 // environment variables; appsettings.json intentionally contains no credentials.
-builder.Services.Configure<DigiLockerOptions>(
-    builder.Configuration.GetSection(DigiLockerOptions.SectionName));
-builder.Services.AddHttpClient<IDigiLockerService, DigiLockerService>();
+builder.Services.Configure<DecentroOptions>(
+    builder.Configuration.GetSection(DecentroOptions.SectionName));
+builder.Services.AddHttpClient<IDecentroDigiLockerService, DecentroDigiLockerService>();
 
 // Register Core Domain Services & Repository
 // Scoped, not Singleton: the repository now shares the scoped DbContext lifetime.
