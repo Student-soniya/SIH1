@@ -1,4 +1,7 @@
-﻿namespace SchemeReady.Api.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace SchemeReady.Api.Models;
 
 public class UserAccount
 {
@@ -52,14 +55,36 @@ public class Scheme
     public int MaximumTenureMonths { get; set; }
     public int MoratoriumMonths { get; set; }
     public List<string> RequiredDocuments { get; set; } = new();
-    public List<string> SupportedStates { get; set; } = new();
+    public List<string> SupportedDistricts { get; set; } = new();
     public string ApplicationMode { get; set; } = "Offline";
     public string OfficialUrl { get; set; } = string.Empty;
     public string SourceDocument { get; set; } = string.Empty;
     public DateTime LastVerifiedDate { get; set; }
     public string Status { get; set; } = "Verified";
     public string Description { get; set; } = string.Empty;
-    public double MinAcademicPercentage { get; set; } = 0; // For Education Loans
+
+    // Minimum qualifying academic percentage, used by education/skill schemes.
+    // 0 (the default) means the scheme declares no academic gate, so the academic
+    // rule in SchemeMatchingService is skipped entirely.
+    public double MinAcademicPercentage { get; set; } = 0;
+
+    // Gender eligibility restriction: "Any" | "Female" | "Male".
+    // Replaces the applicant-name-based MSY gate (R3.5). Default keeps every
+    // existing scheme unrestricted, so this is additive and optional in request bodies.
+    public string GenderRestriction { get; set; } = "Any";
+
+    // Illustrative-data labelling (R2.1). Defaults to true: seeded regulatory
+    // details (interest rate, source document, last-verified date) are unverified
+    // sample values until an Admin clears the flag with a verification reference.
+    public bool IsIllustrative { get; set; } = true;
+    public string? VerificationSourceReference { get; set; }
+    public DateTime? VerifiedOn { get; set; }
+
+    // Projected onto the response by DataProvenance.Project(...) — never stored.
+    // Null when IsIllustrative is false, and omitted from JSON entirely (R2.5).
+    [NotMapped]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenance { get; set; }
 }
 
 public class ChannelPartner
@@ -81,8 +106,17 @@ public class ChannelPartner
     public string Pincode { get; set; } = string.Empty;
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public string FundUtilizationStatus { get; set; } = "High Fund Availability / 0% Overdue"; // SIH requirement!
+    public string FundUtilizationStatus { get; set; } = "High Fund Availability / 0% Overdue";
     public string NpaHealthScore { get; set; } = "AAA (Low NPA - Priority Disbursal)";
+
+    // Illustrative-data labelling (R2.1), identical semantics to Scheme.
+    public bool IsIllustrative { get; set; } = true;
+    public string? VerificationSourceReference { get; set; }
+    public DateTime? VerifiedOn { get; set; }
+
+    [NotMapped]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenance { get; set; }
 }
 
 public class BeneficiaryProfile
@@ -133,6 +167,13 @@ public class SchemeMatchResult
     public string SourceDocument { get; set; } = string.Empty;
     public DateTime LastVerifiedDate { get; set; }
     public string PartnerAvailability { get; set; } = "Available in District";
+
+    // Additive provenance fields (R2.2). DataProvenance is null — and therefore
+    // omitted from the serialised response — whenever IsIllustrative is false (R2.5).
+    public bool IsIllustrative { get; set; } = true;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenance { get; set; }
 }
 
 public class ApplicationReadiness
@@ -140,6 +181,12 @@ public class ApplicationReadiness
     public int OverallScore { get; set; }
     public List<ReadinessItem> Items { get; set; } = new();
     public string NextRecommendedAction { get; set; } = string.Empty;
+
+    // Additive provenance (R2.2). The readiness checklist quotes scheme-derived
+    // certificate thresholds, so the notice accompanies the response whenever any
+    // stored scheme row is still illustrative. Omitted when none is.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenance { get; set; }
 }
 
 public class ReadinessItem

@@ -16,6 +16,15 @@ import {
   Percent
 } from 'lucide-react';
 import { getPartners } from '../api';
+import IllustrativeBadge from './IllustrativeBadge';
+
+/** The partner's own last-verified date, replacing a hard-coded claim. */
+function formatVerifiedDate(value) {
+  if (!value) return 'not recorded';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'not recorded';
+  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 export default function PartnerRouting({ 
   lang, 
@@ -143,16 +152,26 @@ export default function PartnerRouting({
 
               <h3 className="text-xl font-bold tracking-tight text-white">
                 {recommendedPartner.institutionName}
+                <IllustrativeBadge record={recommendedPartner} className="ml-2" />
               </h3>
 
-              <p className="text-xs text-slate-300 flex items-center gap-1">
+              <p className="text-xs text-slate-300 flex items-center flex-wrap gap-1">
                 <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>{recommendedPartner.address}</span>
+                <IllustrativeBadge record={recommendedPartner} />
               </p>
 
-              {/* Exact SIH routing quote */}
+              {recommendedPartner.contactNumber && (
+                <p className="text-xs text-slate-300 flex items-center flex-wrap gap-1">
+                  <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="font-mono">{recommendedPartner.contactNumber}</span>
+                  <IllustrativeBadge record={recommendedPartner} />
+                </p>
+              )}
+
+              {/* Exact PRD quote alignment */}
               <div className="bg-white/10 rounded-xl p-3 text-xs text-emerald-200 border border-white/10">
-                <strong>Smart Routing Recommendation:</strong> {recommendedPartner.institutionName}, {recommendedPartner.distanceKm} km away, accepts {recommendedPartner.applicationMode.toLowerCase()} applications, supports selected credit scheme, verified with clean balance sheet (0% overdue).
+                <strong>Smart Routing Recommendation:</strong> {recommendedPartner.institutionName}, {recommendedPartner.distanceKm} km away, accepts {recommendedPartner.applicationMode.toLowerCase()} applications, supports the selected scheme, last verified {formatVerifiedDate(recommendedPartner.lastVerifiedDate)}.
               </div>
             </div>
 
@@ -216,16 +235,19 @@ export default function PartnerRouting({
 
               <h4 className="text-sm font-bold text-slate-900 leading-snug">
                 {partner.institutionName}
+                <IllustrativeBadge record={partner} className="ml-1.5" />
               </h4>
 
               <div className="text-xs text-slate-600 space-y-1">
-                <p className="flex items-start space-x-1.5">
+                <p className="flex items-start flex-wrap gap-x-1.5 gap-y-1">
                   <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                   <span className="truncate">{partner.address}</span>
+                  <IllustrativeBadge record={partner} />
                 </p>
-                <p className="flex items-center space-x-1.5">
+                <p className="flex items-center flex-wrap gap-x-1.5 gap-y-1">
                   <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="font-mono">{partner.contactNumber}</span>
+                  <IllustrativeBadge record={partner} />
                 </p>
               </div>
 

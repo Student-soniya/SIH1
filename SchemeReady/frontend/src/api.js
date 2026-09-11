@@ -1,4 +1,15 @@
-﻿const API_BASE = 'http://localhost:5000/api';
+// The canonical provenance notice, byte-for-byte identical to DataProvenance.Text in
+// SchemeReady/backend/Services/DataProvenance.cs. Every fallback Scheme and ChannelPartner
+// below carries it together with isIllustrative: true, so the illustrative badge renders
+// identically whether a record came from the API or from these offline fallbacks (R2.9).
+export const DATA_PROVENANCE =
+  'Interest rate, cited source document and last-verified date are illustrative sample values pending verification against current official NSFDC guidelines.';
+
+﻿// Protected endpoints go through tokenFetchJson, which attaches the bearer header and throws
+// ApiError rather than returning anything fabricated (R5.5, R5.11).
+import { API_BASE, ApiError, tokenFetch, tokenFetchJson } from './auth/tokenFetch';
+
+export { ApiError };
 
 export async function extractEntities(userSpeechOrText, lang = 'en') {
   try {
@@ -84,7 +95,9 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/micro-credit-scheme',
       sourceDocument: 'NSFDC Operational Guidelines 2024-26, Clause 4.2',
       lastVerifiedDate: '2026-09-10T00:00:00Z',
-      partnerAvailability: 'Karnataka State Dr. B.R. Ambedkar Development Corporation'
+      partnerAvailability: 'Karnataka State Dr. B.R. Ambedkar Development Corporation',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       schemeId: 'NSFDC-TLS-02',
@@ -108,7 +121,9 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/term-loan-scheme',
       sourceDocument: 'NSFDC Lending Policy Master Circular 2025-26',
       lastVerifiedDate: '2026-09-10T00:00:00Z',
-      partnerAvailability: 'Canara Bank MSME Hub'
+      partnerAvailability: 'Canara Bank MSME Hub',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       schemeId: 'NSFDC-LUY-04',
@@ -132,100 +147,26 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/laghu-udhyami',
       sourceDocument: 'Ministry of Social Justice & Empowerment Notification 2025',
       lastVerifiedDate: '2026-08-25T00:00:00Z',
-      partnerAvailability: 'Canara Bank - MSME Hub'
+      partnerAvailability: 'Canara Bank - MSME Hub',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     }
   ];
 }
 
+/**
+ * Readiness for a profile. Protected (R4.15), so there is no offline fallback: the previous
+ * implementation returned a complete seven-item checklist with `aadhaar_front_back.pdf` and
+ * `income_certificate_2026.pdf` already "uploaded" whenever the API was unreachable, which is
+ * indistinguishable to the user from real persisted evidence. It now throws (R5.11) and the
+ * caller keeps its last-known state and shows an error banner.
+ */
 export async function getReadiness(profile) {
-  try {
-    const res = await fetch(`${API_BASE}/readiness/calculate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile)
-    });
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn('API fallback for readiness:', err);
-  }
-
-  const score = profile.hasCasteCertificate ? 92 : 72;
-  return {
-    overallScore: score,
-    nextRecommendedAction: profile.hasCasteCertificate
-      ? 'All statutory documents are verified! Generate your Application Pack.'
-      : 'Upload your Caste Certificate or apply at Nadakacheri to boost your score to 92%.',
-    items: [
-      {
-        key: 'eligibility',
-        title: 'Eligibility Criteria',
-        status: 'Complete',
-        isMandatory: true,
-        whyRequired: 'Confirms age, target community category, and annual family income eligibility.',
-        howToObtain: 'Verified via questionnaire response.',
-        acceptedFormats: 'System Verified'
-      },
-      {
-        key: 'identity',
-        title: 'Identity Documents (Aadhaar / KYC)',
-        status: 'Complete',
-        isMandatory: true,
-        whyRequired: 'Mandatory KYC for Direct Benefit Transfer (DBT) and bank linkage.',
-        howToObtain: 'Download e-Aadhaar from UIDAI portal (eaadhaar.uidai.gov.in).',
-        acceptedFormats: 'PDF, JPG (Max 5MB)',
-        uploadedFileName: 'aadhaar_front_back.pdf'
-      },
-      {
-        key: 'caste_cert',
-        title: 'Caste Certificate (RD Number)',
-        status: profile.hasCasteCertificate ? 'Complete' : 'Missing',
-        isMandatory: true,
-        whyRequired: 'Mandatory statutory proof confirming eligibility for subsidized interest rates (4-5%).',
-        howToObtain: 'Apply online via Karnataka Nadakacheri portal (nadakacheri.karnataka.gov.in) or visit nearest Tahsildar / Atalji Janasnehi Kendra. Takes 7-14 working days.',
-        acceptedFormats: 'PDF, JPG (Max 5MB)',
-        uploadedFileName: profile.hasCasteCertificate ? 'caste_cert_verified.pdf' : null
-      },
-      {
-        key: 'income_cert',
-        title: 'Income Certificate',
-        status: profile.hasIncomeCertificate ? 'Complete' : 'Missing',
-        isMandatory: true,
-        whyRequired: 'Confirms annual family income falls within the scheme ceiling limit.',
-        howToObtain: 'Issued by Revenue Department / Nadakacheri portal.',
-        acceptedFormats: 'PDF, JPG (Max 5MB)',
-        uploadedFileName: 'income_certificate_2026.pdf'
-      },
-      {
-        key: 'business_plan',
-        title: 'Business Plan & Project Report',
-        status: 'Complete',
-        isMandatory: true,
-        whyRequired: 'Required by bank loan officers to evaluate technical feasibility and repayment capacity.',
-        howToObtain: 'Generated instantly by SchemeReady AI Business Plan Builder.',
-        acceptedFormats: 'PDF, Printout',
-        uploadedFileName: 'project_report_one_page.pdf'
-      },
-      {
-        key: 'quotation',
-        title: 'Equipment Quotation / Invoice',
-        status: 'Missing',
-        isMandatory: false,
-        whyRequired: 'Validates purchase value of tools and permits direct bank supplier disbursement.',
-        howToObtain: 'Obtain a proforma quotation from your machinery supplier with GST invoice.',
-        acceptedFormats: 'PDF, JPG, PNG',
-        uploadedFileName: null
-      },
-      {
-        key: 'partner',
-        title: 'Nearest Verified Channel Partner',
-        status: 'Complete',
-        isMandatory: true,
-        whyRequired: 'Identifies the designated submission center for physical and digital review.',
-        howToObtain: 'Assigned automatically: Karnataka State Channelizing Agency (4.2 km).',
-        acceptedFormats: 'Verified Office Record'
-      }
-    ]
-  };
+  return tokenFetchJson('readiness/calculate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile)
+  });
 }
 
 export async function generateBusinessPlan(planReq) {
@@ -349,7 +290,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar copy', 'Caste certificate (RD number)', 'Income certificate', 'Bank passbook copy', 'Quotation'],
       lastVerifiedDate: '2026-09-10T00:00:00Z',
       isOnlineSubmissionAvailable: false,
-      pincode: '560001'
+      pincode: '560001',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-PSB-02',
@@ -366,7 +309,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['KYC docs', 'Caste certificate', 'Income declaration', 'Business DPR', 'Vendor quotation'],
       lastVerifiedDate: '2026-09-08T00:00:00Z',
       isOnlineSubmissionAvailable: true,
-      pincode: '560001'
+      pincode: '560001',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-MFI-04',
@@ -383,7 +328,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar Card', 'Voter ID', 'Bank statement'],
       lastVerifiedDate: '2026-09-09T00:00:00Z',
       isOnlineSubmissionAvailable: true,
-      pincode: '560011'
+      pincode: '560011',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-RRB-03',
@@ -400,110 +347,119 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar', 'Ration card', 'Caste cert', 'Quotation'],
       lastVerifiedDate: '2026-09-05T00:00:00Z',
       isOnlineSubmissionAvailable: false,
-      pincode: '560064'
+      pincode: '560064',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     }
   ];
 }
 
+/**
+ * Generates and persists the application dossier. Protected (R4.15). The deleted fallback
+ * invented an application id, a handoff reference and an eligibility narrative — a dossier the
+ * beneficiary could have taken to a bank branch that no server had ever seen (R5.11).
+ */
 export async function generateApplicationPack(profile) {
-  try {
-    const res = await fetch(`${API_BASE}/application-pack/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile)
-    });
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn('API fallback for application pack:', err);
-  }
-
-  return {
-    applicationId: 'APP-2026-BLR-0941',
-    generatedDate: new Date().toISOString(),
-    profile,
-    selectedScheme: {
-      id: 'NSFDC-MCS-01',
-      name: 'Micro Credit Scheme (MCS)',
-      schemeType: 'Micro Credit',
-      interestRate: 5.0,
-      maximumTenureMonths: 36,
-      moratoriumMonths: 3,
-      incomeLimit: 300000,
-      lastVerifiedDate: '2026-09-10T00:00:00Z',
-      sourceDocument: 'NSFDC Operational Guidelines 2024-26, Clause 4.2'
-    },
-    eligibilityReasons: [
-      'Applicant belongs to the target community (Scheduled Caste).',
-      'Declared family income is within configured threshold of Rs 3,00,000.',
-      'Project cost fits within scheme credit ceiling.',
-      'Suitable State Channelizing Agency is available in applicant district.'
-    ],
-    nearestPartner: {
-      institutionName: 'Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)',
-      district: 'Bengaluru',
-      distanceKm: 4.2,
-      contactNumber: '+91 80 2286 4521 / +91 94808 12345',
-      contactPerson: 'Shri M. Nagaraj (District Manager)',
-      address: 'No. 9 & 10, Vishweshwaraiah Towers, 9th Floor, Dr. Ambedkar Veedhi, Bengaluru - 560001',
-      applicationMode: 'Offline',
-      lastVerifiedDate: '2026-09-10T00:00:00Z'
-    },
-    trackingStatus: 'Ready for Submission',
-    handoffReferenceNumber: 'SURAJ-2026-DEMO-7729',
-    disclaimer: 'This report is a preliminary assistance document. Final eligibility, loan approval, interest rate, and document acceptance are determined by the authorized government agency, bank, or channel partner.'
-  };
+  return tokenFetchJson('application-pack/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile)
+  });
 }
 
+/**
+ * PM-SURAJ handoff. Protected (R4.15). The deleted fallback reported
+ * `success: true, status: 'Transferred to PM-SURAJ Portal'` while nothing had been transferred.
+ */
 export async function handoffToSuraj(appId) {
-  try {
-    const res = await fetch(`${API_BASE}/application-pack/handoff/${appId}`, { method: 'POST' });
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn('API fallback for handoff:', err);
-  }
-
-  return {
-    success: true,
-    applicationId: appId,
-    portal: 'PM-SURAJ (Pradhan Mantri Samajik Utthan evam Rozgar Adharit Jankalyan)',
-    status: 'Transferred to PM-SURAJ Portal',
-    forwardedTo: 'Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)',
-    timestamp: new Date().toISOString(),
-    message: 'Application dossier successfully transmitted to PM-SURAJ portal demonstration gateway.'
-  };
+  return tokenFetchJson(`application-pack/handoff/${encodeURIComponent(appId)}`, { method: 'POST' });
 }
 
+/** Admin statistics. Admin_Role only (R4.14); the deleted fallback reported 148 fictional
+ *  applications and a district breakdown to match. */
 export async function getAdminStats() {
-  try {
-    const res = await fetch(`${API_BASE}/admin/stats`);
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn('API fallback for stats:', err);
+  return tokenFetchJson('admin/stats');
+}
+
+/**
+ * Uploads one document and returns `{ id, documentKey, originalFileName, byteLength, readinessScore }`.
+ *
+ * The body is `FormData`, so no `Content-Type` header is set by hand — the browser adds the
+ * multipart boundary. `applicationPackId` is optional and links the document to a dossier, which
+ * is what lets the assigned officer read it.
+ */
+export async function uploadDocument(file, docKey, applicationPackId = null) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('docKey', docKey);
+  if (applicationPackId) form.append('applicationPackId', applicationPackId);
+
+  const response = await tokenFetch('documents', { method: 'POST', body: form });
+
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const body = await response.json();
+      detail = body?.error || '';
+    } catch {
+      /* an empty body is expected for 401 and 404 */
+    }
+    throw new ApiError(detail || `Upload failed with status ${response.status}.`, response.status, 'documents');
   }
 
-  return {
-    totalSchemes: 6,
-    totalVerifiedPartners: 14,
-    totalApplicationsPrepared: 148,
-    popularBusinessCategories: {
-      'Mobile Repair & Electronics': 52,
-      'Tailoring & Garments': 44,
-      'Food Stall & Catering': 28,
-      'Green Transport (E-Rickshaw)': 18,
-      'Leathercraft & Artisans': 12
-    },
-    applicationsByDistrict: {
-      'Bengaluru Urban': 68,
-      'Bengaluru Rural': 29,
-      'Mysuru': 24,
-      'Hubballi-Dharwad': 18,
-      'Belagavi': 15
-    },
-    commonMissingDocuments: {
-      'Caste Certificate (RD No)': 58,
-      'Business Quotation': 42,
-      'Income Certificate': 29,
-      'Bank Account Proof': 11
-    }
-  };
+  return response.json();
+}
+
+/** The caller's own live documents — metadata only. */
+export async function listMyDocuments() {
+  return tokenFetchJson('documents/mine');
+}
+
+
+// ---------------------------------------------------------------------------- Rule_Store
+//
+// Admin_Role only (R4.14), so every call goes through tokenFetchJson and throws ApiError on
+// failure. There is deliberately no fallback: a rule editor that silently showed compiled-in
+// numbers when the API was unreachable would invite an administrator to "correct" a value that
+// was never loaded, and to believe the save landed.
+
+/** The stored rule rows, the five weights, the declared bounds, and the preview sample profile. */
+export async function getAdminRules() {
+  return tokenFetchJson('admin/rules');
+}
+
+/**
+ * Saves a rule row, a weight set, or both. Rejects with `ApiError` carrying the server's message
+ * on a bounds, cross-field or weight-sum violation (R7.6, R7.7) — the message names the field and
+ * the submitted value, so it is shown verbatim rather than replaced with a generic one.
+ */
+export async function saveAdminRules({ rule = null, weights = null }) {
+  return tokenFetchJson('admin/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rule, weights })
+  });
+}
+
+/**
+ * Scores the stored sample profile against pending values and against stored values, without
+ * persisting (R7.11). The comparison is computed by the one server-side matching engine, so the
+ * preview cannot disagree with what saving would produce.
+ */
+export async function previewAdminRules({ rule = null, weights = null }) {
+  return tokenFetchJson('admin/rules/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rule, weights })
+  });
+}
+
+/**
+ * Every channel partner, live from `GET /api/partners` — the endpoint is anonymous, so no bearer
+ * header is attached. Unlike `getPartners` above this has no offline fallback by design: it backs
+ * the admin verification table, where a hard-coded row list was previously displayed as though it
+ * were the register (R2.9 applies to beneficiary-facing fallbacks, not to an audit surface).
+ */
+export async function listAllPartners() {
+  return tokenFetchJson('partners');
 }

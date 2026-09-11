@@ -1,69 +1,170 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { translations } from '../translations';
-import { 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  UploadCloud, 
-  FileCheck2, 
-  Info, 
-  ArrowRight, 
+import {
+  CheckCircle2,
+  AlertCircle,
+  UploadCloud,
+  Info,
+  ArrowRight,
   Sparkles,
-  ExternalLink,
-  ShieldCheck,
-  FileText
+  FileText,
+  Loader2,
+  XCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { getReadiness } from '../api';
+import { getReadiness, uploadDocument } from '../api';
 
-export default function ReadinessDashboard({ 
-  lang, 
-  profile, 
-  setProfile, 
-  onProceedToBusinessPlan 
+/** The four document keys the server accepts (R6.1). Checklist rows outside this set are
+ *  derived, not uploaded, so they get no file control. */
+const UPLOADABLE_KEYS = ['identity', 'caste_cert', 'income_cert', 'quotation'];
+
+/** Mirrors the server's accepted extensions and 5 MiB ceiling so an obviously wrong file gets
+ *  instant feedback. The server re-checks everything — including the magic bytes, which a browser
+ *  cannot see — so this is a courtesy, never the guarantee. */
+const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const MAX_BYTES = 5 * 1024 * 1024;
+
+export default function ReadinessDashboard({
+  lang,
+  profile,
+  setProfile,
+  onProceedToBusinessPlan
 }) {
   const t = translations[lang] || translations.en;
   const [readinessData, setReadinessData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeModalItem, setActiveModalItem] = useState(null);
-  const [uploadingKey, setUploadingKey] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+
+  // One upload at a time, with an explicit phase so the UI can show progress, then an
+  // unmistakable success or failure state.
+  const [upload, setUpload] = useState({ key: null, phase: 'idle', message: null, fileName: null });
+
+  const fileInputs = useRef({});
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchReadiness() {
       setLoading(true);
-      const data = await getReadiness(profile);
-      setReadinessData(data);
-      setLoading(false);
+      try {
+        const data = await getReadiness(profile);
+        if (!cancelled) {
+          setReadinessData(data);
+          setLoadError(null);
+        }
+      } catch (err) {
+        // R5.11 — the readiness endpoint is protected and has no fallback. Previously loaded
+        // data stays on screen; the banner says the refresh failed rather than inventing one.
+        if (!cancelled) {
+          setLoadError(
+            err?.status === 401
+              ? 'Your session ended before the checklist could refresh. Please sign in again.'
+              : 'The readiness checklist could not be refreshed. The figures below may be out of date.'
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     fetchReadiness();
+    return () => { cancelled = true; };
   }, [profile]);
 
-  const handleSimulatedUpload = (key) => {
-    setUploadingKey(key);
-    setTimeout(() => {
-      setUploadingKey(null);
-      if (key === 'caste_cert') {
-        setProfile(prev => ({
-          ...prev,
-          hasCasteCertificate: true,
-          uploadedDocs: [...prev.uploadedDocs, 'Caste certificate']
-        }));
-        confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
-      } else if (key === 'quotation') {
-        setProfile(prev => ({
-          ...prev,
-          uploadedDocs: [...prev.uploadedDocs, 'Business quotation']
-        }));
-        confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
-      }
-    }, 1000);
+  /** Local pre-check. Returns null when the file looks acceptable. */
+  const preCheck = (file) => {
+    const name = file.name || '';
+    const dot = name.lastIndexOf('.');
+    const extension = dot >= 0 ? name.slice(dot).toLowerCase() : '';
+
+    if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+      return `Choose a ${ACCEPTED_EXTENSIONS.join(', ')} file. “${name}” is not one of these.`;
+    }
+    if (file.size === 0) {
+      return 'That file is empty. Please choose the scanned document itself.';
+    }
+    if (file.size > MAX_BYTES) {
+      return `That file is ${(file.size / (1024 * 1024)).toFixed(1)} MB. The limit is 5 MB — try a lower-resolution scan.`;
+    }
+    return null;
   };
 
-  if (loading || !readinessData) {
+  const handleFileChosen = async (key, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';                 // allow re-picking the same file after a failure
+    if (!file) return;
+
+    const localFailure = preCheck(file);
+    if (localFailure) {
+      setUpload({ key, phase: 'error', message: localFailure, fileName: file.name });
+      return;
+    }
+
+    setUpload({ key, phase: 'uploading', message: null, fileName: file.name });
+
+    try {
+      const result = await uploadDocument(file, key, profile.id);
+
+      setUpload({
+        key,
+        phase: 'success',
+        message: `Uploaded — readiness is now ${result.readinessScore}%.`,
+        fileName: result.originalFileName
+      });
+
+      // The score in the 201 body is the authority; the local profile is updated to match so
+      // the header meter and the checklist agree.
+      setProfile((prev) => {
+        const next = { ...prev };
+        if (key === 'caste_cert') next.hasCasteCertificate = true;
+        if (key === 'income_cert') next.hasIncomeCertificate = true;
+
+        const label = {
+          identity: 'Aadhaar/KYC',
+          caste_cert: 'Caste certificate',
+          income_cert: 'Income certificate',
+          quotation: 'Business quotation'
+        }[key];
+
+        next.uploadedDocs = prev.uploadedDocs.includes(label)
+          ? prev.uploadedDocs
+          : [...prev.uploadedDocs, label];
+
+        return next;
+      });
+
+      confetti({ particleCount: 55, spread: 55, origin: { y: 0.6 } });
+    } catch (err) {
+      setUpload({
+        key,
+        phase: 'error',
+        message: err?.status === 401
+          ? 'Your session ended before the upload finished. Please sign in and try again.'
+          : (err?.message || 'The upload was rejected. Nothing was saved — please try again.'),
+        fileName: file.name
+      });
+    }
+  };
+
+  if (loading && !readinessData) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-600">Calculating Application Readiness Score...</p>
+      </div>
+    );
+  }
+
+  if (!readinessData) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-3">
+        <XCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <p className="text-sm font-semibold text-slate-800">
+          {loadError || 'The readiness checklist is unavailable right now.'}
+        </p>
+        <p className="text-xs text-slate-500">
+          Nothing has been lost — reload once you are signed in and your checklist will reappear.
+        </p>
       </div>
     );
   }
@@ -107,6 +208,30 @@ export default function ReadinessDashboard({
         </div>
       </div>
 
+      {loadError && (
+        <div role="alert" className="bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl p-3 flex items-start space-x-2">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <span>{loadError}</span>
+        </div>
+      )}
+
+      {/* Upload guidance — stated once, up front, so no row has to repeat it */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 flex items-start space-x-2">
+        <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-bold text-slate-800 text-sm">How to upload a document</p>
+          <p>
+            Use the <strong>Upload</strong> button on any row below and pick the file from your phone or computer.
+            Accepted formats are <strong>PDF, JPG and PNG</strong>, up to <strong>5 MB</strong> each. A clear photo of
+            the full page is fine.
+          </p>
+          <p>
+            Uploading again for the same row replaces the earlier file. Your documents are stored privately and are
+            visible only to you and the channel partner handling your application.
+          </p>
+        </div>
+      </div>
+
       {/* Recommended Next Action Banner */}
       <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center space-x-3 text-emerald-950 text-xs sm:text-sm">
@@ -133,6 +258,8 @@ export default function ReadinessDashboard({
           {readinessData.items.map((item) => {
             const isComplete = item.status === 'Complete' || item.status === 'Verified';
             const isMissing = item.status === 'Missing';
+            const canUpload = UPLOADABLE_KEYS.includes(item.key);
+            const rowUpload = upload.key === item.key ? upload : null;
 
             return (
               <div key={item.key} className="p-5 hover:bg-slate-50/70 transition-colors">
@@ -184,18 +311,77 @@ export default function ReadinessDashboard({
                       <span>{item.status}</span>
                     </span>
 
-                    {/* Action Upload button */}
-                    {isMissing && (
-                      <button
-                        onClick={() => handleSimulatedUpload(item.key)}
-                        disabled={uploadingKey === item.key}
-                        className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95"
-                      >
-                        <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>{uploadingKey === item.key ? 'Verifying...' : t.readiness.uploadBtn}</span>
-                      </button>
+                    {canUpload && (
+                      <>
+                        {/* The real control. A hidden native input keeps the styled button while
+                            the browser's own file picker does the choosing — there is no simulated
+                            upload path left in this component. */}
+                        <input
+                          ref={(el) => { fileInputs.current[item.key] = el; }}
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                          className="hidden"
+                          onChange={(event) => handleFileChosen(item.key, event)}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => fileInputs.current[item.key]?.click()}
+                          disabled={rowUpload?.phase === 'uploading'}
+                          aria-label={`Upload ${item.title} — PDF, JPG or PNG up to 5 MB`}
+                          className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95"
+                        >
+                          {rowUpload?.phase === 'uploading'
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-300" />
+                            : <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />}
+                          <span>
+                            {rowUpload?.phase === 'uploading'
+                              ? 'Uploading…'
+                              : isComplete ? 'Replace file' : t.readiness.uploadBtn}
+                          </span>
+                        </button>
+
+                        <p className="text-[10px] text-slate-400">PDF, JPG or PNG · up to 5 MB</p>
+                      </>
                     )}
 
+                    {/* Progress. Deliberately indeterminate: a percentage would have to be
+                        invented, since the response arrives only once the whole file has been
+                        sent and validated. */}
+                    {rowUpload?.phase === 'uploading' && (
+                      <div className="w-full md:w-56 space-y-1" role="status" aria-live="polite">
+                        <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full w-1/3 bg-emerald-500 rounded-full animate-pulse" />
+                        </div>
+                        <p className="text-[11px] text-slate-500 text-right">
+                          Sending {rowUpload.fileName} and checking it…
+                        </p>
+                      </div>
+                    )}
+
+                    {rowUpload?.phase === 'success' && (
+                      <div
+                        role="status"
+                        aria-live="polite"
+                        className="w-full md:w-64 flex items-start space-x-1.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] font-semibold rounded-lg p-2"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{rowUpload.message}</span>
+                      </div>
+                    )}
+
+                    {rowUpload?.phase === 'error' && (
+                      <div
+                        role="alert"
+                        className="w-full md:w-64 flex items-start space-x-1.5 bg-rose-50 border border-rose-200 text-rose-900 text-[11px] font-semibold rounded-lg p-2"
+                      >
+                        <XCircle className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                        <span>{rowUpload.message}</span>
+                      </div>
+                    )}
+
+                    {/* Rendered as a text child, so markup characters in a client-supplied
+                        filename appear as characters (R6.8). */}
                     {isComplete && item.uploadedFileName && (
                       <span className="text-[11px] text-slate-500 font-mono flex items-center space-x-1">
                         <FileText className="w-3 h-3 text-slate-400" />
