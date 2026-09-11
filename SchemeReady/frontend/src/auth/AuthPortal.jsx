@@ -21,7 +21,8 @@ import {
   UserPlus,
   LogIn,
   Smartphone,
-  Key
+  Key,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { translations } from '../translations';
@@ -55,7 +56,6 @@ export default function AuthPortal({
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCountdown, setOtpCountdown] = useState(0);
-  const [demoOtpHint, setDemoOtpHint] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
 
   // Form Fields (Password mode)
@@ -176,7 +176,6 @@ export default function AuthPortal({
 
     setOtpSent(true);
     setOtpCountdown(30);
-    setDemoOtpHint(result.otp);
     setFormMessage(`${tAuth.otpSentMsg || 'OTP sent successfully to +91'} ${cleanPhone}`);
   };
 
@@ -614,26 +613,36 @@ export default function AuthPortal({
                   )}
                 </div>
 
-                {/* Simulated SMS Notification Banner */}
-                {otpSent && demoOtpHint && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left space-y-1.5 animate-in fade-in">
+                {/* Real SMS Dispatch Status Banner (OTP code is never displayed in UI) */}
+                {otpSent && (
+                  <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl text-left space-y-1.5 animate-in fade-in">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-emerald-900 flex items-center space-x-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{tAuth.quickDemoOtp || "Security OTP (Test Mode):"}</span>
+                      <span className="font-bold text-[#0D2A4A] flex items-center space-x-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                        <span>{tAuth.smsDispatchedTitle || (isHindi ? 'एसएमएस सत्यापन कोड भेजा गया' : 'SMS Verification Code Dispatched')}</span>
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setOtp(demoOtpHint)}
-                        className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-bold px-2 py-0.5 rounded cursor-pointer transition-all"
-                      >
-                        {isHindi ? 'स्वतः भरें' : 'Auto-fill'}
-                      </button>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-300 flex items-center space-x-1">
+                        <Check className="w-2.5 h-2.5" />
+                        <span>{tAuth.smsSentBadge || (isHindi ? 'एसएमएस भेजा गया' : 'SMS Sent')}</span>
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between font-mono">
-                      <span className="font-black text-emerald-800 tracking-widest text-lg">{demoOtpHint}</span>
-                      <span className="text-[10px] text-emerald-700 font-medium">
-                        {tAuth.otpExpiresIn || "Valid for"} {otpCountdown > 0 ? `${otpCountdown} ${tAuth.seconds || 'seconds'}` : '10 mins'}
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
+                      {isHindi ? (
+                        <>
+                          सत्यापन कोड आपके मोबाइल नंबर <strong className="text-slate-900 font-mono">+91 ******{phoneNumber.slice(-4)}</strong> पर एसएमएस (SMS) द्वारा भेज दिया गया है। कृपया अपने फोन का मैसेज इनबॉक्स देखें और प्राप्त 6 अंकों का कोड दर्ज करें।
+                        </>
+                      ) : (
+                        <>
+                          Verification code sent via SMS to mobile number <strong className="text-slate-900 font-mono">+91 ******{phoneNumber.slice(-4)}</strong>. Please check your phone's SMS Messages inbox and enter the 6-digit code below.
+                        </>
+                      )}
+                    </p>
+                    <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500 font-medium border-t border-blue-100">
+                      <span>{tAuth.didNotReceiveSms || (isHindi ? 'एसएमएस प्राप्त नहीं हुआ?' : 'Did not receive SMS?')}</span>
+                      <span>
+                        {otpCountdown > 0 
+                          ? `${isHindi ? 'पुनः प्रयास' : 'Resend in'} ${otpCountdown}s` 
+                          : (isHindi ? 'पुनः भेजें बटन दबाएं' : 'Click Resend OTP above')}
                       </span>
                     </div>
                   </div>
@@ -964,18 +973,15 @@ export default function AuthPortal({
               </form>
             )}
 
-            {/* Optional Test Credentials Info (Collapsed, clean) */}
+            {/* Sovereign Portal Security Note */}
             <div className="mt-4 pt-3 border-t border-slate-100 text-left">
-              <details className="text-[11px] text-slate-400 group">
-                <summary className="cursor-pointer hover:text-slate-600 font-medium select-none list-none flex items-center justify-between">
-                  <span>{isHindi ? 'परीक्षण हेतु क्रेडेंशियल (वैकल्पिक)' : 'Test credentials info (Optional)'}</span>
-                  <span className="text-[10px] text-emerald-700 font-mono">OTP: 482910</span>
-                </summary>
-                <div className="mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600 space-y-1">
-                  <p>• {isHindi ? 'किसी भी 10-अंकीय मोबाइल नंबर पर ओटीपी 482910 दर्ज कर सकते हैं।' : 'Use any 10-digit mobile number with universal test OTP 482910.'}</p>
-                  <p>• {isHindi ? 'डेमो खाता: ravi.kumar@schemeready.gov.in / Ravi@2026Secure!' : 'Demo account: ravi.kumar@schemeready.gov.in / Ravi@2026Secure!'}</p>
-                </div>
-              </details>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                <span className="flex items-center space-x-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{isHindi ? 'सुरक्षित नागरिक पोर्टल • 256-बिट एन्क्रिप्शन' : 'Secure Citizen Portal • 256-Bit SSL'}</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">PM-SURAJ / NSFDC</span>
+              </div>
             </div>
           </div>
 

@@ -187,7 +187,11 @@ export const translations = {
       seconds: "seconds",
       enterValidMobile: "Please enter a valid 10-digit Indian mobile number",
       enterValidOtp: "Please enter the 6-digit OTP sent to your phone",
-      quickDemoOtp: "Security OTP (Test Mode):"
+      quickDemoOtp: "Security OTP (Test Mode):",
+      smsDispatchedTitle: "SMS Verification Code Dispatched",
+      smsSentBadge: "SMS Sent",
+      smsInboxNotice: "An OTP has been dispatched via SMS to your mobile number. Please check your phone's SMS Messages inbox and enter the 6-digit code below.",
+      didNotReceiveSms: "Did not receive SMS?"
     },
     profile: {
       headerBadge: "Beneficiary Comprehensive Profile (SIH Standard)",
@@ -581,7 +585,11 @@ export const translations = {
       seconds: "सेकंड",
       enterValidMobile: "कृपया मान्य 10-अंकीय भारतीय मोबाइल नंबर दर्ज करें",
       enterValidOtp: "कृपया मोबाइल पर प्राप्त 6-अंकीय ओटीपी दर्ज करें",
-      quickDemoOtp: "सुरक्षा कोड (ओटीपी परीक्षण):"
+      quickDemoOtp: "सुरक्षा कोड (ओटीपी परीक्षण):",
+      smsDispatchedTitle: "एसएमएस द्वारा सत्यापन कोड भेजा गया",
+      smsSentBadge: "एसएमएस भेजा गया",
+      smsInboxNotice: "ओटीपी आपके मोबाइल नंबर पर एसएमएस द्वारा भेज दिया गया है। कृपया अपने फोन का मैसेज इनबॉक्स (SMS Inbox) देखें और नीचे 6 अंकों का कोड दर्ज करें।",
+      didNotReceiveSms: "एसएमएस प्राप्त नहीं हुआ?"
     },
     profile: {
       headerBadge: "लाभार्थी समग्र प्रोफाइल (मानक)",

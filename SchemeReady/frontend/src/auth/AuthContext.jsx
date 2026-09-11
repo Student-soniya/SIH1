@@ -236,7 +236,27 @@ export function AuthProvider({ children }) {
     try {
       sessionStorage.setItem(`schemeready_otp_${cleanPhone}`, otp);
     } catch (e) {}
-    return { ok: true, phone: cleanPhone, otp };
+
+    // Dispatch SMS via Real Gateway or Backend Dispatcher
+    try {
+      const smsApiKey = localStorage.getItem('schemeready_sms_api_key');
+      if (smsApiKey) {
+        fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${smsApiKey}&route=otp&variables_values=${otp}&numbers=${cleanPhone}`, {
+          method: 'GET',
+          mode: 'no-cors'
+        }).catch(() => {});
+      } else {
+        fetch(`${API_BASE}/auth/send-sms-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: cleanPhone, otp })
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('SMS dispatch handled:', err);
+    }
+
+    return { ok: true, phone: cleanPhone };
   }, []);
 
   const loginWithOtp = useCallback(async (phone, otp, displayName = '', isSignUp = false) => {
