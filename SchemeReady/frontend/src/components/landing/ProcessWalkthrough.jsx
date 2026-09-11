@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { 
   MessageSquare, 
   ShieldCheck, 
@@ -10,8 +10,53 @@ import {
   Sparkles 
 } from 'lucide-react';
 
-export default function ProcessWalkthrough({ onStartOnboarding }) {
-  const steps = [
+export default function ProcessWalkthrough({ onStartOnboarding, lang = 'en' }) {
+  const isHindi = lang === 'hi';
+
+  const steps = isHindi ? [
+    {
+      step: '01',
+      title: 'संवादात्मक ऑनबोर्डिंग',
+      icon: MessageSquare,
+      desc: 'अपनी स्थानीय भाषा (हिंदी, कन्नड़, तमिल, तेलुगु, मराठी, बंगाली, अंग्रेजी) में वॉयस सहायता के साथ 2 मिनट की आसान प्रश्नावली का उत्तर दें। कोई भ्रमित करने वाली कानूनी शब्दावली नहीं।',
+      badge: '2 मिनट'
+    },
+    {
+      step: '02',
+      title: 'डिजिलॉकर सत्यापन',
+      icon: ShieldCheck,
+      desc: 'सरकारी वॉटरमार्क और क्यूआर कोड सत्यापन के साथ तहसीलदार जाति और आय प्रमाण पत्र तुरंत प्राप्त करने के लिए डिजिलॉकर कनेक्ट करें।',
+      badge: 'त्वरित सिंक'
+    },
+    {
+      step: '03',
+      title: 'स्पष्टीकरण योग्य योजना मिलान',
+      icon: Coins,
+      desc: 'एनएसएफडीसी, एमएसवाई और टर्म लोन योजनाओं के लिए पारदर्शी मिलान स्कोर देखें, जो पूरे किए गए पात्रता मानदंड, ब्याज दरें और ऋण सीमा दिखाते हैं।',
+      badge: '4% - 8% दरें'
+    },
+    {
+      step: '04',
+      title: 'एआई बिजनेस प्लान (DPR)',
+      icon: FileText,
+      desc: 'हमारा एआई उपकरण कोटेशन, मासिक राजस्व मॉडल, डीएससीआर गणना और ब्रेक-ईवन समय-सीमा के साथ बैंक-स्वीकृत विस्तृत परियोजना रिपोर्ट तैयार करता है।',
+      badge: 'बैंक स्वीकृत'
+    },
+    {
+      step: '05',
+      title: 'सक्रिय चैनल रूटिंग',
+      icon: Building2,
+      desc: 'हम आपके आवेदन को सीधे 0% अतिदेय और उपलब्ध ऋण कोटा वाले सक्रिय राज्य चैनलाइजिंग एजेंसी (SCA) या क्षेत्रीय ग्रामीण बैंक (RRB) से मैप करते हैं।',
+      badge: '0% अतिदेय एससीए'
+    },
+    {
+      step: '06',
+      title: 'ऋण वितरण एवं रियायती ईएमआई',
+      icon: Banknote,
+      desc: '1-क्लिक में अपना आवेदन डोजियर डाउनलोड करें या त्वरित स्वीकृति और रियायती मासिक पुनर्भुगतान के लिए सीधे PM-SURAJ पोर्टल पर प्रेषित करें।',
+      badge: 'त्वरित वितरण'
+    }
+  ] : [
     {
       step: '01',
       title: 'Conversational Onboarding',
@@ -64,13 +109,15 @@ export default function ProcessWalkthrough({ onStartOnboarding }) {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>End-to-End Beneficiary Journey</span>
+            <span>{isHindi ? 'शुरू से अंत तक लाभार्थी यात्रा' : 'End-to-End Beneficiary Journey'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            How SchemeReady Gets You Funded
+            {isHindi ? 'स्कीम रेडी से ऋण कैसे प्राप्त करें' : 'How SchemeReady Gets You Funded'}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-            From your very first idea to the day funds hit your bank account—a clear, transparent, 6-step pathway designed to eliminate bureaucratic rejections.
+            {isHindi 
+              ? 'आपके पहले विचार से लेकर आपके बैंक खाते में राशि पहुंचने के दिन तक — एक स्पष्ट, पारदर्शी 6-चरणीय मार्ग जो प्रशासनिक अस्वीकृतियों को समाप्त करता है।' 
+              : 'From your very first idea to the day funds hit your bank account—a clear, transparent, 6-step pathway designed to eliminate bureaucratic rejections.'}
           </p>
         </div>
 
@@ -108,7 +155,7 @@ export default function ProcessWalkthrough({ onStartOnboarding }) {
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center text-xs font-bold text-slate-400 group-hover:text-emerald-700 transition-colors">
-                  <span>Step {item.step} in Pathway</span>
+                  <span>{isHindi ? `प्रक्रिया का चरण ${item.step}` : `Step ${item.step} in Pathway`}</span>
                 </div>
               </div>
             );
@@ -121,7 +168,7 @@ export default function ProcessWalkthrough({ onStartOnboarding }) {
             onClick={onStartOnboarding}
             className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm px-8 py-4 rounded-2xl shadow-xl shadow-emerald-600/25 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
-            <span>Start Step 01: Conversational Onboarding</span>
+            <span>{isHindi ? 'चरण 01 शुरू करें: संवादात्मक ऑनबोर्डिंग' : 'Start Step 01: Conversational Onboarding'}</span>
             <ArrowRight className="w-4 h-4 text-white" />
           </button>
         </div>

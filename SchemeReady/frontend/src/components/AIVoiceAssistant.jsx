@@ -4,8 +4,8 @@ import { extractEntities } from '../api';
 
 const LANGUAGE_CONFIG = {
   en: { recognition: 'en-IN', label: 'English', greeting: 'Hi! I am SchemeReady Voice Assistant. Tell me about your business idea, location, loan amount, or ask what to do next.' },
-  hi: { recognition: 'hi-IN', label: 'Hindi', greeting: 'नमस्ते! मैं SchemeReady Voice Assistant हूँ। अपने व्यवसाय, स्थान या ऋण राशि के बारे में बताइए, या अगला कदम पूछिए।' },
-  kn: { recognition: 'kn-IN', label: 'Kannada', greeting: 'ನಮಸ್ಕಾರ! ನಾನು SchemeReady Voice Assistant. ನಿಮ್ಮ ವ್ಯವಹಾರ, ಸ್ಥಳ ಅಥವಾ ಸಾಲದ ಮೊತ್ತದ ಬಗ್ಗೆ ಹೇಳಿ, ಅಥವಾ ಮುಂದಿನ ಹಂತವನ್ನು ಕೇಳಿ.' }
+  hi: { recognition: 'hi-IN', label: 'हिन्दी', greeting: 'नमस्ते! मैं स्कीम रेडी वॉयस असिस्टेंट हूँ। अपने व्यवसाय के विचार, स्थान, ऋण राशि के बारे में बताइए, या अगला कदम पूछिए।' },
+  kn: { recognition: 'kn-IN', label: 'ಕನ್ನಡ', greeting: 'ನಮಸ್ಕಾರ! ನಾನು SchemeReady Voice Assistant. ನಿಮ್ಮ ವ್ಯವಹಾರ, ಸ್ಥಳ ಅಥವಾ ಸಾಲದ ಮೊತ್ತದ ಬಗ್ಗೆ ಹೇಳಿ, ಅಥವಾ ಮುಂದಿನ ಹಂತವನ್ನು ಕೇಳಿ.' }
 };
 
 const SUGGESTIONS = {
@@ -175,8 +175,8 @@ export default function AIVoiceAssistant({ lang = 'en', profile, setProfile, onN
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15"><Bot className="h-5 w-5" /></div>
                 <div>
-                  <p className="font-bold">SchemeReady AI Assistant</p>
-                  <p className="text-[11px] text-emerald-50">Voice onboarding · {config.label}</p>
+                  <p className="font-bold">{lang === 'hi' ? 'स्कीम रेडी एआई सहायक' : lang === 'kn' ? 'ಸ್ಕೀಮ್‌ರೆಡಿ ಎಐ ಸಹಾಯಕ' : 'SchemeReady AI Assistant'}</p>
+                  <p className="text-[11px] text-emerald-50">{lang === 'hi' ? 'वॉयस ऑनबोर्डिंग' : lang === 'kn' ? 'ಧ್ವನಿ ಆನ್‌ಬೋರ್ಡಿಂಗ್' : 'Voice onboarding'} · {config.label}</p>
                 </div>
               </div>
               <button onClick={() => setOpen(false)} className="rounded-lg p-1.5 hover:bg-white/15" aria-label="Close assistant"><X className="h-4 w-4" /></button>
@@ -190,7 +190,7 @@ export default function AIVoiceAssistant({ lang = 'en', profile, setProfile, onN
                   </div>
                 </div>
               ))}
-              {speaking && <div className="text-[11px] font-medium text-emerald-700">Speaking…</div>}
+              {speaking && <div className="text-[11px] font-medium text-emerald-700">{lang === 'hi' ? 'बोल रहे हैं…' : lang === 'kn' ? 'ಮಾತನಾಡುತ್ತಿದ್ದಾರೆ…' : 'Speaking…'}</div>}
             </div>
 
             <div className="border-t border-slate-200 bg-white p-3">
@@ -213,7 +213,7 @@ export default function AIVoiceAssistant({ lang = 'en', profile, setProfile, onN
 
         <button onClick={() => setOpen(value => !value)} className="group flex items-center gap-3 rounded-full bg-slate-950 px-4 py-3 text-white shadow-xl ring-4 ring-white/80 hover:scale-[1.02]" aria-label="Open SchemeReady AI Voice Assistant">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-md"><Mic className="h-5 w-5" /></span>
-          <span className="pr-1 text-left"><span className="block text-xs font-bold">Ask SchemeReady</span><span className="block text-[11px] text-slate-300">Voice + AI guidance</span></span>
+          <span className="pr-1 text-left"><span className="block text-xs font-bold">{lang === 'hi' ? 'स्कीम रेडी से पूछें' : lang === 'kn' ? 'ಸ್ಕೀಮ್‌ರೆಡಿ ಕೇಳಿ' : 'Ask SchemeReady'}</span><span className="block text-[11px] text-slate-300">{lang === 'hi' ? 'वॉयस + एआई मार्गदर्शन' : lang === 'kn' ? 'ಧ್ವನಿ + ಎಐ ಮಾರ್ಗದರ್ಶನ' : 'Voice + AI guidance'}</span></span>
         </button>
       </div>
     </>

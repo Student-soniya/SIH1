@@ -212,39 +212,40 @@ export default function EntrepreneurLanding({
       </section>
 
       {/* 5. Problem & Solution Breakdown */}
-      <ProblemSolutionSection onStartOnboarding={onStartOnboarding} />
+      <ProblemSolutionSection onStartOnboarding={onStartOnboarding} lang={lang} />
 
       {/* 6. Flagship Entrepreneurship Schemes Showcase */}
       <SchemesShowcase onSelectScheme={(scheme) => {
         if (onExploreSchemes) onExploreSchemes(scheme);
         else onStartOnboarding();
-      }} />
+      }} lang={lang} />
 
       {/* 7. AI Business Viability Simulator */}
       <div id="viability">
-        <AiViabilityPreview onTestIdea={onStartOnboarding} />
+        <AiViabilityPreview onTestIdea={onStartOnboarding} lang={lang} />
       </div>
 
       {/* 8. 6-Step Journey from Chat to Loan */}
       <div id="process">
-        <ProcessWalkthrough onStartOnboarding={onStartOnboarding} />
+        <ProcessWalkthrough onStartOnboarding={onStartOnboarding} lang={lang} />
       </div>
 
       {/* 9. Channel Partners Map & Directory */}
       <ChannelPartnersMap onSelectPartner={(partner) => {
         onStartOnboarding();
-      }} />
+      }} lang={lang} />
 
       {/* 10. Real Beneficiary Success Stories */}
-      <SuccessStories />
+      <SuccessStories lang={lang} />
 
       {/* 11. Frequently Asked Questions */}
-      <LandingFaq />
+      <LandingFaq lang={lang} />
 
       {/* 12. National Footer */}
       <LandingFooter 
         onStartOnboarding={onStartOnboarding}
         onExploreSchemes={onExploreSchemes}
+        lang={lang}
       />
 
     </div>

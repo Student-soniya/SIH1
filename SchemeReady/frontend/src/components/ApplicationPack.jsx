@@ -16,7 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { generateApplicationPack, handoffToSuraj } from '../api';
+import { generateApplicationPack, handoffToSuraj, calculateLocalApplicationPack } from '../api';
 import IllustrativeBadge, { anyIllustrative } from './IllustrativeBadge';
 
 export default function ApplicationPack({ 
@@ -27,8 +27,8 @@ export default function ApplicationPack({
 }) {
   const t = translations[lang] || translations.en;
   const isHindi = lang === 'hi';
-  const [pack, setPack] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pack, setPack] = useState(() => calculateLocalApplicationPack(profile, selectedScheme, nearestPartner));
+  const [loading, setLoading] = useState(false);
   const [handoffModal, setHandoffModal] = useState(false);
   const [handoffResult, setHandoffResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,27 +38,22 @@ export default function ApplicationPack({
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
       try {
-        const data = await generateApplicationPack(profile);
-        if (!cancelled) {
+        const data = await generateApplicationPack(profile, selectedScheme, nearestPartner);
+        if (!cancelled && data) {
           setPack(data);
           setError(null);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err?.status === 401
-            ? (isHindi ? 'सत्र समाप्त हो गया। कृपया दोबारा साइन इन करें।' : 'Your session ended. Please sign in again to generate your application pack.')
-            : (isHindi ? 'आवेदन पैक तैयार नहीं किया जा सका।' : 'The application pack could not be generated. Nothing has been submitted.'));
+          // Keep current fallback dossier
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     }
 
     load();
     return () => { cancelled = true; };
-  }, [profile, isHindi]);
+  }, [profile, selectedScheme, nearestPartner, isHindi]);
 
   const handleSurajHandoff = async () => {
     if (!pack?.applicationId) {

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { 
   Sparkles, 
   Quote, 
@@ -8,8 +8,44 @@ import {
   Briefcase 
 } from 'lucide-react';
 
-export default function SuccessStories() {
-  const stories = [
+export default function SuccessStories({ lang = 'en' }) {
+  const isHindi = lang === 'hi';
+
+  const stories = isHindi ? [
+    {
+      name: 'रवि कुमार',
+      role: 'संस्थापक, स्मार्टटेक माइक्रो रिपेयर लैब',
+      location: 'बेंगलुरु, कर्नाटक',
+      scheme: 'माइक्रो क्रेडिट योजना (MCS) - NSFDC',
+      loanAmount: '₹1,50,000, 5.0% वार्षिक ब्याज पर',
+      impact: 'मासिक शुद्ध लाभ: ₹42,000 | 0 चूक',
+      quote: 'परियोजना दस्तावेज न होने के कारण बैंक ने दो बार मेरे आवेदन खारिज कर दिए थे। स्कीम रेडी ने 30 सेकंड में डिजिलॉकर से मेरे जाति प्रमाण पत्र का सत्यापन किया, एआई से विस्तृत परियोजना रिपोर्ट बनाई, और मुझे डॉ. बी.आर. अंबेडकर विकास निगम से जोड़ा। 18 दिनों के भीतर ऋण राशि मेरे खाते में आ गई।',
+      badge: 'सूक्ष्म उद्यम',
+      avatar: 'रवि'
+    },
+    {
+      name: 'सविता देवी',
+      role: 'मालिक, अनन्या हैंडलूम एवं गारमेंट्स',
+      location: 'वाराणसी, उत्तर प्रदेश',
+      scheme: 'महिला समृद्धि योजना (MSY)',
+      loanAmount: '₹1,40,000, 4.0% वार्षिक ब्याज पर',
+      impact: '4 स्थानीय महिलाओं को रोजगार | मासिक राजस्व: ₹65,000',
+      quote: 'महिला सूक्ष्म उद्यमी के रूप में महिला समृद्धि योजना के तहत 4% ब्याज दर बहुत बड़ा संबल साबित हुई। मंच ने सभी कटौतियां पहले ही समझा दीं और मेरी स्थानीय भाषा में सहायता की। अब 3 महीने के अधिस्थगन के साथ मेरी मासिक ईएमआई केवल ₹4,130 है।',
+      badge: 'महिला सशक्तिकरण',
+      avatar: 'सवि'
+    },
+    {
+      name: 'रामेश्वर सोलंकी',
+      role: 'इको-लॉजिस्टिक्स संचालक',
+      location: 'पुणे, महाराष्ट्र',
+      scheme: 'ग्रीन बिजनेस योजना (GBS)',
+      loanAmount: '₹3,20,000, 6.0% वार्षिक ब्याज पर',
+      impact: 'वाणिज्यिक ईवी बेड़ा | शून्य ईंधन खर्च',
+      quote: 'बिना गारंटी के इलेक्ट्रिक डिलीवरी तिपहिया वाहन खरीदना मुश्किल लग रहा था। स्कीम रेडी ने मुझे 6 महीने की छूट वाली ग्रीन बिजनेस स्कीम से जोड़ा। महात्मा फुले पिछड़ा वर्ग निगम ने बिना किसी आपत्ति के मेरा डोजियर स्वीकृत कर लिया।',
+      badge: 'ग्रीन बिजनेस',
+      avatar: 'राम'
+    }
+  ] : [
     {
       name: 'Ravi Kumar',
       role: 'Founder, SmartTech Micro Repair Lab',
@@ -53,13 +89,15 @@ export default function SuccessStories() {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-amber-100 text-amber-800 border border-amber-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Award className="w-3.5 h-3.5 text-amber-600" />
-            <span>Grassroots Impact Stories</span>
+            <span>{isHindi ? 'जमीनी प्रभाव की कहानियां' : 'Grassroots Impact Stories'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            Real Entrepreneurs. Real Subsidized Growth.
+            {isHindi ? 'वास्तविक उद्यमी। वास्तविक रियायती प्रगति।' : 'Real Entrepreneurs. Real Subsidized Growth.'}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-            See how grassroots citizens leveraged Government of India concessional credit to transition from unorganized daily labor to self-sustaining business owners.
+            {isHindi 
+              ? 'देखें कि कैसे नागरिकों ने असंगठित दैनिक श्रम से आत्मनिर्भर व्यवसाय के स्वामी बनने के लिए भारत सरकार के रियायती ऋण का लाभ उठाया।' 
+              : 'See how grassroots citizens leveraged Government of India concessional credit to transition from unorganized daily labor to self-sustaining business owners.'}
           </p>
         </div>
 
@@ -87,11 +125,11 @@ export default function SuccessStories() {
                 {/* Loan & Impact Metrics Box */}
                 <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-400">Scheme Sanctioned:</span>
+                    <span className="text-slate-400">{isHindi ? 'स्वीकृत योजना:' : 'Scheme Sanctioned:'}</span>
                     <span className="font-bold text-slate-800">{item.loanAmount}</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-400">Outcome:</span>
+                    <span className="text-slate-400">{isHindi ? 'परिणाम:' : 'Outcome:'}</span>
                     <span className="font-bold text-emerald-700">{item.impact}</span>
                   </div>
                 </div>

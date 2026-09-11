@@ -117,9 +117,8 @@ function AppShell() {
     );
   }
 
-  const requiresSession = !ANONYMOUS_VIEWS.includes(activeTab);
   const requiresAdmin = ADMIN_VIEWS.includes(activeTab);
-  const isAuthView = activeTab === 'login' || (requiresSession && !isAuthenticated);
+  const isAuthView = activeTab === 'login';
 
   const effectiveTab = (() => {
     if (activeTab === 'login') return 'readiness';
@@ -128,8 +127,7 @@ function AppShell() {
   })();
 
   const navigate = (tab) => {
-    if (tab === 'login' || ANONYMOUS_VIEWS.includes(tab) || isAuthenticated) setAuthPanelNotice(null);
-    else setAuthPanelNotice('Please sign in to open this section — your documents and dossier are private to your account.');
+    setAuthPanelNotice(null);
     setActiveTab(tab);
   };
 

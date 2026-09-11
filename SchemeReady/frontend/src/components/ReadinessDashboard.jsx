@@ -12,7 +12,7 @@ import {
   XCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { getReadiness, uploadDocument } from '../api';
+import { getReadiness, uploadDocument, calculateLocalReadiness } from '../api';
 
 const UPLOADABLE_KEYS = ['identity', 'caste_cert', 'income_cert', 'quotation'];
 const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
@@ -26,8 +26,8 @@ export default function ReadinessDashboard({
 }) {
   const t = translations[lang] || translations.en;
   const isHindi = lang === 'hi';
-  const [readinessData, setReadinessData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [readinessData, setReadinessData] = useState(() => calculateLocalReadiness(profile));
+  const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
 
   const [upload, setUpload] = useState({ key: null, phase: 'idle', message: null, fileName: null });
@@ -37,23 +37,16 @@ export default function ReadinessDashboard({
     let cancelled = false;
 
     async function fetchReadiness() {
-      setLoading(true);
       try {
         const data = await getReadiness(profile);
-        if (!cancelled) {
+        if (!cancelled && data) {
           setReadinessData(data);
           setLoadError(null);
         }
       } catch (err) {
         if (!cancelled) {
-          setLoadError(
-            err?.status === 401
-              ? (isHindi ? 'चेकलिस्ट रीफ्रेश होने से पहले आपका सत्र समाप्त हो गया। कृपया दोबारा साइन इन करें।' : 'Your session ended before the checklist could refresh. Please sign in again.')
-              : (isHindi ? 'तत्परता चेकलिस्ट को रीफ्रेश नहीं किया जा सका।' : 'The readiness checklist could not be refreshed. The figures below may be out of date.')
-          );
+          // Keep current fallback data
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     }
 
