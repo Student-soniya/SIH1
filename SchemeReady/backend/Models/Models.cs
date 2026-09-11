@@ -66,6 +66,7 @@ public class Scheme
     public int MoratoriumMonths { get; set; }
     public List<string> RequiredDocuments { get; set; } = new();
     public List<string> SupportedStates { get; set; } = new();
+    public List<string> SupportedDistricts { get; set; } = new();
     public string ApplicationMode { get; set; } = "Offline";
     public string OfficialUrl { get; set; } = string.Empty;
     public string SourceDocument { get; set; } = string.Empty;
@@ -73,6 +74,10 @@ public class Scheme
     public string Status { get; set; } = "Verified";
     public string Description { get; set; } = string.Empty;
     public double MinAcademicPercentage { get; set; } = 0; // For Education Loans
+    public string GenderRestriction { get; set; } = "Any";
+    public bool IsIllustrative { get; set; } = true;
+    public string? VerificationSourceReference { get; set; }
+    public string? DataProvenance { get; set; }
 }
 
 public class ChannelPartner
@@ -96,6 +101,9 @@ public class ChannelPartner
     public double Longitude { get; set; }
     public string FundUtilizationStatus { get; set; } = "High Fund Availability / 0% Overdue"; // SIH requirement!
     public string NpaHealthScore { get; set; } = "AAA (Low NPA - Priority Disbursal)";
+    public bool IsIllustrative { get; set; } = true;
+    public string? VerificationSourceReference { get; set; }
+    public string? DataProvenance { get; set; }
 }
 
 public class BeneficiaryProfile
@@ -146,6 +154,8 @@ public class SchemeMatchResult
     public string SourceDocument { get; set; } = string.Empty;
     public DateTime LastVerifiedDate { get; set; }
     public string PartnerAvailability { get; set; } = "Available in District";
+    public bool IsIllustrative { get; set; }
+    public string? DataProvenance { get; set; }
 }
 
 public class ApplicationReadiness

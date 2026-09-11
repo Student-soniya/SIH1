@@ -6,13 +6,14 @@ using SchemeReady.Api.Services;
 
 namespace SchemeReady.Api.Controllers;
 
+#if false // Superseded by AuthController.cs, which uses ASP.NET Core Identity.
 [ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+[Route("api/legacy-auth")]
+public class LegacyAuthController : ControllerBase
 {
     private readonly ISchemeRepository _repository;
 
-    public AuthController(ISchemeRepository repository)
+    public LegacyAuthController(ISchemeRepository repository)
     {
         _repository = repository;
     }
@@ -98,6 +99,7 @@ public class AuthController : ControllerBase
     }
 }
 
+#endif
 [ApiController]
 [Route("api/[controller]")]
 public class OnboardingController : ControllerBase
