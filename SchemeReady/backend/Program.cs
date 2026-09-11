@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using SchemeReady.Api.Auth;
 using SchemeReady.Api.Data;
 using SchemeReady.Api.Models;
+using SchemeReady.Api.Options;
 using SchemeReady.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -167,6 +168,12 @@ builder.Services.AddAuditingAuthorizationResultHandler();
 // ------------------------------------------------------------ document storage
 // Resolved once, at startup, so a missing root fails the process rather than the first upload.
 builder.Services.AddSingleton(DocumentStorage.FromConfigurationOrThrow(builder.Configuration));
+
+// DigiLocker OAuth2 client. ClientId and ClientSecret are supplied through user-secrets or
+// environment variables; appsettings.json intentionally contains no credentials.
+builder.Services.Configure<DigiLockerOptions>(
+    builder.Configuration.GetSection(DigiLockerOptions.SectionName));
+builder.Services.AddHttpClient<IDigiLockerService, DigiLockerService>();
 
 // Register Core Domain Services & Repository
 // Scoped, not Singleton: the repository now shares the scoped DbContext lifetime.
