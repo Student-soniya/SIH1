@@ -3,14 +3,7 @@
 // requirements are determined by the authorised agency and current guidelines.
 export const CURRENT_NSFDC_GUIDANCE = {
   updated: '2026-09-10',
-  common: {
-    category: 'SC',
-    annualFamilyIncomeMax: 500000,
-    financingShare: 'up to 90% of project cost',
-    route: 'PM-SURAJ or authorised State/other Channelising Agency',
-    directApplication: false,
-    requiredCoreDocuments: ['Valid SC caste certificate', 'Income proof', 'KYC documents']
-  },
+  common: { category: 'SC', annualFamilyIncomeMax: 500000, financingShare: 'up to 90% of project cost', route: 'PM-SURAJ or authorised State/other Channelising Agency', directApplication: false, requiredCoreDocuments: ['Valid SC caste certificate', 'Income proof', 'KYC documents'] },
   schemes: [
     { id: 'mfs', name: 'Micro Finance Scheme (MFS)', projectCostMax: 140000, loanMax: 125000, interest: '6.5% p.a.', tenure: 'up to 3 years', moratorium: '3 months', channel: 'SCAs/CAs', audience: 'small income-generating activities' },
     { id: 'amy', name: 'Aajeevika Micro-Finance Yojana (AMY)', projectCostMax: 140000, loanMax: 125000, interest: '15% p.a.', tenure: 'up to 3 years', moratorium: '3 months', channel: 'selected NBFC-MFIs', audience: 'small income-generating activities' },
