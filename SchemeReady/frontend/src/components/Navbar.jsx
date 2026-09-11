@@ -12,13 +12,21 @@ import {
   CheckCircle2,
   Compass,
   Layers,
+  User,
   LogIn,
   LogOut,
   UserCircle2
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
-export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadPersona, readinessScore = 72 }) {
+export default function Navbar({ 
+  lang, 
+  setLang, 
+  activeTab, 
+  setActiveTab, 
+  onLoadPersona, 
+  readinessScore = 72
+}) {
   const t = translations[lang] || translations.en;
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
 
@@ -26,8 +34,9 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
   // control that would only ever be refused.
   const navItems = [
     { id: 'onboarding', label: t.tabs.onboarding, icon: Sparkles },
+    { id: 'profile', label: t.profileTab, icon: User },
     { id: 'schemes', label: t.tabs.schemes, icon: Compass },
-    { id: 'readiness', label: `${t.tabs.readiness} (${readinessScore}%)`, icon: CheckCircle2, badge: `${readinessScore}%` },
+    { id: 'readiness', label: `${t.tabs.readiness} (${readinessScore}%)`, icon: CheckCircle2 },
     { id: 'businessPlan', label: t.tabs.businessPlan, icon: FileText },
     { id: 'checklist', label: t.tabs.checklist, icon: FolderCheck },
     { id: 'partners', label: t.tabs.partners, icon: Building2 },
@@ -42,18 +51,18 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white text-xs py-1 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2 font-medium">
             <span className="bg-emerald-500 text-slate-900 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">
-              GovTech Hackathon MVP
+              SIH 2026 Innovation
             </span>
-            <span>Government of India &amp; NSFDC Channel Partner Ecosystem | PM-SURAJ Aligned</span>
+            <span>Government of India &amp; NSFDC Channel Finance System | PM-SURAJ Aligned</span>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-emerald-200">● Data Verified: 10 September 2026</span>
+            <span className="text-emerald-200 text-[11px]">● Clean Balance Sheet &amp; 0% Overdue Verified</span>
             <div className="flex items-center space-x-1 border-l border-emerald-700 pl-3">
               <Globe2 className="w-3.5 h-3.5 text-emerald-300" />
               <select
@@ -64,6 +73,10 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
                 <option value="en" className="text-slate-900">English (EN)</option>
                 <option value="kn" className="text-slate-900">ಕನ್ನಡ (Kannada)</option>
                 <option value="hi" className="text-slate-900">हिन्दी (Hindi)</option>
+                <option value="ta" className="text-slate-900">தமிழ் (Tamil)</option>
+                <option value="te" className="text-slate-900">తెలుగు (Telugu)</option>
+                <option value="mr" className="text-slate-900">मराठी (Marathi)</option>
+                <option value="bn" className="text-slate-900">বাংলা (Bengali)</option>
               </select>
             </div>
           </div>
@@ -80,7 +93,7 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-black tracking-tight text-slate-900">{t.appTitle}</h1>
               <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded-md">
-                v2.6
+                SIH Edition
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium">
@@ -94,13 +107,15 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
             white, where every other header control is a muted emerald outline — because it is
             the one action an unrecognised visitor needs to find immediately. */}
         <div className="flex items-center space-x-3 ml-auto">
+
           <button
             onClick={onLoadPersona}
-            className="flex items-center space-x-2 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-lg transition-all shadow-xs active:scale-95"
+            className="flex items-center space-x-2 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-xl transition-all shadow-xs active:scale-95"
             title="Auto-fill Ravi's persona (Bengaluru SC entrepreneur, Mobile repair shop, ₹1.8L cost)"
           >
             <UserCheck className="w-4 h-4 text-emerald-600" />
-            <span>{t.demoPersonaBtn}</span>
+            <span className="hidden sm:inline">{t.demoPersonaBtn}</span>
+            <span className="sm:hidden">Ravi Persona</span>
           </button>
 
           {isAuthenticated ? (

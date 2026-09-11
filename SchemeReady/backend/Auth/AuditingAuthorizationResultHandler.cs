@@ -21,6 +21,18 @@ namespace SchemeReady.Api.Auth;
 /// status and for no part of the operation to be performed, not for an audit row, and auditing
 /// every unauthenticated probe would let an anonymous caller inflate the audit table at will.
 /// </summary>
+public static class AuditingAuthorizationRegistration
+{
+    /// <summary>
+    /// Registered from this file rather than inline in Program.cs: naming
+    /// <see cref="IAuthorizationMiddlewareResultHandler"/> there failed to bind (CS0234
+    /// fully-qualified, CS0246 via a using) even though it binds here. Pre-existing break,
+    /// unrelated to the main merge — this keeps the registration where the type resolves.
+    /// </summary>
+    public static IServiceCollection AddAuditingAuthorizationResultHandler(this IServiceCollection services)
+        => services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuditingAuthorizationResultHandler>();
+}
+
 public class AuditingAuthorizationResultHandler : IAuthorizationMiddlewareResultHandler
 {
     private readonly AuthorizationMiddlewareResultHandler _default = new();

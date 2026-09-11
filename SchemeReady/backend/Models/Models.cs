@@ -3,19 +3,55 @@ using System.Text.Json.Serialization;
 
 namespace SchemeReady.Api.Models;
 
+public class UserAccount
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string Role { get; set; } = "Beneficiary";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public class AuthRequest
+{
+    public string UserIdOrEmail { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string CaptchaAnswer { get; set; } = string.Empty;
+    public string CaptchaToken { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public bool IsSignUp { get; set; } = false;
+}
+
+public class AuthResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+}
+
+public class CaptchaResponse
+{
+    public string Token { get; set; } = string.Empty;
+    public string Question { get; set; } = string.Empty;
+    public string ImageOrText { get; set; } = string.Empty;
+}
+
 public class Scheme
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public string SchemeType { get; set; } = string.Empty;
+    public string SchemeType { get; set; } = string.Empty; // Micro Credit, Term Loan, Education, Women, Green
     public string TargetGroup { get; set; } = string.Empty;
     public int MinimumAge { get; set; } = 18;
     public int MaximumAge { get; set; } = 60;
-    public decimal IncomeLimit { get; set; }
+    public decimal IncomeLimit { get; set; } = 500000; // SIH standard: up to Rs 5.00 Lakh
     public decimal MinimumProjectCost { get; set; }
     public decimal MaximumProjectCost { get; set; }
     public List<string> EligibleBusinessTypes { get; set; } = new();
-    public decimal InterestRate { get; set; }
+    public decimal InterestRate { get; set; } // Concessional 4.0% to 8.0%
     public int MaximumTenureMonths { get; set; }
     public int MoratoriumMonths { get; set; }
     public List<string> RequiredDocuments { get; set; } = new();
@@ -26,6 +62,11 @@ public class Scheme
     public DateTime LastVerifiedDate { get; set; }
     public string Status { get; set; } = "Verified";
     public string Description { get; set; } = string.Empty;
+
+    // Minimum qualifying academic percentage, used by education/skill schemes.
+    // 0 (the default) means the scheme declares no academic gate, so the academic
+    // rule in SchemeMatchingService is skipped entirely.
+    public double MinAcademicPercentage { get; set; } = 0;
 
     // Gender eligibility restriction: "Any" | "Female" | "Male".
     // Replaces the applicant-name-based MSY gate (R3.5). Default keeps every
@@ -65,6 +106,8 @@ public class ChannelPartner
     public string Pincode { get; set; } = string.Empty;
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public string FundUtilizationStatus { get; set; } = "High Fund Availability / 0% Overdue";
+    public string NpaHealthScore { get; set; } = "AAA (Low NPA - Priority Disbursal)";
 
     // Illustrative-data labelling (R2.1), identical semantics to Scheme.
     public bool IsIllustrative { get; set; } = true;
@@ -80,23 +123,30 @@ public class BeneficiaryProfile
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8].ToUpper();
     public string FullName { get; set; } = "Ravi Kumar";
-    public string BusinessType { get; set; } = "tailoring";
+    public string ParentsName { get; set; } = "Anand Kumar & Lakshmi Devi";
+    public string Gender { get; set; } = "Male"; // Male, Female, Other (Crucial for Mahila Samriddhi)
+    public string BusinessType { get; set; } = "mobile repair";
+    public string ProjectDescription { get; set; } = "Mobile and smartphone chip-level repair lab with high-precision SMD rework station, digital microscopes, and touch-glass separators.";
     public string Location { get; set; } = "Bengaluru";
-    public decimal EstimatedProjectCost { get; set; } = 120000;
-    public decimal AnnualFamilyIncome { get; set; } = 250000;
+    public string State { get; set; } = "Karnataka";
+    public decimal EstimatedProjectCost { get; set; } = 180000;
+    public decimal AnnualFamilyIncome { get; set; } = 360000; // Under 5.0 Lakh SIH ceiling
+    public decimal HouseholdAnnualIncome { get; set; } = 360000;
+    public bool HasFiledItr { get; set; } = true;
+    public string ItrAckNumber { get; set; } = "ITR-V-2025-8891042";
+    public double TenthMarksPercentage { get; set; } = 78.5;
+    public string TenthSchoolName { get; set; } = "Government High School, Malleshwaram";
+    public double TwelfthMarksPercentage { get; set; } = 74.0;
+    public string TwelfthSchoolName { get; set; } = "National Pre-University College, Bengaluru";
     public string UserType { get; set; } = "new_entrepreneur"; // new_entrepreneur, existing_entrepreneur, student
     public string Category { get; set; } = "SC"; // SC, Safai Karamchari, OBC, General
     public bool HasCasteCertificate { get; set; } = false;
     public bool HasIncomeCertificate { get; set; } = true;
-    public decimal RequiredLoanAmount { get; set; } = 120000;
+    public decimal RequiredLoanAmount { get; set; } = 150000;
     public string SupportPreference { get; set; } = "offline"; // online, offline, any
-    public string PreferredLanguage { get; set; } = "kn"; // en, kn, hi
+    public string PreferredLanguage { get; set; } = "kn"; // en, kn, hi, ta, te, mr, bn
     public int Age { get; set; } = 28;
-    public List<string> UploadedDocs { get; set; } = new() { "Aadhaar/KYC", "Income certificate" };
-
-    // "Any" | "Female" | "Male". Optional in request bodies; the default of "Any"
-    // means an omitted value never triggers a gender penalty (R3.5, Phase B).
-    public string Gender { get; set; } = "Any";
+    public List<string> UploadedDocs { get; set; } = new() { "Aadhaar/KYC", "Income certificate", "10th Marksheet", "12th Marksheet", "ITR Acknowledgement" };
 }
 
 public class SchemeMatchResult
@@ -143,7 +193,7 @@ public class ReadinessItem
 {
     public string Key { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
-    public string Status { get; set; } = "Missing"; // Complete, Partially complete, Missing, Verified, Pending review
+    public string Status { get; set; } = "Missing";
     public bool IsMandatory { get; set; } = true;
     public string WhyRequired { get; set; } = string.Empty;
     public string HowToObtain { get; set; } = string.Empty;
@@ -189,7 +239,7 @@ public class BusinessPlanReport
 public class EmiRequest
 {
     public decimal LoanAmount { get; set; } = 150000;
-    public decimal AnnualInterestRate { get; set; } = 5.0m;
+    public decimal AnnualInterestRate { get; set; } = 6.5m;
     public int TenureMonths { get; set; } = 36;
     public int MoratoriumMonths { get; set; } = 3;
     public decimal SubsidyContribution { get; set; } = 15000;

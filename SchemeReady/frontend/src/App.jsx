@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import ConversationalOnboarding from './components/ConversationalOnboarding';
+import BeneficiaryProfileView from './components/BeneficiaryProfileView';
 import ExplainableSchemeResults from './components/ExplainableSchemeResults';
 import ReadinessDashboard from './components/ReadinessDashboard';
 import BusinessPlanBuilder from './components/BusinessPlanBuilder';
@@ -38,18 +39,33 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('onboarding');
   const [authPanelNotice, setAuthPanelNotice] = useState(null);
 
-  // Realistic default profile (Ravi Kumar - Persona from PRD)
+  // Realistic default profile (Ravi Kumar - Persona from PRD & SIH guidelines)
   const [profile, setProfile] = useState({
     id: 'APP-2026-BLR-0941',
     fullName: 'Ravi Kumar',
+    parentsName: 'Shri M. Venkataram & Smt. Lakshmi',
+    gender: 'Male',
     businessType: 'mobile repair',
+    businessScale: 'Micro (Up to ₹5 Lakhs)',
+    projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
     location: 'Bengaluru',
+    state: 'Karnataka',
     estimatedProjectCost: 180000,
     annualFamilyIncome: 360000,
+    householdAnnualIncome: 360000,
+    cibilScore: 745,
     userType: 'new_entrepreneur',
     category: 'SC',
-    hasCasteCertificate: false, // 72% readiness default
+    hasCasteCertificate: false, // 72% readiness default (remediated to true upon upload / DigiLocker)
+    casteCertificateNo: 'RD0038921029-SC',
+    digilockerVerified: false,
     hasIncomeCertificate: true,
+    hasFiledItr: true,
+    itrAckNumber: 'ITR-V-2025-8891042',
+    tenthMarksPercentage: 84.5,
+    tenthSchoolName: 'Government High School, Malleshwaram',
+    twelfthMarksPercentage: 79.2,
+    twelfthSchoolName: 'Government PU College, Rajajinagar',
     requiredLoanAmount: 150000,
     supportPreference: 'offline',
     preferredLanguage: 'kn',
@@ -89,14 +105,29 @@ function AppShell() {
     setProfile({
       id: 'APP-2026-BLR-0941',
       fullName: 'Ravi Kumar',
+      parentsName: 'Shri M. Venkataram & Smt. Lakshmi',
+      gender: 'Male',
       businessType: 'mobile repair',
+      businessScale: 'Micro (Up to ₹5 Lakhs)',
+      projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
       location: 'Bengaluru',
+      state: 'Karnataka',
       estimatedProjectCost: 180000,
       annualFamilyIncome: 360000,
+      householdAnnualIncome: 360000,
+      cibilScore: 745,
       userType: 'new_entrepreneur',
       category: 'SC',
       hasCasteCertificate: false,
+      casteCertificateNo: 'RD0038921029-SC',
+      digilockerVerified: false,
       hasIncomeCertificate: true,
+      hasFiledItr: true,
+      itrAckNumber: 'ITR-V-2025-8891042',
+      tenthMarksPercentage: 84.5,
+      tenthSchoolName: 'Government High School, Malleshwaram',
+      twelfthMarksPercentage: 79.2,
+      twelfthSchoolName: 'Government PU College, Rajajinagar',
       requiredLoanAmount: 150000,
       supportPreference: 'offline',
       preferredLanguage: 'kn',
@@ -172,6 +203,14 @@ function AppShell() {
                 profile={profile}
                 setProfile={setProfile}
                 onProceedToMatching={() => navigate('schemes')}
+              />
+            )}
+
+            {effectiveTab === 'profile' && (
+              <BeneficiaryProfileView
+                profile={profile}
+                setProfile={setProfile}
+                onSaveDone={() => navigate('schemes')}
               />
             )}
 
@@ -284,6 +323,7 @@ function AppShell() {
           </div>
         </div>
       </footer>
+
     </div>
   );
 }

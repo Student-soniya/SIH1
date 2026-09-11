@@ -162,8 +162,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // R4.21 — one audit event per role-based 403, written from the one seam that sees the decision.
-builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.Policy.IAuthorizationMiddlewareResultHandler,
-                              AuditingAuthorizationResultHandler>();
+builder.Services.AddAuditingAuthorizationResultHandler();
 
 // ------------------------------------------------------------ document storage
 // Resolved once, at startup, so a missing root fails the process rather than the first upload.

@@ -9,6 +9,12 @@ using SchemeReady.Api.Services;
 
 namespace SchemeReady.Api.Controllers;
 
+// main's demo AuthController (SHA-256 + arithmetic captcha, in-memory user list) was
+// removed here during the merge. Phase C+D superseded it: Controllers/AuthController.cs
+// serves the same "api/auth" route with ASP.NET Identity, signed JWTs and refresh-token
+// rotation. Keeping both would have been a duplicate class in this namespace and two
+// controllers claiming one route.
+
 [ApiController]
 [Route("api/[controller]")]
 public class OnboardingController : ControllerBase
@@ -44,19 +50,23 @@ public class OnboardingController : ControllerBase
             response.BusinessType = "leather craft";
         else if (lower.Contains("grocery") || lower.Contains("shop") || lower.Contains("ಅಂಗಡಿ"))
             response.BusinessType = "grocery";
+        else if (lower.Contains("student") || lower.Contains("college") || lower.Contains("study") || lower.Contains("ವಿದ್ಯಾರ್ಥಿ"))
+            response.BusinessType = "education";
 
         if (lower.Contains("bengaluru") || lower.Contains("bangalore") || lower.Contains("ಬೆಂಗಳೂರು"))
             response.Location = "Bengaluru";
+        else if (lower.Contains("mumbai") || lower.Contains("bombay") || lower.Contains("मुंबई"))
+            response.Location = "Mumbai";
+        else if (lower.Contains("lucknow") || lower.Contains("लखनउ"))
+            response.Location = "Lucknow";
+        else if (lower.Contains("chennai") || lower.Contains("madras"))
+            response.Location = "Chennai";
         else if (lower.Contains("mysuru") || lower.Contains("mysore") || lower.Contains("ಮೈಸೂರು"))
             response.Location = "Mysuru";
         else if (lower.Contains("hubballi") || lower.Contains("dharwad") || lower.Contains("ಹುಬ್ಬಳ್ಳಿ"))
             response.Location = "Hubballi-Dharwad";
-        else if (lower.Contains("belagavi") || lower.Contains("belgaum") || lower.Contains("ಬೆಳಗಾವಿ"))
-            response.Location = "Belagavi";
-        else if (lower.Contains("kalaburagi") || lower.Contains("gulbarga") || lower.Contains("ಕಲಬುರಗಿ"))
-            response.Location = "Kalaburagi";
 
-        var lakhMatch = Regex.Match(lower, @"(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lac|ಲಕ್ಷ)", RegexOptions.IgnoreCase);
+        var lakhMatch = Regex.Match(lower, @"(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lac|ಲಕ್ಷ|लाख)", RegexOptions.IgnoreCase);
         if (lakhMatch.Success && decimal.TryParse(lakhMatch.Groups[1].Value, out decimal lakhs))
         {
             response.RequiredAmount = lakhs * 100000m;
@@ -273,9 +283,12 @@ public class PartnersController : ControllerBase
 
     [AllowAnonymous]                                             // R4.16
     [HttpGet("route")]
-    public async Task<ActionResult<List<ChannelPartner>>> RoutePartners([FromQuery] string district = "Bengaluru", [FromQuery] string? schemeId = null)
+    public async Task<ActionResult<List<ChannelPartner>>> RoutePartners(
+        [FromQuery] string district = "Bengaluru", 
+        [FromQuery] string? state = "Karnataka", 
+        [FromQuery] string? schemeId = null)
     {
-        var routed = await _partnerService.GetRecommendedPartnersAsync(district, schemeId);
+        var routed = await _partnerService.GetRecommendedPartnersAsync(district, state, schemeId);
         return Ok(DataProvenance.Project(routed));
     }
 }
@@ -339,7 +352,7 @@ public class ApplicationPackController : ControllerBase
             MoratoriumMonths = scheme.MoratoriumMonths
         });
 
-        var partners = await _partnerService.GetRecommendedPartnersAsync(profile.Location, scheme.Id);
+        var partners = await _partnerService.GetRecommendedPartnersAsync(profile.Location, profile.State, scheme.Id);
         var nearestPartner = partners.FirstOrDefault() ?? (await _repository.GetAllPartnersAsync()).First();
 
         var pack = new ApplicationPack
@@ -411,7 +424,7 @@ public class ApplicationPackController : ControllerBase
             ApplicationId = id,
             Portal = "PM-SURAJ (Pradhan Mantri Samajik Utthan evam Rozgar Adharit Jankalyan)",
             Status = "Transferred to PM-SURAJ Portal",
-            ForwardedTo = "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+            ForwardedTo = "State Channelizing Agency (SCA)",
             Timestamp = DateTime.UtcNow,
             Message = "Application dossier successfully transmitted to PM-SURAJ portal demonstration gateway."
         });
