@@ -1,0 +1,976 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": null,
+  "handDerived": true,
+  "notes": "HAND-DERIVED, NOT RECORDED. The sandbox that produced this file has no .NET SDK and no NuGet access, so BaselineRecorder could not be executed. Every matchScore, isRecommended flag, result position and reason string below was derived by tracing SchemeMatchingService.MatchSchemesAsync as of Phase B task 5.3 against Data/SeedData.cs. It is NOT yet trustworthy as an oracle. Before Phase E relies on it, run 'dotnet run --project tests/baseline/BaselineRecorder' and commit the regenerated file: only recordedAt, handDerived and the estimatedEmi values should change. Any other diff is a hand-derivation error in this file, and BaselineEqualityTests will say so. estimatedEmi is null throughout because the EMI formula raises (1+r) to the tenure power in double precision, which cannot be reproduced by hand; the test skips null values.",
+  "profiles": [
+    {
+      "key": "all-components-maximal",
+      "coverage": "All five components at maximum for MCS-01 and MSY-03; proves FullName no longer gates MSY.",
+      "profile": {
+        "id": "BASE0001",
+        "fullName": "Ravi Kumar",
+        "businessType": "tailoring",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 120000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 120000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 98,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 150,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 98,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 140,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 300,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 100,000 - Rs 500,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 88,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 400,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 83,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 120,000) is lower than the recommended minimum of Rs 200,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "income-above-limit",
+      "coverage": "AnnualFamilyIncome exceeds the IncomeLimit of all six seeded schemes.",
+      "profile": {
+        "id": "BASE0002",
+        "fullName": "Ravi Kumar",
+        "businessType": "tailoring",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 120000,
+        "annualFamilyIncome": 600000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 120000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 150,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 300,000)."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 140,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 300,000)."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 74,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 300,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 350,000).",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 74,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 100,000 - Rs 500,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 350,000).",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 68,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 400,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 450,000).",
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 63,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Family income (Rs 600,000) exceeds the configured limit (Rs 500,000).",
+            "Required amount (Rs 120,000) is lower than the recommended minimum of Rs 200,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "cost-below-minimum",
+      "coverage": "EstimatedProjectCost below the MinimumProjectCost of all six seeded schemes.",
+      "profile": {
+        "id": "BASE0003",
+        "fullName": "Ravi Kumar",
+        "businessType": "tailoring",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 5000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 5000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 83,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 10,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 83,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 10,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 83,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 200,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 77,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 50,000.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 77,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 100,000.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 71,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 5,000) is lower than the recommended minimum of Rs 50,000.",
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "cost-above-maximum",
+      "coverage": "EstimatedProjectCost above the MaximumProjectCost of all six seeded schemes.",
+      "profile": {
+        "id": "BASE0004",
+        "fullName": "Ravi Kumar",
+        "businessType": "tailoring",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 2000000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 2000000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 150,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 140,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 1,500,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 74,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 300,000.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 74,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 500,000.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 68,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "Project cost (Rs 2,000,000) exceeds the maximum scheme ceiling of Rs 400,000.",
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "no-partner-in-district",
+      "coverage": "Location matches no ChannelPartner district, so the partner component drops to its floor for all six schemes.",
+      "profile": {
+        "id": "BASE0005",
+        "fullName": "Ravi Kumar",
+        "businessType": "tailoring",
+        "location": "Kalaburagi",
+        "estimatedProjectCost": 120000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 120000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 150,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 140,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 88,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 300,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 88,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 100,000 - Rs 500,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 88,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 400,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 77,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 120,000) is lower than the recommended minimum of Rs 200,000.",
+            "No direct SCA / bank branch tagged for this scheme in Kalaburagi; regional office routing needed."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "unmatched-business-type",
+      "coverage": "BusinessType matches no EligibleBusinessTypes entry either way; also exercises MissingDocuments via an absent caste certificate.",
+      "profile": {
+        "id": "BASE0006",
+        "fullName": "Ravi Kumar",
+        "businessType": "astrology consultancy",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 120000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": false,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 120000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Female"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 86,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 300,000).",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 86,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 100,000 - Rs 500,000).",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 86,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 150,000).",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 86,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 140,000).",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 80,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 400,000)."
+          ],
+          "negativeReasons": [
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 69,
+          "isRecommended": false,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 120,000) is lower than the recommended minimum of Rs 200,000.",
+            "Additional mandatory certificates required: Caste certificate (RD Number).",
+            "Business type 'astrology consultancy' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [
+            "Caste certificate (RD Number)"
+          ],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        }
+      ]
+    },
+    {
+      "key": "gender-restricted-scheme",
+      "coverage": "Declared gender does not satisfy NSFDC-MSY-03's Female restriction; the other five schemes declare Any and are unaffected.",
+      "profile": {
+        "id": "BASE0007",
+        "fullName": "Sunita Devi",
+        "businessType": "tailoring",
+        "location": "Bengaluru",
+        "estimatedProjectCost": 120000,
+        "annualFamilyIncome": 250000,
+        "userType": "new_entrepreneur",
+        "category": "SC",
+        "hasCasteCertificate": true,
+        "hasIncomeCertificate": true,
+        "requiredLoanAmount": 120000,
+        "supportPreference": "offline",
+        "preferredLanguage": "kn",
+        "age": 28,
+        "uploadedDocs": [
+          "Aadhaar/KYC",
+          "Caste certificate",
+          "Income certificate",
+          "Business quotation"
+        ],
+        "gender": "Male"
+      },
+      "results": [
+        {
+          "schemeId": "NSFDC-MCS-01",
+          "matchScore": 98,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 150,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-GBS-05",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 300,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-LUY-04",
+          "matchScore": 94,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 350,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 100,000 - Rs 500,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km)."
+          ],
+          "negativeReasons": [
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-SLS-06",
+          "matchScore": 88,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 450,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 50,000 - Rs 400,000).",
+            "Primary statutory eligibility certificates are verified."
+          ],
+          "negativeReasons": [
+            "No direct SCA / bank branch tagged for this scheme in Bengaluru; regional office routing needed.",
+            "Business type 'tailoring' may require special committee evaluation under generalized trade category."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "State Channelizing Agency Available",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-MSY-03",
+          "matchScore": 85,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 300,000.",
+            "Project cost (Rs 120,000) fits the scheme limit (Rs 10,000 - Rs 140,000).",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Scheme is exclusively reserved for women entrepreneurs."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        },
+        {
+          "schemeId": "NSFDC-TLS-02",
+          "matchScore": 83,
+          "isRecommended": true,
+          "positiveReasons": [
+            "Applicant belongs to the target community (Scheduled Caste).",
+            "Declared family income (Rs 250,000) is within the configured threshold of Rs 500,000.",
+            "Primary statutory eligibility certificates are verified.",
+            "Suitable partner (Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)) is available in the applicant’s district (Bengaluru, 4.2 km).",
+            "Business type 'tailoring' is actively promoted under this scheme."
+          ],
+          "negativeReasons": [
+            "Required amount (Rs 120,000) is lower than the recommended minimum of Rs 200,000."
+          ],
+          "missingDocuments": [],
+          "partnerAvailability": "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+          "estimatedEmi": null
+        }
+      ]
+    }
+  ]
+}

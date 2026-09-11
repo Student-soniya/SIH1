@@ -179,6 +179,45 @@ Confirm the tables with `psql schemeready -c '\dt'`, which should list `Schemes`
 `OfficerPartnerAssignments`, `StoredDocuments`, `AuditEvents` and the seven `AspNet*`
 identity tables.
 
+Two migrations exist as of Phase B, so expect two `Applying migration` lines:
+`20260101000000_InitialPostgres` and `20260102000000_BackfillMsyGenderRestriction`.
+
+#### 3a. Verify the MSY gender-restriction backfill (Phase B)
+
+`20260102000000_BackfillMsyGenderRestriction` is a **data-only** migration and the reason
+Phase B is safe to deploy against an existing database.
+
+Phase B deleted the applicant-name gate in `SchemeMatchingService`
+(`profile.FullName.Contains("Ravi")`) that was the only enforcement of Mahila Samriddhi
+Yojana's women-only rule, and moved that rule onto the row as `Scheme.GenderRestriction`.
+`SeedData` sets `"Female"` for `NSFDC-MSY-03`, which covers every fresh database — but the
+seeder inserts only when a primary key is absent and never issues an `UPDATE`, so a
+database seeded before Phase B would keep `"Any"` and **the women-only restriction would
+silently disappear**. The migration backfills exactly that row, once, and is recorded in
+`__EFMigrationsHistory` so it never re-applies over a later admin decision.
+
+```bash
+psql schemeready -c 'SELECT "Id", "GenderRestriction" FROM "Schemes" ORDER BY "Id";'
+```
+
+*Working directory:* anywhere
+*Success signal:* `NSFDC-MSY-03` reads `Female`; the other five schemes read `Any`. If
+MSY-03 still reads `Any`, the migration did not run — check
+`SELECT * FROM "__EFMigrationsHistory";` for the `20260102000000` row.
+
+This migration is hand-authored **without** a Designer/`BuildTargetModel` companion,
+because it changes no schema and therefore contributes nothing to the model snapshot.
+`dotnet ef database update` and `Database.Migrate()` need only the `[Migration]` attribute
+and `Up`, both of which are present. If any `dotnet ef` command objects to the missing
+target model, delete the file and regenerate the pair with:
+
+```bash
+dotnet ef migrations add BackfillMsyGenderRestriction
+```
+
+then paste the two guarded `UPDATE` statements from the deleted file into the generated
+`Up` and `Down`.
+
 ### 4. Revert the most recently applied migration
 
 ```bash
@@ -260,8 +299,25 @@ Consequences to keep in mind while reviewing Phase A:
 
 - **No Phase A C# file has been compiled.** Expect to fix the odd `using` or nullable
   warning on the first `dotnet build`.
-- **The migration and its snapshot are hand-authored transcriptions.** Group 2a is the
-  authoritative check; group 2b is the remedy.
+- **The migrations and the snapshot are hand-authored transcriptions.** Group 2a is the
+  authoritative check; group 2b is the remedy. The Phase B data-only migration
+  `20260102000000_BackfillMsyGenderRestriction` intentionally has no Designer companion —
+  see group 3a.
+- **`tests/baseline/MatchingBaseline.json` is hand-derived and is not yet a trustworthy
+  oracle.** Its scores, flags, ordering and reason strings were traced by reading the
+  scoring code, not recorded from a running process. Regenerate it before relying on it:
+
+  ```bash
+  dotnet run --project tests/baseline/BaselineRecorder
+  ```
+
+  *Working directory:* repository root
+  *Success signal:* `Baseline written: 7 profile(s), 42 result(s)` and a `git diff` on
+  `tests/baseline/MatchingBaseline.json` that changes **only** `recordedAt`,
+  `handDerived` (true → false) and the `estimatedEmi` values (null → numbers). Any change
+  to a score, flag, ordering or reason string is a hand-derivation error — commit the
+  regenerated file and re-read Phase B before trusting `BaselineEqualityTests` as the
+  Phase E merge gate.
 - Two raw-SQL functional indexes (`ix_schemes_id_lower`, `ix_channel_partners_id_lower`)
   back the case-insensitive identifier lookups. Because EF Core 8 cannot express an
   expression index in the model, they live in `migrationBuilder.Sql` and deliberately do

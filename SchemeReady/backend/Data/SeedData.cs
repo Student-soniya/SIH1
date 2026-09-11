@@ -93,7 +93,20 @@ public static class SeedData
             LastVerifiedDate = new DateTime(2026, 9, 10),
             Status = "Verified",
             Description = "Highly subsidized credit program with 4% p.a. interest rate exclusively for women entrepreneurs and SHG members.",
-            IsIllustrative = true
+            IsIllustrative = true,
+
+            // The one row in this file that is not a verbatim carry-over from the
+            // in-memory repository (R3.5).
+            //
+            // Mahila Samriddhi Yojana is women-only — the TargetGroup, Description and
+            // SourceDocument above all say so. Until Phase B that rule was enforced
+            // nowhere in the data: it lived in Services.cs as
+            // `profile.FullName.Contains("Ravi")`. Deleting that gate without setting this
+            // field would have silently dropped the restriction, which is why the two
+            // changes ship together. Migration 20260102000000 backfills databases that
+            // were seeded before this line existed — the seeder itself never updates an
+            // existing row.
+            GenderRestriction = "Female"
         },
         new()
         {

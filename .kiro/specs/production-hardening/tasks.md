@@ -87,18 +87,18 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
 
 ### Phase B — Matching engine normalisation and frozen baseline (R3)
 
-- [ ] 5. Commit B1 — normalise, without editing any reason string
-  - [ ] 5.1 Pin invariant culture and add the Scheme-Id tie-break
+- [x] 5. Commit B1 — normalise, without editing any reason string
+  - [x] 5.1 Pin invariant culture and add the Scheme-Id tie-break
     - `Services/Services.cs`: add `private static readonly CultureInfo Inv = CultureInfo.InvariantCulture` and pass it to every `ToString("N0")` in `SchemeMatchingService`; change the final sort to `OrderByDescending(r => r.MatchScore).ThenBy(r => r.SchemeId, StringComparer.Ordinal)`
     - Do not alter any reason string template; preserve the U+2019 in `applicant’s district` and the `Rs ` prefix; keep files UTF-8-with-BOM
     - _Requirements: 3.3, 3.4, 3.6_
 
-  - [ ] 5.2 Replace the name-based MSY gate with a gender restriction
+  - [x] 5.2 Replace the name-based MSY gate with a gender restriction
     - `Services/Services.cs`: delete the `profile.FullName.Contains("Ravi")` condition; gate on `scheme.GenderRestriction` vs `profile.Gender`, reducing the eligibility component by the gender penalty floored at 0 and adding the reserved-gender negative reason; apply no adjustment when the restriction is `Any`
     - Assert by inspection that no eligibility, scoring or reason-generation path reads `FullName`
     - _Requirements: 3.5_
 
-  - [ ] 5.3 Extract every numeric literal into named constants
+  - [x] 5.3 Extract every numeric literal into named constants
     - New `Matching/MatchScoreBounds.cs`: `ClampMin = 10`, `ClampMax = 98`, `RecommendedAtOrAbove = 75`
     - New `Matching/Awards.cs`: `Scale(weight, num, den)` integer helper plus the twelve named award methods so seeded weights reproduce today's numbers exactly
     - New `Matching/EmiProjection.cs`: the `0.90m` cost factor and `36`-month cap as named constants
@@ -109,14 +109,14 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
     - **Property 8** every result has ≥1 reason, a positive per maximal component, a negative per sub-maximal component, and one `MissingDocuments` entry per undeclared certificate (R3.2); **Property 9** score in 10–98, `IsRecommended ⟺ score ≥ 75`, ordering with ordinal id tie-break (R3.4); **Property 10** results deeply equal under arbitrary `FullName` replacement, gender penalty applied exactly when declared-and-unsatisfied (R3.5)
     - **Validates: Requirements 3.2, 3.4, 3.5**
 
-- [ ] 6. Commit B2 — freeze the behavioural baseline
-  - [ ] 6.1 Write `BaselineRecorder` and check in `MatchingBaseline.json`
+- [x] 6. Commit B2 — freeze the behavioural baseline
+  - [x] 6.1 Write `BaselineRecorder` and check in `MatchingBaseline.json`
     - New `tests/baseline/BaselineRecorder` entry point plus seven checked-in profiles: all components maximal; income above limit; cost below minimum; cost above maximum; no partner in district; unmatched business type; gender-restricted scheme
     - Emit `tests/baseline/MatchingBaseline.json` — the full ordered `List<SchemeMatchResult>` per profile including every reason string — and git-track it
     - _Requirements: 3.7_
 
-- [ ] 7. Commit B3 — enforce the baseline
-  - [ ] 7.1 Write `BaselineEqualityTests` (table-driven baseline test, not a property test)
+- [x] 7. Commit B3 — enforce the baseline
+  - [x] 7.1 Write `BaselineEqualityTests` (table-driven baseline test, not a property test)
     - New `tests/SchemeReady.Api.PropertyTests/BaselineEqualityTests.cs`: xUnit `[Theory]` over the seven recorded profiles; `StringComparer.Ordinal` on every reason string at every index; exact `int`/`bool` equality on scores, flags and ordering; zero numeric tolerance; failure reports a per-string diff
     - This test is the merge gate for Phase E
     - _Requirements: 3.7_

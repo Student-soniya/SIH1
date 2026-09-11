@@ -1,4 +1,6 @@
-﻿using SchemeReady.Api.Data;
+﻿using System.Globalization;
+using SchemeReady.Api.Data;
+using SchemeReady.Api.Matching;
 using SchemeReady.Api.Models;
 
 namespace SchemeReady.Api.Services;
@@ -10,6 +12,21 @@ public interface ISchemeMatchingService
 
 public class SchemeMatchingService : ISchemeMatchingService
 {
+    /// <summary>
+    /// Every interpolated number in a reason string is formatted through this, never
+    /// through the ambient culture (R3.3, R3.6).
+    ///
+    /// A reason string that reads "Rs 150,000" on a developer's machine and
+    /// "Rs 150.000" on a de-DE server cannot be a stable baseline, and R3.7 demands
+    /// byte-for-byte equality. The frontend formats independently with en-IN grouping
+    /// (R8.11); the API stays invariant. That asymmetry is deliberate.
+    ///
+    /// No reason string *template* changes here — only the formatter behind the
+    /// interpolation holes. The U+2019 apostrophe in "applicant’s district" and the
+    /// "Rs " prefix are untouched.
+    /// </summary>
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
     private readonly ISchemeRepository _repository;
     private readonly IEmiCalculatorService _emiService;
 
@@ -38,7 +55,7 @@ public class SchemeMatchingService : ISchemeMatchingService
 
             if (categoryMatch)
             {
-                eligibilityScore += 20;
+                eligibilityScore += Awards.EligibilityCategory(SeededWeights.Eligibility);
                 positiveReasons.Add("Applicant belongs to the target community (Scheduled Caste).");
             }
             else
@@ -48,38 +65,38 @@ public class SchemeMatchingService : ISchemeMatchingService
 
             if (profile.AnnualFamilyIncome <= scheme.IncomeLimit)
             {
-                eligibilityScore += 20;
-                positiveReasons.Add($"Declared family income (Rs {profile.AnnualFamilyIncome:N0}) is within the configured threshold of Rs {scheme.IncomeLimit:N0}.");
+                eligibilityScore += Awards.EligibilityIncome(SeededWeights.Eligibility);
+                positiveReasons.Add($"Declared family income (Rs {profile.AnnualFamilyIncome.ToString("N0", Inv)}) is within the configured threshold of Rs {scheme.IncomeLimit.ToString("N0", Inv)}.");
             }
             else
             {
-                negativeReasons.Add($"Family income (Rs {profile.AnnualFamilyIncome:N0}) exceeds the configured limit (Rs {scheme.IncomeLimit:N0}).");
+                negativeReasons.Add($"Family income (Rs {profile.AnnualFamilyIncome.ToString("N0", Inv)}) exceeds the configured limit (Rs {scheme.IncomeLimit.ToString("N0", Inv)}).");
             }
 
             // 2. Project Cost Fit (25% weight)
             int costScore = 0;
             if (profile.EstimatedProjectCost >= scheme.MinimumProjectCost && profile.EstimatedProjectCost <= scheme.MaximumProjectCost)
             {
-                costScore = 25;
-                positiveReasons.Add($"Project cost (Rs {profile.EstimatedProjectCost:N0}) fits the scheme limit (Rs {scheme.MinimumProjectCost:N0} - Rs {scheme.MaximumProjectCost:N0}).");
+                costScore = Awards.CostInRange(SeededWeights.ProjectCost);
+                positiveReasons.Add($"Project cost (Rs {profile.EstimatedProjectCost.ToString("N0", Inv)}) fits the scheme limit (Rs {scheme.MinimumProjectCost.ToString("N0", Inv)} - Rs {scheme.MaximumProjectCost.ToString("N0", Inv)}).");
             }
             else if (profile.EstimatedProjectCost < scheme.MinimumProjectCost)
             {
-                costScore = 8;
-                negativeReasons.Add($"Required amount (Rs {profile.EstimatedProjectCost:N0}) is lower than the recommended minimum of Rs {scheme.MinimumProjectCost:N0}.");
+                costScore = Awards.CostBelowMin(SeededWeights.ProjectCost);
+                negativeReasons.Add($"Required amount (Rs {profile.EstimatedProjectCost.ToString("N0", Inv)}) is lower than the recommended minimum of Rs {scheme.MinimumProjectCost.ToString("N0", Inv)}.");
             }
             else
             {
-                costScore = 5;
-                negativeReasons.Add($"Project cost (Rs {profile.EstimatedProjectCost:N0}) exceeds the maximum scheme ceiling of Rs {scheme.MaximumProjectCost:N0}.");
+                costScore = Awards.CostAboveMax(SeededWeights.ProjectCost);
+                negativeReasons.Add($"Project cost (Rs {profile.EstimatedProjectCost.ToString("N0", Inv)}) exceeds the maximum scheme ceiling of Rs {scheme.MaximumProjectCost.ToString("N0", Inv)}.");
             }
 
             // 3. Document Readiness (15% weight)
             int docScore = 0;
-            if (profile.HasCasteCertificate) docScore += 8;
+            if (profile.HasCasteCertificate) docScore += Awards.DocCaste(SeededWeights.Documents);
             else missingDocs.Add("Caste certificate (RD Number)");
 
-            if (profile.HasIncomeCertificate) docScore += 7;
+            if (profile.HasIncomeCertificate) docScore += Awards.DocIncome(SeededWeights.Documents);
             else missingDocs.Add("Income certificate");
 
             if (missingDocs.Any())
@@ -99,13 +116,15 @@ public class SchemeMatchingService : ISchemeMatchingService
 
             if (localPartners.Any())
             {
-                partnerScore = 10;
+                partnerScore = Awards.PartnerPresent(SeededWeights.Partner);
                 var p = localPartners.OrderBy(x => x.DistanceKm).First();
-                positiveReasons.Add($"Suitable partner ({p.InstitutionName}) is available in the applicant’s district ({profile.Location}, {p.DistanceKm} km).");
+                // DistanceKm is a double, so it needs Inv for the same reason the rupee
+                // amounts do — "4.2 km" must not become "4,2 km" on a comma-decimal host.
+                positiveReasons.Add($"Suitable partner ({p.InstitutionName}) is available in the applicant’s district ({profile.Location}, {p.DistanceKm.ToString(Inv)} km).");
             }
             else
             {
-                partnerScore = 4;
+                partnerScore = Awards.PartnerAbsent(SeededWeights.Partner);
                 negativeReasons.Add($"No direct SCA / bank branch tagged for this scheme in {profile.Location}; regional office routing needed.");
             }
 
@@ -117,32 +136,57 @@ public class SchemeMatchingService : ISchemeMatchingService
 
             if (businessSupported)
             {
-                prefScore = 10;
+                prefScore = Awards.BusinessMatch(SeededWeights.BusinessType);
                 positiveReasons.Add($"Business type '{profile.BusinessType}' is actively promoted under this scheme.");
             }
             else
             {
-                prefScore = 4;
+                prefScore = Awards.BusinessMismatch(SeededWeights.BusinessType);
                 negativeReasons.Add($"Business type '{profile.BusinessType}' may require special committee evaluation under generalized trade category.");
             }
 
-            // Special scheme checks (e.g. MSY for women)
-            if (scheme.Id == "NSFDC-MSY-03" && profile.FullName.Contains("Ravi", StringComparison.OrdinalIgnoreCase))
+            // Gender restriction declared by the scheme (R3.5).
+            //
+            // This replaces `scheme.Id == "NSFDC-MSY-03" && profile.FullName.Contains("Ravi")`.
+            // That expression was wrong twice over: it hard-coded one scheme identifier, and
+            // it inferred gender from a name substring — so "Ravi Sharma" (any gender) was
+            // barred from a women-only scheme while every other applicant, women-only scheme
+            // or not, sailed through. No eligibility, scoring or reason-generation path in
+            // this method reads FullName any more.
+            //
+            // The restriction now lives on the row: SeedData sets GenderRestriction =
+            // "Female" on NSFDC-MSY-03 (Mahila Samriddhi Yojana), and every other scheme
+            // keeps the "Any" default, which applies no adjustment whatsoever.
+            //
+            // An undeclared or empty profile gender does not satisfy a restriction, so the
+            // penalty applies — a restricted scheme is not silently opened up by an omitted
+            // field.
+            bool schemeRestrictsGender = !string.IsNullOrWhiteSpace(scheme.GenderRestriction) &&
+                                         !scheme.GenderRestriction.Equals("Any", StringComparison.OrdinalIgnoreCase);
+
+            if (schemeRestrictsGender &&
+                !scheme.GenderRestriction.Equals(profile.Gender, StringComparison.OrdinalIgnoreCase))
             {
-                negativeReasons.Add("Scheme is exclusively reserved for women entrepreneurs.");
-                eligibilityScore = Math.Max(0, eligibilityScore - 15);
+                // "women entrepreneurs" is the existing string, preserved character-for-character
+                // for the Female restriction that is the only one seeded (R3.3). A Male
+                // restriction gets the parallel wording rather than a factually wrong one.
+                negativeReasons.Add(scheme.GenderRestriction.Equals("Male", StringComparison.OrdinalIgnoreCase)
+                    ? "Scheme is exclusively reserved for men entrepreneurs."
+                    : "Scheme is exclusively reserved for women entrepreneurs.");
+
+                eligibilityScore = Math.Max(0, eligibilityScore - Awards.GenderPenalty(SeededWeights.Eligibility));
             }
 
             int totalMatchScore = eligibilityScore + costScore + docScore + partnerScore + prefScore;
-            totalMatchScore = Math.Clamp(totalMatchScore, 10, 98);
+            totalMatchScore = Math.Clamp(totalMatchScore, MatchScoreBounds.ClampMin, MatchScoreBounds.ClampMax);
 
             // Calculate estimated EMI
-            decimal loanPortion = Math.Min(profile.RequiredLoanAmount, scheme.MaximumProjectCost * 0.90m);
+            decimal loanPortion = Math.Min(profile.RequiredLoanAmount, scheme.MaximumProjectCost * EmiProjection.MaximumFinancedShareOfCeiling);
             var emiCalc = _emiService.CalculateEmi(new EmiRequest
             {
                 LoanAmount = loanPortion,
                 AnnualInterestRate = scheme.InterestRate,
-                TenureMonths = Math.Min(36, scheme.MaximumTenureMonths),
+                TenureMonths = Math.Min(EmiProjection.MaximumProjectedTenureMonths, scheme.MaximumTenureMonths),
                 MoratoriumMonths = scheme.MoratoriumMonths
             });
 
@@ -152,7 +196,7 @@ public class SchemeMatchingService : ISchemeMatchingService
                 SchemeName = scheme.Name,
                 SchemeType = scheme.SchemeType,
                 MatchScore = totalMatchScore,
-                IsRecommended = totalMatchScore >= 75,
+                IsRecommended = totalMatchScore >= MatchScoreBounds.RecommendedAtOrAbove,
                 PositiveReasons = positiveReasons,
                 NegativeReasons = negativeReasons,
                 MissingDocuments = missingDocs,
@@ -172,7 +216,15 @@ public class SchemeMatchingService : ISchemeMatchingService
             });
         }
 
-        return results.OrderByDescending(r => r.MatchScore).ToList();
+        // Ties broken by scheme identifier in ascending ordinal order (R3.4). Without the
+        // tie-break, OrderByDescending's stability made the result order depend on the
+        // repository's row order, which PostgreSQL does not guarantee — two identical
+        // requests could disagree, and a baseline could never be frozen (R3.6, R3.7).
+        // StringComparer.Ordinal, not the current culture: identifiers are opaque ASCII keys.
+        return results
+            .OrderByDescending(r => r.MatchScore)
+            .ThenBy(r => r.SchemeId, StringComparer.Ordinal)
+            .ToList();
     }
 }
 
