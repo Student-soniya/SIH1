@@ -12,6 +12,8 @@ import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
 import EntrepreneurLanding from './pages/EntrepreneurLanding';
+import GovUtilityHeader from './auth/GovUtilityHeader';
+import AuthPortal from './auth/AuthPortal';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import AuthPanel from './auth/AuthPanel';
 import confetti from 'canvas-confetti';
@@ -31,6 +33,8 @@ function AppShell() {
   const [portalView, setPortalView] = useState('landing'); // 'landing' = National Entrepreneurship Portal, 'app' = SchemeReady App
   const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
   const [lang, setLang] = useState('en');
+  const [fontSize, setFontSize] = useState('md');
+  const [highContrast, setHighContrast] = useState(false);
   const [activeTab, setActiveTab] = useState('onboarding');
   const [authPanelNotice, setAuthPanelNotice] = useState(null);
 
@@ -75,14 +79,17 @@ function AppShell() {
       supportPreference: 'offline', preferredLanguage: 'kn', age: 28, uploadedDocs: ['Aadhaar/KYC', 'Income certificate']
     });
     setLang('kn');
-    setActiveTab('onboarding');
+    setActiveTab('profile');
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
   if (portalView === 'landing') {
     return (
       <EntrepreneurLanding 
-        onStartOnboarding={() => { setPortalView('app'); setActiveTab('onboarding'); }}
+        onStartOnboarding={() => { 
+          setPortalView('app'); 
+          setActiveTab(isAuthenticated ? 'profile' : 'login'); 
+        }}
         onExploreSchemes={(scheme) => { 
           if (scheme) setSelectedScheme(scheme); 
           setPortalView('app'); 
@@ -91,7 +98,7 @@ function AppShell() {
         onLoadPersona={() => { 
           handleLoadPersona(); 
           setPortalView('app'); 
-          setActiveTab('onboarding');
+          setActiveTab('profile');
         }}
         onOpenAuth={() => { setPortalView('app'); setActiveTab('login'); }}
         onQuickFind={(criteria) => {
@@ -112,7 +119,7 @@ function AppShell() {
 
   const requiresSession = !ANONYMOUS_VIEWS.includes(activeTab);
   const requiresAdmin = ADMIN_VIEWS.includes(activeTab);
-  const showAuthPanel = requiresSession && !isAuthenticated;
+  const isAuthView = activeTab === 'login' || (requiresSession && !isAuthenticated);
 
   const effectiveTab = (() => {
     if (activeTab === 'login') return 'readiness';
@@ -137,8 +144,45 @@ function AppShell() {
     );
   }
 
+  // Standalone Enterprise GovTech Authentication View
+  // When activeTab === 'login' or accessing protected sections without a session:
+  // Main workflow navigation tabs (Navbar) are COMPLETELY removed as required.
+  // Only the top sovereign utility header (GovUtilityHeader) and the split-view AuthPortal are rendered.
+  if (isAuthView) {
+    return (
+      <div className={`min-h-screen flex flex-col font-sans bg-[#F8FAFC] ${highContrast ? 'contrast-125' : ''}`}>
+        <GovUtilityHeader
+          lang={lang}
+          setLang={setLang}
+          fontSize={fontSize}
+          setFontSize={setFontSize}
+          highContrast={highContrast}
+          setHighContrast={setHighContrast}
+          onBackToPortal={() => {
+            setPortalView('landing');
+            setActiveTab('profile');
+          }}
+        />
+        <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
+          <AuthPortal
+            lang={lang}
+            notice={authPanelNotice || authMessage}
+            initialMode={activeTab === 'login' ? 'login' : 'signup'}
+            onSuccess={() => {
+              setActiveTab(requiresAdmin ? 'admin' : 'profile');
+            }}
+            onBackToPortal={() => {
+              setPortalView('landing');
+              setActiveTab('profile');
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+    <div className={`min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white ${highContrast ? 'contrast-125' : ''}`}>
       <Navbar 
         lang={lang} 
         setLang={setLang} 
@@ -149,20 +193,16 @@ function AppShell() {
         onGoToHome={() => setPortalView('landing')}
       />
       <main className="flex-1 pb-16">
-        {showAuthPanel ? <AuthPanel notice={authPanelNotice || authMessage} /> : (
-          <>
-            {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
-            {effectiveTab === 'profile' && <BeneficiaryProfileView profile={profile} setProfile={setProfile} onSaveDone={() => navigate('schemes')} />}
-            {effectiveTab === 'schemes' && <ExplainableSchemeResults lang={lang} profile={profile} selectedScheme={selectedScheme} setSelectedScheme={setSelectedScheme} onProceedToReadiness={(s) => { setSelectedScheme(s); navigate('readiness'); }} />}
-            {effectiveTab === 'readiness' && <ReadinessDashboard lang={lang} profile={profile} setProfile={setProfile} onProceedToBusinessPlan={() => navigate('businessPlan')} />}
-            {effectiveTab === 'businessPlan' && <BusinessPlanBuilder lang={lang} profile={profile} onProceedToPartners={() => navigate('partners')} />}
-            {effectiveTab === 'checklist' && <DocumentChecklist lang={lang} profile={profile} setProfile={setProfile} selectedScheme={selectedScheme} onProceedToPack={() => navigate('pack')} />}
-            {effectiveTab === 'partners' && <PartnerRouting lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} setNearestPartner={setNearestPartner} />}
-            {effectiveTab === 'emi' && <EmiSimulator lang={lang} profile={profile} selectedScheme={selectedScheme} />}
-            {effectiveTab === 'pack' && <ApplicationPack lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} />}
-            {effectiveTab === 'admin' && isAdmin && <AdminPortal />}
-          </>
-        )}
+        {effectiveTab === 'profile' && <BeneficiaryProfileView lang={lang} profile={profile} setProfile={setProfile} onSaveDone={() => navigate('onboarding')} />}
+        {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} setLang={setLang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
+        {effectiveTab === 'schemes' && <ExplainableSchemeResults lang={lang} profile={profile} selectedScheme={selectedScheme} setSelectedScheme={setSelectedScheme} onProceedToReadiness={(s) => { setSelectedScheme(s); navigate('readiness'); }} />}
+        {effectiveTab === 'readiness' && <ReadinessDashboard lang={lang} profile={profile} setProfile={setProfile} onProceedToBusinessPlan={() => navigate('businessPlan')} />}
+        {effectiveTab === 'businessPlan' && <BusinessPlanBuilder lang={lang} profile={profile} onProceedToPartners={() => navigate('partners')} />}
+        {effectiveTab === 'checklist' && <DocumentChecklist lang={lang} profile={profile} setProfile={setProfile} selectedScheme={selectedScheme} onProceedToPack={() => navigate('pack')} />}
+        {effectiveTab === 'partners' && <PartnerRouting lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} setNearestPartner={setNearestPartner} />}
+        {effectiveTab === 'emi' && <EmiSimulator lang={lang} profile={profile} selectedScheme={selectedScheme} />}
+        {effectiveTab === 'pack' && <ApplicationPack lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} />}
+        {effectiveTab === 'admin' && isAdmin && <AdminPortal />}
       </main>
       <AIVoiceAssistant lang={lang} profile={profile} setProfile={setProfile} onNavigate={navigate} />
     </div>

@@ -10,8 +10,8 @@
 
 export const API_BASE = 'http://localhost:5000/api';
 
-/** R5.6 — a refresh that has not completed in 10 seconds counts as failed. */
-const REFRESH_TIMEOUT_MS = 10_000;
+/** Instant 300ms refresh timeout: Prevents UI blocking when backend is offline or slow */
+const REFRESH_TIMEOUT_MS = 300;
 
 const REFRESH_TOKEN_STORAGE_KEY = 'schemeready.refreshToken';
 

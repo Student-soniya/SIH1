@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { translations } from '../translations';
 import { 
   Building2, 
@@ -10,30 +10,30 @@ import {
   ExternalLink, 
   Sparkles, 
   CheckCircle2, 
-  ArrowRight,
-  Filter,
-  CheckCheck,
-  Percent
+  ArrowRight, 
+  Filter, 
+  CheckCheck, 
+  Percent 
 } from 'lucide-react';
 import { getPartners } from '../api';
 import IllustrativeBadge from './IllustrativeBadge';
 
-/** The partner's own last-verified date, replacing a hard-coded claim. */
-function formatVerifiedDate(value) {
-  if (!value) return 'not recorded';
+function formatVerifiedDate(value, isHindi) {
+  if (!value) return isHindi ? 'दर्ज नहीं' : 'not recorded';
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return 'not recorded';
-  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  if (Number.isNaN(parsed.getTime())) return isHindi ? 'दर्ज नहीं' : 'not recorded';
+  return parsed.toLocaleDateString(isHindi ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function PartnerRouting({ 
-  lang, 
+  lang = 'en', 
   profile, 
   selectedScheme, 
-  onSelectPartner,
+  onSelectPartner, 
   onProceedToEmi 
 }) {
   const t = translations[lang] || translations.en;
+  const isHindi = lang === 'hi';
   const [partners, setPartners] = useState([]);
   const [selectedState, setSelectedState] = useState(profile.state || 'Karnataka');
   const [selectedDistrict, setSelectedDistrict] = useState(profile.location || 'Bengaluru');
@@ -80,7 +80,7 @@ export default function PartnerRouting({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <Building2 className="w-3.5 h-3.5" />
-            <span>SIH Innovation: Channel Partner Fund Router</span>
+            <span>{isHindi ? 'नवाचार: चैनल पार्टनर फंड एवं कार्यालय राउटर' : 'SIH Innovation: Channel Partner Fund Router'}</span>
           </div>
           <h2 className="text-2xl font-bold text-slate-900">{t.partners.title}</h2>
           <p className="text-sm text-slate-600 mt-1">{t.partners.subtitle}</p>
@@ -113,11 +113,11 @@ export default function PartnerRouting({
             onChange={(e) => setSelectedType(e.target.value)}
             className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-emerald-600"
           >
-            <option value="ALL">All Categories (SCA, PSB, RRB, MFI)</option>
-            <option value="SCA">State Channelizing Agency (SCA)</option>
-            <option value="PSB">Public Sector Bank (PSB)</option>
-            <option value="RRB">Regional Rural Bank (RRB)</option>
-            <option value="NBFC-MFI">Micro Finance Institution (MFI)</option>
+            <option value="ALL">{isHindi ? 'सभी श्रेणियां (SCA, PSB, RRB, MFI)' : 'All Categories (SCA, PSB, RRB, MFI)'}</option>
+            <option value="SCA">{isHindi ? 'राज्य चैनलिंग एजेंसी (SCA)' : 'State Channelizing Agency (SCA)'}</option>
+            <option value="PSB">{isHindi ? 'सार्वजनिक क्षेत्र का बैंक (PSB)' : 'Public Sector Bank (PSB)'}</option>
+            <option value="RRB">{isHindi ? 'क्षेत्रीय ग्रामीण बैंक (RRB)' : 'Regional Rural Bank (RRB)'}</option>
+            <option value="NBFC-MFI">{isHindi ? 'सूक्ष्म वित्त संस्थान (MFI)' : 'Micro Finance Institution (MFI)'}</option>
           </select>
         </div>
       </div>
@@ -127,11 +127,14 @@ export default function PartnerRouting({
         <div className="flex items-center space-x-2">
           <CheckCheck className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>
-            <strong>SIH Fund Utilization &amp; NPA Filter:</strong> Applications are strictly routed to partners verified for active fund disbursals with low NPAs to eliminate offline delays.
+            <strong>{isHindi ? 'फंड उपयोगिता एवं एनपीए फ़िल्टर:' : 'SIH Fund Utilization & NPA Filter:'}</strong>{' '}
+            {isHindi 
+              ? 'आवेदनों को सक्रिय निधि वितरण और कम एनपीए वाले सत्यापित भागीदारों को भेजा जाता है।' 
+              : 'Applications are strictly routed to partners verified for active fund disbursals with low NPAs to eliminate offline delays.'}
           </span>
         </div>
         <span className="bg-emerald-200/70 text-emerald-900 font-bold px-3 py-1 rounded-lg shrink-0">
-          100+ Channel Partners Indexed
+          {isHindi ? '100+ चैनल पार्टनर अनुक्रमित' : '100+ Channel Partners Indexed'}
         </span>
       </div>
 
@@ -169,25 +172,27 @@ export default function PartnerRouting({
                 </p>
               )}
 
-              {/* Exact PRD quote alignment */}
               <div className="bg-white/10 rounded-xl p-3 text-xs text-emerald-200 border border-white/10">
-                <strong>Smart Routing Recommendation:</strong> {recommendedPartner.institutionName}, {recommendedPartner.distanceKm} km away, accepts {recommendedPartner.applicationMode.toLowerCase()} applications, supports the selected scheme, last verified {formatVerifiedDate(recommendedPartner.lastVerifiedDate)}.
+                <strong>{isHindi ? 'स्मार्ट रूटिंग सिफारिश:' : 'Smart Routing Recommendation:'}</strong>{' '}
+                {isHindi 
+                  ? `${recommendedPartner.institutionName}, ${recommendedPartner.distanceKm} किमी दूर, ${recommendedPartner.applicationMode === 'Offline' ? 'ऑफलाइन' : 'ऑनलाइन'} आवेदन स्वीकार करता है, चयनित योजना का समर्थन करता है, अंतिम सत्यापन ${formatVerifiedDate(recommendedPartner.lastVerifiedDate, isHindi)}।`
+                  : `${recommendedPartner.institutionName}, ${recommendedPartner.distanceKm} km away, accepts ${recommendedPartner.applicationMode.toLowerCase()} applications, supports the selected scheme, last verified ${formatVerifiedDate(recommendedPartner.lastVerifiedDate, false)}.`}
               </div>
             </div>
 
             {/* Quick badges & action */}
             <div className="flex flex-col items-start lg:items-end gap-3 shrink-0">
               <div className="text-right">
-                <span className="text-xs text-slate-400 block">Distance from applicant:</span>
+                <span className="text-xs text-slate-400 block">{isHindi ? 'आवेदक से दूरी:' : 'Distance from applicant:'}</span>
                 <span className="text-2xl font-black text-emerald-400">{recommendedPartner.distanceKm} km</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-lg">
-                  {recommendedPartner.fundUtilizationStatus || 'High Fund Availability'}
+                  {isHindi ? 'उच्च निधि उपलब्धता / 0% बकाया' : (recommendedPartner.fundUtilizationStatus || 'High Fund Availability')}
                 </span>
                 <span className="bg-slate-700/60 text-slate-300 text-xs px-2.5 py-1 rounded-lg">
-                  Mode: {recommendedPartner.applicationMode}
+                  {isHindi ? `माध्यम: ${recommendedPartner.applicationMode}` : `Mode: ${recommendedPartner.applicationMode}`}
                 </span>
               </div>
 
@@ -196,9 +201,9 @@ export default function PartnerRouting({
                   if (onSelectPartner) onSelectPartner(recommendedPartner);
                   onProceedToEmi();
                 }}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 shadow-lg shadow-emerald-500/20"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
               >
-                <span>Select &amp; Open Financial Calculator</span>
+                <span>{isHindi ? 'चुनें और वित्तीय कैलकुलेटर खोलें' : 'Select & Open Financial Calculator'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -255,16 +260,20 @@ export default function PartnerRouting({
               <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 text-[11px] space-y-0.5">
                 <div className="text-emerald-800 font-bold flex items-center space-x-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                  <span>{partner.fundUtilizationStatus || 'High Fund Availability / 0% Overdue'}</span>
+                  <span>
+                    {isHindi ? 'उच्च निधि उपलब्धता / 0% बकाया' : (partner.fundUtilizationStatus || 'High Fund Availability / 0% Overdue')}
+                  </span>
                 </div>
                 <div className="text-slate-500 font-mono text-[10px]">
-                  NPA Audit: {partner.npaHealthScore || 'AAA (Low Default Risk)'}
+                  {isHindi ? 'एनपीए ऑडिट:' : 'NPA Audit:'} {partner.npaHealthScore || 'AAA (Low Default Risk)'}
                 </div>
               </div>
 
               {/* Supported Schemes Chips */}
               <div className="pt-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Schemes Processed:</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                  {isHindi ? 'संसाधित योजनाएं:' : 'Schemes Processed:'}
+                </span>
                 <div className="flex flex-wrap gap-1">
                   {partner.supportedSchemes.map((sId, i) => (
                     <span key={i} className="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded font-mono">
@@ -279,9 +288,11 @@ export default function PartnerRouting({
             <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
               <span className="flex items-center space-x-1 text-emerald-700 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Verified Clean Disbursal</span>
+                <span>{isHindi ? 'सत्यापित स्वच्छ वितरण' : 'Verified Clean Disbursal'}</span>
               </span>
-              <span className="font-semibold text-slate-700">{partner.applicationMode} Mode</span>
+              <span className="font-semibold text-slate-700">
+                {partner.applicationMode} {isHindi ? 'मोड' : 'Mode'}
+              </span>
             </div>
           </div>
         ))}
