@@ -32,24 +32,57 @@ export default function ApplicationPack({
   const [handoffResult, setHandoffResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       setLoading(true);
-      const data = await generateApplicationPack(profile);
-      setPack(data);
-      setLoading(false);
+      try {
+        const data = await generateApplicationPack(profile);
+        if (!cancelled) {
+          setPack(data);
+          setError(null);
+        }
+      } catch (err) {
+        // Protected endpoint with no fallback (R5.11): the previously loaded dossier stays on
+        // screen and the banner says so, rather than a fabricated pack being presented as real.
+        if (!cancelled) {
+          setError(err?.status === 401
+            ? 'Your session ended. Please sign in again to generate your application pack.'
+            : 'The application pack could not be generated. Nothing has been submitted.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     load();
+    return () => { cancelled = true; };
   }, [profile]);
 
   const handleSurajHandoff = async () => {
+    if (!pack?.applicationId) {
+      setError('Generate your application pack before requesting the PM-SURAJ handoff.');
+      return;
+    }
+
     setSubmitting(true);
-    const res = await handoffToSuraj(pack?.applicationId || 'APP-2026-BLR-0941');
-    setTimeout(() => {
+    try {
+      const res = await handoffToSuraj(pack.applicationId);
       setHandoffResult(res);
-      setSubmitting(false);
+      setError(null);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
-    }, 1200);
+    } catch (err) {
+      // No fabricated success: the previous code reported a completed transfer even when the
+      // request never reached the server (R5.11).
+      setError(err?.status === 404
+        ? 'That application pack is not available for handoff from this account.'
+        : 'The PM-SURAJ handoff did not complete. Your dossier is unchanged.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleShareWhatsApp = () => {
@@ -58,6 +91,17 @@ export default function ApplicationPack({
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
+
+  if (!pack && error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-2">
+        <p className="text-sm font-semibold text-rose-800">{error}</p>
+        <p className="text-xs text-slate-500">
+          No dossier is shown, because none was generated — nothing has been sent to any agency.
+        </p>
+      </div>
+    );
+  }
 
   if (loading || !pack) {
     return (
@@ -70,6 +114,12 @@ export default function ApplicationPack({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      {error && (
+        <div role="alert" className="no-print bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl p-3">
+          {error}
+        </div>
+      )}
+
       {/* Top Banner Actions (Hidden on Print) */}
       <div className="no-print bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

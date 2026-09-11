@@ -130,25 +130,25 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
 
 ### Phase C — Identity, JWT, roles, CORS (R4) and the frontend auth shell (R5)
 
-- [ ] 9. Backend authentication
-  - [ ] 9.1 Add Identity, refresh-token storage and the three roles
+- [x] 9. Backend authentication
+  - [x] 9.1 Add Identity, refresh-token storage and the three roles
     - New `Auth/ApplicationUser.cs`, `Auth/RefreshToken.cs`, `Auth/OfficerPartnerAssignment.cs`; register them in `SchemeReadyDbContext`
     - `Program.cs`: `AddIdentityCore` with `MaxFailedAccessAttempts = 5`, `DefaultLockoutTimeSpan = 15 min`; seed the `Beneficiary`/`Officer`/`Admin` roles
     - Index `RefreshTokens (UserId) WHERE "RevokedAt" IS NULL`; unique index on `TokenHash`
     - _Requirements: 4.1, 4.9_
 
-  - [ ] 9.2 Implement `AuthController` signup, login, logout and `/me`
+  - [x] 9.2 Implement `AuthController` signup, login, logout and `/me`
     - New `Controllers/AuthController.cs`: signup validates email 5–254 with exactly one `@` and non-empty sides, password 12–128 with ≥1 letter and ≥1 digit, display name 1–100 → 201 + Beneficiary role; duplicate email (case-insensitive) → 409 with no state disclosure; bound violations → 400 naming each unmet rule
     - Login: unknown email and wrong password share one code path and one `const string` 401 message; `IsLockedOut` maps to 423 **before** password verification; success resets the counter and returns exactly one access + one refresh token
     - Logout revokes every refresh token for the user → 204; no response body ever contains a password or hash
     - _Requirements: 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.13_
 
-  - [ ] 9.3 Implement JWT issuance and validation
+  - [x] 9.3 Implement JWT issuance and validation
     - New `Auth/TokenService.cs`: HS256, 15-minute lifetime, claims `sub`, `name`, `role[]`, and `partner_id` projected from `OfficerPartnerAssignments` for officers
     - `Program.cs` `AddJwtBearer`: validate issuer, audience, signature, expiry with `ClockSkew = TimeSpan.FromSeconds(60)`
     - _Requirements: 4.8, 4.20_
 
-  - [ ] 9.4 Implement refresh rotation with replay detection
+  - [x] 9.4 Implement refresh rotation with replay detection
     - `Controllers/AuthController.cs` refresh: SHA-256 the presented token; inside one transaction `SELECT ... FOR UPDATE`; missing/expired → 401; already-revoked → revoke the whole family, write a `SuspectedTokenReplay` audit event, 401; valid → conditional `UPDATE ... WHERE RevokedAt IS NULL` (rows-affected must be 1), insert the replacement hash, commit, then return the new pair
     - Store only hashes; return plaintext exactly once
     - _Requirements: 4.10, 4.11, 4.12_
@@ -162,19 +162,19 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
     - **Property 13** signup accepts exactly the valid space (R4.1–4.4); **Property 14** model-based lockout against a reference model with byte-identical 401 bodies (R4.5–4.7); **Property 16** endpoint × principal matrix enumerated from `IApiDescriptionGroupCollectionProvider` so an unattributed new endpoint fails (R4.14–4.16, 4.20, 4.21)
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.14, 4.15, 4.16, 4.20, 4.21**
 
-- [ ] 10. Authorization gates, ownership and CORS
-  - [ ] 10.1 Apply role attributes to every existing endpoint
+- [x] 10. Authorization gates, ownership and CORS
+  - [x] 10.1 Apply role attributes to every existing endpoint
     - `Controllers/Controllers.cs`: `[Authorize(Roles="Admin")]` on `POST /api/admin/schemes`, `POST /api/admin/partners`, `POST /api/admin/verify-partner/{id}`, `GET /api/admin/stats`; `[Authorize(Roles="Beneficiary,Officer,Admin")]` on application-pack generate/get/handoff and `POST /api/readiness/calculate`; `[AllowAnonymous]` on the eight anonymous endpoints; routes, verbs and body schemas unchanged
     - 403 for a valid token lacking the role, with one audit event and no state change
     - _Requirements: 4.14, 4.15, 4.16, 4.21_
 
-  - [ ] 10.2 Implement pack ownership and officer-partner access
+  - [x] 10.2 Implement pack ownership and officer-partner access
     - New `Services/ApplicationPackAccessService.cs`: grant when Admin, or owner, or Officer whose `partner_id` claim equals `pack.AssignedPartnerId` (read only); every denial and every absent target returns 404 with an empty body
     - Set `OwnerUserId` from the authenticated requester and `AssignedPartnerId` from the routed `nearestPartner.Id` at pack generation
     - Fix `ApplicationPackController.HandoffToSuraj` to call `SaveApplicationAsync` instead of mutating a list element
     - _Requirements: 4.17, 4.18, 4.19_
 
-  - [ ] 10.3 Replace `AllowAnyOrigin` with an explicit origin list
+  - [x] 10.3 Replace `AllowAnyOrigin` with an explicit origin list
     - `Program.cs`: CORS policy from `SCHEMEREADY_CORS_ORIGINS`, allowing the `Authorization` header and credentials, methods restricted to GET/POST/PUT/DELETE/OPTIONS; absent or empty list fails startup with the key name logged
     - _Requirements: 4.22, 4.23, 4.24_
 
@@ -182,19 +182,19 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
     - **Property 17** ownership decides access identically for packs and documents, 404 on every denial (R4.17–4.19, 6.13–6.16, 6.18); **Property 18** `Access-Control-Allow-Origin` present iff the origin is exactly configured, including scheme/port/slash/subdomain near-misses (R4.22, 4.23)
     - **Validates: Requirements 4.17, 4.18, 4.19, 4.22, 4.23**
 
-- [ ] 11. Frontend auth shell
-  - [ ] 11.1 Build the auth context and token fetch wrapper
+- [x] 11. Frontend auth shell
+  - [x] 11.1 Build the auth context and token fetch wrapper
     - New `src/auth/AuthContext.jsx`: access token in a `useRef` (never `localStorage`), refresh token in `localStorage`; exposes `user`, `roles`, `login`, `signup`, `logout`; calls refresh exactly once on load when a stored refresh token exists, before rendering any authenticated view
     - New `src/auth/tokenFetch.js`: module-level `let refreshPromise` single-flight shared by all 401s, `AbortController` at 10 s, exactly one retry per original request, no second refresh; attaches `Authorization: Bearer` only for protected endpoints
     - On a 401 from login or refresh: discard both tokens, show the login form with a message distinguishing bad credentials from an ended session
     - _Requirements: 5.3, 5.4, 5.5, 5.6, 5.7_
 
-  - [ ] 11.2 Build the login and signup forms
+  - [x] 11.2 Build the login and signup forms
     - New `src/auth/LoginForm.jsx`, `src/auth/SignupForm.jsx`: client-side validation for email ≤254 with exactly one `@` and non-empty sides, password 8–128, matching confirmation, display name 1–60; on failure name the field, send no request, retain every value except the password fields
     - Logout control clears both tokens regardless of the endpoint outcome and shows the login form
     - _Requirements: 5.1, 5.2, 5.10_
 
-  - [ ] 11.3 Gate navigation by session and role, and delete protected-endpoint fallbacks
+  - [x] 11.3 Gate navigation by session and role, and delete protected-endpoint fallbacks
     - `src/App.jsx`: wrap in `AuthProvider`; unauthenticated navigation limited to onboarding, scheme matcher, EMI simulator, business plan — any other target renders the login form with no protected request; admin tab shown only when `roles.includes('Admin')`, direct navigation otherwise falls back to the readiness dashboard
     - `src/api.js`: delete the fabricated fallbacks in `getReadiness`, `generateApplicationPack`, `handoffToSuraj`, `getAdminStats` — these now `throw ApiError`; components keep last-known state and show an error banner
     - _Requirements: 5.8, 5.9, 5.11_
@@ -209,32 +209,32 @@ Seven independently shippable phases in the design's merge order (A→G, plus R1
 
 ### Phase D — Secure document upload and retrieval (R6)
 
-- [ ] 13. Document service
-  - [ ] 13.1 Add the `StoredDocument` entity and storage layout
+- [x] 13. Document service
+  - [x] 13.1 Add the `StoredDocument` entity and storage layout
     - New `Models/StoredDocument.cs` + `SchemeReadyDbContext` mapping: `Id` uuid PK, `OwnerUserId`, `ApplicationPackId?`, `DocumentKey`, `OriginalFileName` ≤255, `StoredFileName`, `ContentType`, `ByteLength`, `Sha256`, `UploadedAt`, `DeletedAt?`
     - Partial unique index `("OwnerUserId","DocumentKey") WHERE "DeletedAt" IS NULL`
     - Storage root from `SCHEMEREADY_DOCUMENT_ROOT`, with `documents/{ownerUserId}/` and `tmp/` subdirectories on the same volume, outside any static-content tree
     - _Requirements: 6.9, 6.11_
 
-  - [ ] 13.2 Implement validation, storage and the upload endpoint
+  - [x] 13.2 Implement validation, storage and the upload endpoint
     - New `Services/DocumentService.cs`: short-circuiting validation in the fixed order extension → content-type → magic bytes → length, with the 400 message naming the **first** failed check; extensions `.pdf/.jpg/.jpeg/.png` case-insensitive; content types `application/pdf`/`image/jpeg`/`image/png` ignoring `;` parameters; signatures `25 50 44 46`, `FF D8 FF`, `89 50 4E 47 0D 0A 1A 0A` matched against the declared type; length 1–5,242,880
     - Buffer to `tmp/{guid}.part`, validate, then `File.Move` — a rejection leaves no partial artefact; stored filename is 32 hex chars from `RandomNumberGenerator` plus the validated extension, independent of client input; client filename kept as metadata truncated to 255 with separators, drive letters and control chars stripped
     - New `Controllers/DocumentsController.cs`: `POST /api/documents` → 201 with document id, key and recalculated score; missing/multiple file parts or a bad document key → 400 naming the field with nothing written
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.20_
 
-  - [ ] 13.3 Implement replacement and readiness recalculation
+  - [x] 13.3 Implement replacement and readiness recalculation
     - Replacement: mark the previous live row for that `(owner, key)` `DeletedAt = now()` and delete its bytes inside the same transaction as the new insert
     - Project live documents onto the profile shape (`identity` → `UploadedDocs`, `caste_cert` → `HasCasteCertificate`, `income_cert` → `HasIncomeCertificate`, `quotation` → `UploadedDocs`) and call the **unmodified** `IReadinessService` for the score in the 201 body
     - _Requirements: 6.10, 6.11_
 
-  - [ ] 13.4 Implement retrieval, listing, deletion and the retained legacy route
+  - [x] 13.4 Implement retrieval, listing, deletion and the retained legacy route
     - `GET /api/documents/{id}` identified solely by database id — no parameter conveys a filename or path; `Content-Disposition: attachment; filename="<sanitised>"` and `X-Content-Type-Options: nosniff` on every response; `GET /api/documents/mine`; `DELETE /api/documents/{id}` removes bytes, marks deleted, 204
     - Ownership/officer checks via `ApplicationPackAccessService`; absent, soft-deleted or foreign targets → 404 disclosing neither existence nor owner, with nothing changed; no token or an invalid token → 401 with nothing served, stored or deleted
     - Rewrite `ReadinessController.UploadDocument` to delegate to `DocumentService`, deleting the `docKey == "caste_cert" || true` expression and the fabricated profile while keeping its route, verb and response schema
     - One audit event per operation, its outcome distinguishing accepted upload, rejected upload, retrieval and deletion
     - _Requirements: 6.12, 6.13, 6.14, 6.15, 6.16, 6.17, 6.18, 6.19_
 
-  - [ ] 13.5 Replace the simulated upload in the readiness dashboard
+  - [x] 13.5 Replace the simulated upload in the readiness dashboard
     - `src/components/ReadinessDashboard.jsx`: replace `handleSimulatedUpload` with a real `<input type="file">` posting to `/api/documents`, taking the score from the 201 body and rendering `{doc.originalFileName}` as a text child
     - _Requirements: 6.8, 6.10_
 

@@ -325,3 +325,31 @@ Consequences to keep in mind while reviewing Phase A:
 
 This document is extended in each later phase as new commands, packages and environment
 variables arrive.
+
+
+## Provisioning the first Admin account
+
+`IdentitySeeder` creates the `Beneficiary`, `Officer` and `Admin` roles on every start, but seeds
+no user: a checked-in administrator credential would be a shipped secret. Create the first admin
+against a running API and a psql session on the same database:
+
+1. `POST /api/auth/signup` with the admin's email, a 12–128 character password containing at least
+   one letter and one digit, and a display name. The account is created with the `Beneficiary`
+   role. Success signal: HTTP 201 with a `userId`.
+2. Grant the role in SQL, from the repository root:
+
+   ```sh
+   psql "$SCHEMEREADY_DB_CONNECTION_PSQL" -c '
+     INSERT INTO "AspNetUserRoles" ("UserId", "RoleId")
+     SELECT u."Id", r."Id"
+     FROM "AspNetUsers" u, "AspNetRoles" r
+     WHERE u."NormalizedEmail" = upper(:'"'"'email'"'"') AND r."Name" = '"'"'Admin'"'"';'
+   ```
+
+   Success signal: `INSERT 0 1`.
+3. Log in again. Roles are read at token issue, so the new access token carries `Admin` — an older
+   token does not, and expires within 15 minutes.
+
+An `Officer` account additionally needs one row in `OfficerPartnerAssignments` mapping its user id
+to a `ChannelPartners.Id`; that partner id becomes the `partner_id` claim and is what grants the
+officer read access to dossiers assigned to that partner.

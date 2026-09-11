@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import ConversationalOnboarding from './components/ConversationalOnboarding';
 import ExplainableSchemeResults from './components/ExplainableSchemeResults';
@@ -9,12 +9,34 @@ import PartnerRouting from './components/PartnerRouting';
 import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
-import { translations } from './translations';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import AuthPanel from './auth/AuthPanel';
 import confetti from 'canvas-confetti';
 
+/**
+ * Views reachable without a session (R5.8). Everything else — readiness, checklist, partners,
+ * application pack, admin — is replaced by the login form, and crucially the replacement happens
+ * *before* the view mounts, so no protected request is ever issued for a view the user may not see.
+ */
+const ANONYMOUS_VIEWS = ['onboarding', 'schemes', 'emi', 'businessPlan'];
+
+/** R5.9 — the admin portal needs the Admin role, not merely a session. */
+const ADMIN_VIEWS = ['admin'];
+
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
+}
+
+function AppShell() {
+  const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
+
   const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('onboarding');
+  const [authPanelNotice, setAuthPanelNotice] = useState(null);
 
   // Realistic default profile (Ravi Kumar - Persona from PRD)
   const [profile, setProfile] = useState({
@@ -86,6 +108,46 @@ export default function App() {
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
+  /**
+   * Resolves the view actually rendered. Two substitutions, both required:
+   *
+   *  * no session and a protected target → the login form (R5.8);
+   *  * a session without Admin and an admin target → the readiness dashboard (R5.9).
+   */
+  const requiresSession = !ANONYMOUS_VIEWS.includes(activeTab);
+  const requiresAdmin = ADMIN_VIEWS.includes(activeTab);
+
+  const showAuthPanel = requiresSession && !isAuthenticated;
+
+  const effectiveTab = (() => {
+    // 'login' is the target of the header's sign-in control; once a session exists it has
+    // nothing to show, so it lands on the readiness dashboard.
+    if (activeTab === 'login') return 'readiness';
+    if (requiresAdmin && isAuthenticated && !isAdmin) return 'readiness';
+    return activeTab;
+  })();
+
+  const navigate = (tab) => {
+    if (tab === 'login' || ANONYMOUS_VIEWS.includes(tab) || isAuthenticated) {
+      setAuthPanelNotice(null);
+    } else {
+      setAuthPanelNotice('Please sign in to open this section — your documents and dossier are private to your account.');
+    }
+    setActiveTab(tab);
+  };
+
+  // R5.4 — nothing that needs a session renders until the single refresh call has resolved.
+  if (restoring) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-600">Restoring your session…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
       {/* Navigation Header */}
@@ -93,92 +155,98 @@ export default function App() {
         lang={lang}
         setLang={setLang}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={navigate}
         onLoadPersona={handleLoadPersona}
         readinessScore={readinessScore}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 pb-16">
-        {activeTab === 'onboarding' && (
-          <ConversationalOnboarding
-            lang={lang}
-            profile={profile}
-            setProfile={setProfile}
-            onProceedToMatching={() => setActiveTab('schemes')}
-          />
-        )}
+        {showAuthPanel ? (
+          <AuthPanel notice={authPanelNotice || authMessage} />
+        ) : (
+          <>
+            {effectiveTab === 'onboarding' && (
+              <ConversationalOnboarding
+                lang={lang}
+                profile={profile}
+                setProfile={setProfile}
+                onProceedToMatching={() => navigate('schemes')}
+              />
+            )}
 
-        {activeTab === 'schemes' && (
-          <ExplainableSchemeResults
-            lang={lang}
-            profile={profile}
-            selectedScheme={selectedScheme}
-            setSelectedScheme={setSelectedScheme}
-            onProceedToReadiness={(s) => {
-              setSelectedScheme(s);
-              setActiveTab('readiness');
-            }}
-          />
-        )}
+            {effectiveTab === 'schemes' && (
+              <ExplainableSchemeResults
+                lang={lang}
+                profile={profile}
+                selectedScheme={selectedScheme}
+                setSelectedScheme={setSelectedScheme}
+                onProceedToReadiness={(s) => {
+                  setSelectedScheme(s);
+                  navigate('readiness');
+                }}
+              />
+            )}
 
-        {activeTab === 'readiness' && (
-          <ReadinessDashboard
-            lang={lang}
-            profile={profile}
-            setProfile={setProfile}
-            onProceedToBusinessPlan={() => setActiveTab('businessPlan')}
-          />
-        )}
+            {effectiveTab === 'readiness' && (
+              <ReadinessDashboard
+                lang={lang}
+                profile={profile}
+                setProfile={setProfile}
+                onProceedToBusinessPlan={() => navigate('businessPlan')}
+              />
+            )}
 
-        {activeTab === 'businessPlan' && (
-          <BusinessPlanBuilder
-            lang={lang}
-            profile={profile}
-            onProceedToPartners={() => setActiveTab('partners')}
-          />
-        )}
+            {effectiveTab === 'businessPlan' && (
+              <BusinessPlanBuilder
+                lang={lang}
+                profile={profile}
+                onProceedToPartners={() => navigate('partners')}
+              />
+            )}
 
-        {activeTab === 'checklist' && (
-          <DocumentChecklist
-            lang={lang}
-            profile={profile}
-            setProfile={setProfile}
-            selectedScheme={selectedScheme}
-            onProceedToPack={() => setActiveTab('pack')}
-          />
-        )}
+            {effectiveTab === 'checklist' && (
+              <DocumentChecklist
+                lang={lang}
+                profile={profile}
+                setProfile={setProfile}
+                selectedScheme={selectedScheme}
+                onProceedToPack={() => navigate('pack')}
+              />
+            )}
 
-        {activeTab === 'partners' && (
-          <PartnerRouting
-            lang={lang}
-            profile={profile}
-            selectedScheme={selectedScheme}
-            onSelectPartner={(p) => setNearestPartner(p)}
-            onProceedToEmi={() => setActiveTab('emi')}
-          />
-        )}
+            {effectiveTab === 'partners' && (
+              <PartnerRouting
+                lang={lang}
+                profile={profile}
+                selectedScheme={selectedScheme}
+                onSelectPartner={(p) => setNearestPartner(p)}
+                onProceedToEmi={() => navigate('emi')}
+              />
+            )}
 
-        {activeTab === 'emi' && (
-          <EmiSimulator
-            lang={lang}
-            profile={profile}
-            selectedScheme={selectedScheme}
-            onProceedToPack={() => setActiveTab('pack')}
-          />
-        )}
+            {effectiveTab === 'emi' && (
+              <EmiSimulator
+                lang={lang}
+                profile={profile}
+                selectedScheme={selectedScheme}
+                onProceedToPack={() => navigate('pack')}
+              />
+            )}
 
-        {activeTab === 'pack' && (
-          <ApplicationPack
-            lang={lang}
-            profile={profile}
-            selectedScheme={selectedScheme}
-            nearestPartner={nearestPartner}
-          />
-        )}
+            {effectiveTab === 'pack' && (
+              <ApplicationPack
+                lang={lang}
+                profile={profile}
+                selectedScheme={selectedScheme}
+                nearestPartner={nearestPartner}
+              />
+            )}
 
-        {activeTab === 'admin' && (
-          <AdminPortal lang={lang} />
+            {effectiveTab === 'admin' && isAdmin && (
+              <AdminPortal lang={lang} />
+            )}
+          </>
         )}
       </main>
 
@@ -200,15 +268,19 @@ export default function App() {
             >
               ASP.NET Core Swagger Docs
             </a>
+            {isAdmin && (
+              <>
+                <span>•</span>
+                <button
+                  onClick={() => navigate('admin')}
+                  className="text-slate-600 hover:text-slate-900 font-medium"
+                >
+                  Admin Console
+                </button>
+              </>
+            )}
             <span>•</span>
-            <button
-              onClick={() => setActiveTab('admin')}
-              className="text-slate-600 hover:text-slate-900 font-medium"
-            >
-              Admin Console
-            </button>
-            <span>•</span>
-            <span>Local Database: MS SQL Server Ready</span>
+            <span>Local Database: PostgreSQL 16</span>
           </div>
         </div>
       </footer>

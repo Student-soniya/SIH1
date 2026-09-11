@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using SchemeReady.Api.Auth;
 using SchemeReady.Api.Data;
 using SchemeReady.Api.Services;
 
@@ -11,14 +15,40 @@ bool seedOnly = args.Contains("--seed-only");
 // Add Controllers
 builder.Services.AddControllers();
 
-// Configure CORS for React UI
+// ---------------------------------------------------------------------- CORS
+//
+// R4.22–R4.24. The previous policy was AllowAnyOrigin + AllowAnyHeader + AllowAnyMethod,
+// which cannot coexist with credentialed requests and admitted every origin on the internet.
+// The replacement takes an explicit comma-separated list from configuration and fails startup
+// when it is absent or empty, logging the key name (R4.24) — a deployment cannot accidentally
+// fall back to a permissive policy.
+const string CorsOriginsKey = "SCHEMEREADY_CORS_ORIGINS";
+const string CorsPolicyName = "SchemeReadyOrigins";
+
+var configuredOrigins = (builder.Configuration[CorsOriginsKey] ?? string.Empty)
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    .Distinct(StringComparer.Ordinal)
+    .ToArray();
+
+if (configuredOrigins.Length == 0)
+{
+    // Logged before the host is built, so the message survives even though no logger is wired yet.
+    Console.Error.WriteLine(
+        $"FATAL: required configuration {CorsOriginsKey} is absent or empty. " +
+        "Supply a comma-separated list of permitted origins (for example " +
+        "\"http://localhost:5173,https://schemeready.example.gov.in\"). The API will not start.");
+
+    throw new InvalidOperationException($"Missing required configuration: {CorsOriginsKey}.");
+}
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins(configuredOrigins)                 // exact origins only — no wildcard
+              .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+              .WithHeaders("Authorization", "Content-Type", "Accept")
+              .AllowCredentials();
     });
 });
 
@@ -31,6 +61,16 @@ builder.Services.AddSwaggerGen(c =>
         Title = "SchemeReady (Udyam Saarthi AI) API",
         Version = "v1",
         Description = "GovTech Platform API for Beneficiary Onboarding, Explainable Scheme Matching, Application Readiness Scoring, AI Business Plan Generation, Channel Partner Routing, and PM-SURAJ Handoff."
+    });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Paste the access token returned by POST /api/auth/login."
     });
 });
 
@@ -47,13 +87,91 @@ builder.Services.AddDbContext<SchemeReadyDbContext>(options =>
         npgsql.CommandTimeout(30);
     }));
 
+// ------------------------------------------------------------------ Identity
+//
+// AddIdentityCore, not AddIdentity: this API issues bearer tokens and has no cookie sign-in
+// surface, so the cookie handlers AddIdentity registers would be dead weight — and a second
+// authentication scheme able to authenticate a request is exactly the kind of thing that
+// quietly widens an authorization surface.
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    // R4.7 — five failed attempts, then a 15-minute lock. The login handler maps IsLockedOut
+    // to 423 *before* verifying the password, so a correct password during lockout still gets 423.
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.AllowedForNewUsers = true;
+
+    // R4.2's credential space exactly: 12–128 characters with at least one letter and at least
+    // one digit. Identity has no "at least one letter" switch, and its defaults would also
+    // demand an uppercase character and a symbol — rules R4.2 does not state — so the
+    // character-class requirements are turned off here and the full rule set is enforced by
+    // AuthController.ValidateSignup, which can also name every unmet rule at once (R4.4).
+    options.Password.RequiredLength = 12;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredUniqueChars = 1;
+
+    options.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<SchemeReadyDbContext>()
+.AddDefaultTokenProviders();
+
+// ----------------------------------------------------------- JWT bearer auth
+var jwtSettings = JwtSettings.LoadOrThrow(builder.Configuration);
+builder.Services.AddSingleton(jwtSettings);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Inbound claim mapping renames "sub" to the long ClaimTypes.NameIdentifier URI and
+        // "role" to the long role URI. Disabling it keeps the claim types identical on both
+        // sides of the wire, which is what PrincipalExtensions reads.
+        options.MapInboundClaims = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = jwtSettings.SecurityKey(),
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+            ValidateLifetime = true,
+
+            // R4.20 — the default is five minutes, which would honour an expired token for
+            // nearly five minutes longer than the 60-second allowance permits.
+            ClockSkew = JwtSettings.ClockSkew,
+
+            NameClaimType = PrincipalExtensions.NameClaimType,
+            RoleClaimType = PrincipalExtensions.RoleClaimType
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// R4.21 — one audit event per role-based 403, written from the one seam that sees the decision.
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.Policy.IAuthorizationMiddlewareResultHandler,
+                              AuditingAuthorizationResultHandler>();
+
+// ------------------------------------------------------------ document storage
+// Resolved once, at startup, so a missing root fails the process rather than the first upload.
+builder.Services.AddSingleton(DocumentStorage.FromConfigurationOrThrow(builder.Configuration));
+
 // Register Core Domain Services & Repository
 // Scoped, not Singleton: the repository now shares the scoped DbContext lifetime.
 builder.Services.AddScoped<ISchemeRepository, EfSchemeRepository>();
 builder.Services.AddScoped<DatabaseSeeder>();
+builder.Services.AddScoped<IdentitySeeder>();
 // Singleton: it resolves its own scope per write, so it never enlists in a request's
 // transaction (design C9).
 builder.Services.AddSingleton<IAuditWriter, AuditWriter>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IApplicationPackAccessService, ApplicationPackAccessService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
 builder.Services.AddScoped<ISchemeMatchingService, SchemeMatchingService>();
 builder.Services.AddScoped<IBusinessPlanService, BusinessPlanService>();
@@ -71,6 +189,10 @@ using (var scope = app.Services.CreateScope())
 
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
     await seeder.SeedAsync();
+
+    // The three roles of R4.14–R4.16. No user account is seeded — see IdentitySeeder.
+    var identitySeeder = scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
+    await identitySeeder.SeedRolesAsync();
 }
 
 if (seedOnly)
@@ -78,6 +200,8 @@ if (seedOnly)
     app.Logger.LogInformation("--seed-only: migrations applied and seed complete. Exiting without serving requests.");
     return;
 }
+
+app.Logger.LogInformation("CORS policy admits {Count} configured origin(s).", configuredOrigins.Length);
 
 // Enable Swagger UI always for development & judging demo
 app.UseSwagger();
@@ -87,9 +211,14 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseCors("AllowAll");
+app.UseCors(CorsPolicyName);
 
 app.UseRouting();
+
+// Order matters: authentication populates HttpContext.User, authorization then evaluates the
+// [Authorize] attributes against it.
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

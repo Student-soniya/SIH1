@@ -21,19 +21,48 @@ export default function AdminPortal({ lang }) {
   const [loading, setLoading] = useState(true);
   const [verifiedMap, setVerifiedMap] = useState({});
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchStats() {
       setLoading(true);
-      const data = await getAdminStats();
-      setStats(data);
-      setLoading(false);
+      try {
+        const data = await getAdminStats();
+        if (!cancelled) {
+          setStats(data);
+          setError(null);
+        }
+      } catch (err) {
+        // Admin_Role only (R4.14). The deleted fallback reported 148 fictional applications;
+        // an unreachable or forbidden endpoint now says so instead (R5.11).
+        if (!cancelled) {
+          setError(err?.status === 403
+            ? 'This console requires an administrator account.'
+            : 'Administrative statistics are unavailable right now.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     fetchStats();
+    return () => { cancelled = true; };
   }, []);
 
   const handleVerify = (name) => {
     setVerifiedMap(prev => ({ ...prev, [name]: true }));
   };
+
+  if (!stats && error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-2">
+        <p className="text-sm font-semibold text-rose-800">{error}</p>
+        <p className="text-xs text-slate-500">No figures are shown, because none could be retrieved.</p>
+      </div>
+    );
+  }
 
   if (loading || !stats) {
     return (
@@ -46,6 +75,12 @@ export default function AdminPortal({ lang }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      {error && (
+        <div role="alert" className="bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl p-3">
+          {error} The figures below are the last ones successfully retrieved.
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

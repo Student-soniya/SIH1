@@ -11,12 +11,19 @@ import {
   ShieldCheck, 
   CheckCircle2,
   Compass,
-  Layers
+  Layers,
+  LogIn,
+  LogOut,
+  UserCircle2
 } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadPersona, readinessScore = 72 }) {
   const t = translations[lang] || translations.en;
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
 
+  // R5.9 — the admin entry is present only for an Admin session, so a non-admin never sees a
+  // control that would only ever be refused.
   const navItems = [
     { id: 'onboarding', label: t.tabs.onboarding, icon: Sparkles },
     { id: 'schemes', label: t.tabs.schemes, icon: Compass },
@@ -26,8 +33,13 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
     { id: 'partners', label: t.tabs.partners, icon: Building2 },
     { id: 'emi', label: t.tabs.emi, icon: Calculator },
     { id: 'pack', label: t.tabs.applicationPack, icon: ShieldCheck, highlight: true },
-    { id: 'admin', label: t.tabs.admin, icon: Layers }
+    ...(isAdmin ? [{ id: 'admin', label: t.tabs.admin, icon: Layers }] : [])
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    setActiveTab('onboarding');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
@@ -77,8 +89,11 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
           </div>
         </div>
 
-        {/* Demo Persona Action */}
-        <div className="flex items-center space-x-3">
+        {/* Demo persona, then the session control in the top-right corner.
+            The sign-in button is the highest-contrast element in the header — solid amber on
+            white, where every other header control is a muted emerald outline — because it is
+            the one action an unrecognised visitor needs to find immediately. */}
+        <div className="flex items-center space-x-3 ml-auto">
           <button
             onClick={onLoadPersona}
             className="flex items-center space-x-2 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-lg transition-all shadow-xs active:scale-95"
@@ -87,6 +102,31 @@ export default function Navbar({ lang, setLang, activeTab, setActiveTab, onLoadP
             <UserCheck className="w-4 h-4 text-emerald-600" />
             <span>{t.demoPersonaBtn}</span>
           </button>
+
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-2">
+              <span className="hidden sm:flex items-center space-x-1.5 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg">
+                <UserCircle2 className="w-4 h-4 text-slate-500" />
+                <span>{user?.displayName}</span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 px-3.5 py-2 rounded-lg transition-all active:scale-95"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setActiveTab('login')}
+              aria-label="Sign in to SchemeReady"
+              className="flex items-center space-x-2 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/30 ring-2 ring-amber-300/60 active:scale-95"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Sign in</span>
+            </button>
+          )}
         </div>
       </div>
 
