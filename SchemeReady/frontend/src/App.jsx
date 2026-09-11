@@ -147,7 +147,7 @@ function AppShell() {
   // Only the top sovereign utility header (GovUtilityHeader) and the split-view AuthPortal are rendered.
   if (isAuthView) {
     return (
-      <div className={`min-h-screen flex flex-col font-sans bg-[#F8FAFC] ${highContrast ? 'contrast-125' : ''} ${fontSize === 'sm' ? 'text-sm' : fontSize === 'lg' ? 'text-lg' : 'text-base'}`}>
+      <div className={`min-h-screen flex flex-col font-sans bg-[#F8FAFC] ${highContrast ? 'contrast-125' : ''}`}>
         <GovUtilityHeader
           lang={lang}
           setLang={setLang}
@@ -160,7 +160,7 @@ function AppShell() {
             setActiveTab('onboarding');
           }}
         />
-        <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
           <AuthPortal
             notice={authPanelNotice || authMessage}
             initialMode={activeTab === 'login' ? 'login' : 'signup'}
@@ -180,7 +180,7 @@ function AppShell() {
   }
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white ${highContrast ? 'contrast-125' : ''} ${fontSize === 'sm' ? 'text-sm' : fontSize === 'lg' ? 'text-lg' : 'text-base'}`}>
+    <div className={`min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white ${highContrast ? 'contrast-125' : ''}`}>
       <Navbar 
         lang={lang} 
         setLang={setLang} 

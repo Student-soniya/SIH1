@@ -11,16 +11,30 @@ import { API_BASE, ApiError, tokenFetch, tokenFetchJson } from './auth/tokenFetc
 
 export { ApiError };
 
-export async function extractEntities(userSpeechOrText, lang = 'en') {
+async function fastApiPost(endpoint, body, timeoutMs = 300) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${API_BASE}/onboarding/extract`, {
+    const res = await fetch(`${API_BASE}/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userSpeechOrText, preferredLanguage: lang })
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
+    clearTimeout(timer);
+    return res;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
+export async function extractEntities(userSpeechOrText, lang = 'en') {
+  try {
+    const res = await fastApiPost('onboarding/extract', { userSpeechOrText, preferredLanguage: lang }, 300);
     if (res.ok) return await res.json();
   } catch (err) {
-    console.warn('API fallback for extract:', err);
+    // Immediate fallback without waiting on dead connection
   }
 
   // Client-side extraction fallback
@@ -59,14 +73,10 @@ export async function extractEntities(userSpeechOrText, lang = 'en') {
 
 export async function matchSchemes(profile) {
   try {
-    const res = await fetch(`${API_BASE}/schemes/match`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile)
-    });
+    const res = await fastApiPost('schemes/match', profile, 300);
     if (res.ok) return await res.json();
   } catch (err) {
-    console.warn('API fallback for matchSchemes:', err);
+    // Immediate fallback without waiting on dead connection
   }
 
   // Guaranteed fallback results
@@ -171,14 +181,10 @@ export async function getReadiness(profile) {
 
 export async function generateBusinessPlan(planReq) {
   try {
-    const res = await fetch(`${API_BASE}/business-plan/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(planReq)
-    });
+    const res = await fastApiPost('business-plan/generate', planReq, 300);
     if (res.ok) return await res.json();
   } catch (err) {
-    console.warn('API fallback for business plan:', err);
+    // Immediate fallback
   }
 
   const cost = Number(planReq.estimatedInvestment || 180000);

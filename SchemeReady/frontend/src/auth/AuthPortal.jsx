@@ -124,28 +124,20 @@ export default function AuthPortal({
     setTimeout(() => setIsShaking(false), 450);
   };
 
-  // Demo Beneficiary Login shortcut for evaluators
+  // Demo Beneficiary Login shortcut for evaluators - Instant 1-Click
   const handleLoadDemoUser = async (demoRole = 'beneficiary') => {
     setFormMessage(null);
     setServerErrors([]);
-    if (demoRole === 'beneficiary') {
-      setEmail('ravi.kumar@schemeready.gov.in');
-      setPassword('Ravi@2026Secure!');
-      setSubmitting(true);
-      const res = await login('ravi.kumar@schemeready.gov.in', 'Ravi@2026Secure!');
-      setSubmitting(false);
-      if (!res.ok) {
-        setFormMessage('Demo session initialized: Welcome, Ravi Kumar (Beneficiary)');
-      }
-    } else {
-      setEmail('officer.nagaraj@schemeready.gov.in');
-      setPassword('Officer@2026SCA!');
-      setSubmitting(true);
-      const res = await login('officer.nagaraj@schemeready.gov.in', 'Officer@2026SCA!');
-      setSubmitting(false);
-      if (!res.ok) {
-        setFormMessage('Demo session initialized: Welcome, District Manager (SCA Officer)');
-      }
+    setSubmitting(true);
+    const demoEmail = demoRole === 'beneficiary' ? 'ravi.kumar@schemeready.gov.in' : 'officer.nagaraj@schemeready.gov.in';
+    const demoPassword = demoRole === 'beneficiary' ? 'Ravi@2026Secure!' : 'Officer@2026SCA!';
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    
+    const res = await login(demoEmail, demoPassword);
+    setSubmitting(false);
+    if (res.ok && onSuccess) {
+      onSuccess();
     }
   };
 
@@ -221,17 +213,17 @@ export default function AuthPortal({
   const activeAlert = formMessage || authMessage || notice;
 
   return (
-    <div className="min-h-[calc(100vh-45px)] w-full bg-[#F8FAFC] flex items-center justify-center p-4 sm:p-6 lg:p-10 font-sans">
+    <div className="w-full max-w-4xl mx-auto my-auto p-2 sm:p-4 font-sans">
       
       {/* Split-View Container */}
       <div 
-        className={`w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 bg-white grid grid-cols-1 lg:grid-cols-12 transition-all ${
+        className={`w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200/90 bg-white grid grid-cols-1 lg:grid-cols-12 transition-all ${
           isShaking ? 'animate-shake' : ''
         }`}
       >
         
         {/* LEFT PANEL: High-Trust Government Portal (Deep Navy #0D2A4A + Gold Accents) */}
-        <div className="lg:col-span-5 bg-[#0D2A4A] bg-emblem-pattern text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+        <div className="lg:col-span-5 bg-[#0D2A4A] bg-emblem-pattern text-white p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
           
           {/* Subtle Golden Geometric Halo Blob */}
           <div className="absolute -top-24 -left-24 w-80 h-80 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
@@ -345,11 +337,11 @@ export default function AuthPortal({
         </div>
 
         {/* RIGHT PANEL: Clean Elevated White Authentication Card */}
-        <div className="lg:col-span-7 p-6 sm:p-10 bg-white flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-7 p-5 sm:p-7 bg-white flex flex-col justify-between space-y-4">
           
           <div>
             {/* Tab Switcher: Sign In vs Create Account */}
-            <div className="flex items-center p-1 bg-slate-100 rounded-2xl mb-6">
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl mb-4">
               <button
                 type="button"
                 onClick={() => { setMode('login'); setFormMessage(null); setErrors({}); }}

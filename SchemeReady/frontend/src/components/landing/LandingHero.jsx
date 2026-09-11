@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -82,7 +82,7 @@ export default function LandingHero({ onStartOnboarding, onExploreSchemes, onQui
 
   return (
     <div 
-      className="relative w-full min-h-[640px] lg:min-h-[700px] bg-slate-950 text-white overflow-hidden"
+      className="relative w-full min-h-[500px] lg:min-h-[580px] bg-slate-950 text-white overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -115,11 +115,11 @@ export default function LandingHero({ onStartOnboarding, onExploreSchemes, onQui
       <div className="absolute top-1/2 -right-24 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none z-20" />
 
       {/* Hero Content Container */}
-      <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-20 flex flex-col justify-center min-h-[640px] lg:min-h-[700px]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:py-14 flex flex-col justify-center min-h-[500px] lg:min-h-[580px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
           
           {/* Left Column: Mission Narrative & CTAs */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <div className="lg:col-span-7 space-y-5 text-left">
             {/* National Tagline Badge */}
             <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-emerald-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
@@ -129,12 +129,12 @@ export default function LandingHero({ onStartOnboarding, onExploreSchemes, onQui
             </div>
 
             {/* Dynamic Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15] drop-shadow-md">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-[1.2] drop-shadow-md">
               {slides[currentSlide].headline}
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed max-w-2xl drop-shadow-sm">
+            <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed max-w-2xl drop-shadow-sm">
               {slides[currentSlide].subheadline}
             </p>
 
