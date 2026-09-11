@@ -26,7 +26,7 @@ export default function Navbar({
   setActiveTab, 
   onLoadPersona, 
   readinessScore = 72,
-  onBackToSih
+  onGoToHome
 }) {
   const t = translations[lang] || translations.en;
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -119,13 +119,13 @@ export default function Navbar({
             <span className="sm:hidden">Ravi Persona</span>
           </button>
 
-          {onBackToSih && (
+          {onGoToHome && (
             <button
-              onClick={onBackToSih}
-              className="flex items-center space-x-1.5 text-xs font-black bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 px-3.5 py-2 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
-              title="Return to the Smart India Hackathon 2026 National Portal"
+              onClick={onGoToHome}
+              className="flex items-center space-x-1.5 text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-2 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Return to the SchemeReady National Concessional Portal Front Page"
             >
-              <span>🇮🇳 SIH 2026 Portal</span>
+              <span>🏠 Home / Portal</span>
             </button>
           )}
 

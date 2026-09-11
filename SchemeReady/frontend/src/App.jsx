@@ -11,7 +11,7 @@ import PartnerRouting from './components/PartnerRouting';
 import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
-import SihPortal from './pages/SihPortal';
+import EntrepreneurLanding from './pages/EntrepreneurLanding';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import AuthPanel from './auth/AuthPanel';
 import confetti from 'canvas-confetti';
@@ -28,7 +28,7 @@ export default function App() {
 }
 
 function AppShell() {
-  const [portalView, setPortalView] = useState('sih'); // 'sih' = SIH 2026 Homepage, 'schemeready' = SchemeReady App
+  const [portalView, setPortalView] = useState('landing'); // 'landing' = National Entrepreneurship Portal, 'app' = SchemeReady App
   const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
   const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('onboarding');
@@ -79,10 +79,33 @@ function AppShell() {
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
-  if (portalView === 'sih') {
+  if (portalView === 'landing') {
     return (
-      <SihPortal 
-        onSwitchToSchemeReady={() => setPortalView('schemeready')} 
+      <EntrepreneurLanding 
+        onStartOnboarding={() => { setPortalView('app'); setActiveTab('onboarding'); }}
+        onExploreSchemes={(scheme) => { 
+          if (scheme) setSelectedScheme(scheme); 
+          setPortalView('app'); 
+          setActiveTab('schemes'); 
+        }}
+        onLoadPersona={() => { 
+          handleLoadPersona(); 
+          setPortalView('app'); 
+          setActiveTab('onboarding');
+        }}
+        onOpenAuth={() => { setPortalView('app'); setActiveTab('login'); }}
+        onQuickFind={(criteria) => {
+          setProfile(prev => ({
+            ...prev,
+            businessType: criteria.businessType || prev.businessType,
+            location: criteria.location || prev.location,
+            requiredLoanAmount: criteria.requiredLoanAmount || prev.requiredLoanAmount
+          }));
+          setPortalView('app');
+          setActiveTab('schemes');
+        }}
+        lang={lang}
+        setLang={setLang}
       />
     );
   }
@@ -123,7 +146,7 @@ function AppShell() {
         setActiveTab={navigate} 
         onLoadPersona={handleLoadPersona} 
         readinessScore={readinessScore}
-        onBackToSih={() => setPortalView('sih')}
+        onGoToHome={() => setPortalView('landing')}
       />
       <main className="flex-1 pb-16">
         {showAuthPanel ? <AuthPanel notice={authPanelNotice || authMessage} /> : (
