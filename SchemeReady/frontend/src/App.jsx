@@ -30,7 +30,7 @@ export default function App() {
 }
 
 function AppShell() {
-  const [portalView, setPortalView] = useState('landing'); // 'landing' = National Entrepreneurship Portal, 'app' = SchemeReady App
+  const [portalView, setPortalView] = useState('landing');
   const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
   const [lang, setLang] = useState('en');
   const [fontSize, setFontSize] = useState('md');
@@ -46,16 +46,16 @@ function AppShell() {
     parentsName: '',
     gender: '',
     businessType: '',
-    businessScale: 'Micro (Up to ₹5 Lakhs)',
+    businessScale: '',
     projectDescription: '',
     location: '',
     state: '',
-    estimatedProjectCost: 0,
-    annualFamilyIncome: 0,
-    householdAnnualIncome: 0,
-    cibilScore: 720,
+    estimatedProjectCost: '',
+    annualFamilyIncome: '',
+    householdAnnualIncome: '',
+    cibilScore: '',
     userType: 'new_entrepreneur',
-    category: 'SC',
+    category: '',
     hasCasteCertificate: false,
     casteCertificateNo: '',
     digilockerVerified: false,
@@ -66,10 +66,10 @@ function AppShell() {
     tenthSchoolName: '',
     twelfthMarksPercentage: '',
     twelfthSchoolName: '',
-    requiredLoanAmount: 0,
-    supportPreference: 'online',
-    preferredLanguage: 'hi',
-    age: 25,
+    requiredLoanAmount: '',
+    supportPreference: '',
+    preferredLanguage: '',
+    age: '',
     uploadedDocs: []
   });
 
@@ -139,14 +139,33 @@ function AppShell() {
     if (authUser?.isDemo) {
       handleLoadPersona();
     } else if (authUser) {
-      const fresh = createCleanProfile(authUser);
-      setProfile(fresh);
+      const savedForUser = localStorage.getItem(`schemeready_profile_${authUser.userId}`);
+      let existingProfile = null;
       try {
-        localStorage.setItem('schemeready_profile', JSON.stringify(fresh));
+        existingProfile = savedForUser ? JSON.parse(savedForUser) : null;
+      } catch (e) {}
+
+      const nextProfile = existingProfile && typeof existingProfile === 'object'
+        ? existingProfile
+        : createCleanProfile(authUser);
+
+      setProfile(nextProfile);
+      try {
+        localStorage.setItem(`schemeready_profile_${authUser.userId}`, JSON.stringify(nextProfile));
+        localStorage.setItem('schemeready_profile', JSON.stringify(nextProfile));
       } catch (e) {}
     }
     setActiveTab(requiresAdmin ? 'admin' : 'profile');
   };
+
+  useEffect(() => {
+    if (!isAuthenticated || !profile?.id) return;
+    const userId = profile.id;
+    if (!userId) return;
+    try {
+      localStorage.setItem(`schemeready_profile_${userId}`, JSON.stringify(profile));
+    } catch (e) {}
+  }, [profile, isAuthenticated]);
 
   if (portalView === 'landing') {
     return (
@@ -162,7 +181,7 @@ function AppShell() {
         }}
         onLoadPersona={() => { 
           handleLoadPersona(); 
-          setPortalView('app'); 
+          setPortalView('app');
           setActiveTab('profile');
         }}
         onOpenAuth={() => { setPortalView('app'); setActiveTab('login'); }}
@@ -207,10 +226,6 @@ function AppShell() {
     );
   }
 
-  // Standalone Enterprise GovTech Authentication View
-  // When activeTab === 'login' or accessing protected sections without a session:
-  // Main workflow navigation tabs (Navbar) are COMPLETELY removed as required.
-  // Only the top sovereign utility header (GovUtilityHeader) and the split-view AuthPortal are rendered.
   if (isAuthView) {
     return (
       <div className={`min-h-screen flex flex-col font-sans bg-[#F8FAFC] ${highContrast ? 'contrast-125' : ''}`}>
