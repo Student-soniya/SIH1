@@ -8,7 +8,7 @@
 //     inside that window. Ten concurrent 401s cause one refresh, not ten, and each original
 //     request is retried exactly once.
 
-export const API_BASE = 'http://localhost:5000/api';
+export const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
 
 /** Instant 300ms refresh timeout: Prevents UI blocking when backend is offline or slow */
 const REFRESH_TIMEOUT_MS = 300;

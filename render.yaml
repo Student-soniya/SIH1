@@ -1,0 +1,62 @@
+services:
+  # --------------------------------------------------------------------------
+  # 1. SchemeReady Frontend Web Service
+  # --------------------------------------------------------------------------
+  - type: web
+    name: schemeready-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: VITE_API_BASE
+        fromService:
+          type: web
+          name: schemeready-backend
+          envVarKey: RENDER_EXTERNAL_URL
+          valueSuffix: /api
+
+  # --------------------------------------------------------------------------
+  # 2. SchemeReady .NET 8 Backend API Web Service
+  # --------------------------------------------------------------------------
+  - type: web
+    name: schemeready-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /swagger
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: SCHEMEREADY_CORS_ORIGINS
+        value: "*"
+      - key: SCHEMEREADY_JWT_SIGNING_KEY
+        generateValue: true
+      - key: SCHEMEREADY_JWT_ISSUER
+        value: https://schemeready.onrender.com
+      - key: SCHEMEREADY_JWT_AUDIENCE
+        value: https://schemeready.onrender.com
+      - key: SCHEMEREADY_DOCUMENT_ROOT
+        value: /app/data/documents
+      - key: DATABASE_URL
+        fromDatabase:
+          name: schemeready-db
+          property: connectionString
+
+# --------------------------------------------------------------------------
+# Managed PostgreSQL Database (Free Tier)
+# --------------------------------------------------------------------------
+databases:
+  - name: schemeready-db
+    plan: free
+    region: oregon
+    databaseName: schemeready
+    user: schemeready_user
