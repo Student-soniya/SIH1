@@ -1,10 +1,11 @@
 #!/bin/sh
 set -e
 
-# Default to 10000 (Render default) if PORT is unset
-export PORT="${PORT:-10000}"
+PORT="${PORT:-10000}"
 
-# Substitute dynamic ${PORT} in Nginx config template
-envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+# If Render assigns a different port than 10000, adjust nginx configuration
+if [ "$PORT" != "10000" ]; then
+    sed -i "s/listen 10000/listen $PORT/g" /etc/nginx/conf.d/default.conf 2>/dev/null || true
+fi
 
 exec "$@"

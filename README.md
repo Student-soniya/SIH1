@@ -1,8 +1,10 @@
 # SchemeReady (Udyam Saarthi AI) 🏛️🇮🇳
 
-> **Smart India Hackathon (SIH) 2026**
-> **Problem Statement**: Proactive Application Readiness & Channel Partner Routing for NSFDC Beneficiary Concessional Finance
-> **Target Ministry**: Ministry of Social Justice and Empowerment (MoSJE) / National Scheduled Castes Finance and Development Corporation (NSFDC)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vishnurvchettiar/SIH1)
+
+> **Smart India Hackathon (SIH) 2026**  
+> **Problem Statement**: Proactive Application Readiness & Channel Partner Routing for NSFDC Beneficiary Concessional Finance  
+> **Target Ministry**: Ministry of Social Justice and Empowerment (MoSJE) / National Scheduled Castes Finance and Development Corporation (NSFDC)  
 
 ---
 
@@ -10,9 +12,9 @@
 SchemeReady shifts the paradigm from passive scheme discovery to **active application readiness and verified channel partner routing**. While NSFDC provides concessional loans (4%–8% p.a., up to 90% project cost) to SC beneficiaries with family income up to ₹5.00 Lakhs, beneficiaries **cannot apply directly to NSFDC**. Direct loan applications are rejected; funds must flow through over 100 Channel Partners (SCAs, RRBs, Public Sector Banks).
 
 SchemeReady solves this by providing:
-1. **Conversational & Voice Onboarding** (with regional language support).
-2. **256-bit SHA Hashed Authentication & Captcha Challenge**.
-3. **Comprehensive Beneficiary Profile Dossier** (10th/12th marks, parents' name, gender, CIBIL score, ITR acknowledgment).
+1. **Conversational & Voice Onboarding** (with 7 regional language support: English, हिन्दी, ಕನ್ನಡ, தமிழ், తెలుగు, मराठी, বাংলা).
+2. **Dynamic Random OTP Authentication** via WhatsApp and browser notifications.
+3. **Comprehensive Beneficiary Profile Dossier** (10th/12th marks, CIBIL score, ITR acknowledgment).
 4. **AI Business Survival & Viability Predictor** (92% survival probability, DSCR = 2.46, market forecast).
 5. **DigiLocker Verification & Interactive PDF Viewer Modal** (Govt watermark, QR verification, Tahsildar sign).
 6. **Dynamic Document Checklist with Pending Remediation Alert**.
@@ -23,24 +25,29 @@ SchemeReady solves this by providing:
 
 ---
 
-## 🚀 Quick Start
+## 🚀 1-Click Cloud Deployment on Render
 
-### Backend (.NET 8 Web API)
-`ash
-cd backend
-dotnet run --urls "http://localhost:5000"
-`
-* **Swagger API UI**: http://localhost:5000/swagger
+Deploy the entire full-stack platform (Frontend + .NET 8 Backend + PostgreSQL) with a single click:
 
-### Frontend (React + Vite + Tailwind CSS)
-`ash
-cd frontend
-npm install
-npm run dev -- --host 0.0.0.0 --port 5173
-`
-* **Web Portal**: http://localhost:5173
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vishnurvchettiar/SIH1)
+
+See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for full deployment documentation.
 
 ---
 
-## 🗄️ Database Architecture
-* **MS SQL Server Schema Script**: ackend/Data/schema.sql (Ready for Azure SQL / MS SQL Server 2019/2022).
+## 💻 Local Development Quick Start
+
+### Backend (.NET 8 Web API)
+```bash
+cd SchemeReady/backend
+dotnet run --urls "http://localhost:5000"
+```
+* **Swagger API UI**: http://localhost:5000/swagger
+
+### Frontend (React + Vite + Tailwind CSS)
+```bash
+cd SchemeReady/frontend
+npm install
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+* **Web Portal**: http://localhost:5173

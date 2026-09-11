@@ -18,14 +18,11 @@ RUN npm run build
 # Stage 2: Serve with lightweight Nginx Alpine
 FROM nginx:alpine AS runner
 
-# Install gettext for envsubst
-RUN apk add --no-cache gettext
-
 # Remove default nginx config
 RUN rm -rf /etc/nginx/conf.d/default.conf
 
-# Copy custom Nginx configuration template and entrypoint
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy custom Nginx configuration and entrypoint
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
