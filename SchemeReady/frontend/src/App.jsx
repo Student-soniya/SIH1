@@ -15,7 +15,6 @@ import EntrepreneurLanding from './pages/EntrepreneurLanding';
 import GovUtilityHeader from './auth/GovUtilityHeader';
 import AuthPortal from './auth/AuthPortal';
 import { AuthProvider, useAuth } from './auth/AuthContext';
-import AuthPanel from './auth/AuthPanel';
 import confetti from 'canvas-confetti';
 
 const ANONYMOUS_VIEWS = ['onboarding', 'schemes', 'emi', 'businessPlan'];
@@ -30,32 +29,32 @@ export default function App() {
 }
 
 function AppShell() {
-  const [portalView, setPortalView] = useState('landing'); // 'landing' = National Entrepreneurship Portal, 'app' = SchemeReady App
-  const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
+  const [portalView, setPortalView] = useState('landing');
+  const { user, isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
   const [lang, setLang] = useState('en');
   const [fontSize, setFontSize] = useState('md');
   const [highContrast, setHighContrast] = useState(false);
   const [activeTab, setActiveTab] = useState('onboarding');
   const [authPanelNotice, setAuthPanelNotice] = useState(null);
 
-  const createCleanProfile = (user = {}) => ({
-    id: user?.userId || `APP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-    fullName: user?.displayName || user?.fullName || '',
-    phoneNumber: user?.phoneNumber || user?.phone || '',
-    email: user?.email || '',
+  const createCleanProfile = (authUser = {}) => ({
+    id: authUser?.userId || `APP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    fullName: authUser?.displayName || authUser?.fullName || '',
+    phoneNumber: authUser?.phoneNumber || authUser?.phone || '',
+    email: authUser?.email || '',
     parentsName: '',
     gender: '',
     businessType: '',
-    businessScale: 'Micro (Up to ₹5 Lakhs)',
+    businessScale: '',
     projectDescription: '',
     location: '',
     state: '',
-    estimatedProjectCost: 0,
-    annualFamilyIncome: 0,
-    householdAnnualIncome: 0,
-    cibilScore: 720,
+    estimatedProjectCost: '',
+    annualFamilyIncome: '',
+    householdAnnualIncome: '',
+    cibilScore: '',
     userType: 'new_entrepreneur',
-    category: 'SC',
+    category: '',
     hasCasteCertificate: false,
     casteCertificateNo: '',
     digilockerVerified: false,
@@ -66,29 +65,44 @@ function AppShell() {
     tenthSchoolName: '',
     twelfthMarksPercentage: '',
     twelfthSchoolName: '',
-    requiredLoanAmount: 0,
-    supportPreference: 'online',
-    preferredLanguage: 'hi',
-    age: 25,
+    requiredLoanAmount: '',
+    supportPreference: '',
+    preferredLanguage: '',
+    age: '',
     uploadedDocs: []
   });
 
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('schemeready_profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') return parsed;
-      }
-    } catch (e) {}
-    return createCleanProfile();
-  });
+  const [profile, setProfile] = useState(() => createCleanProfile());
 
   useEffect(() => {
+    if (!isAuthenticated || !user?.userId) return;
+
+    const userKey = `schemeready_profile_${user.userId}`;
+    let existingProfile = null;
+
     try {
+      const savedForUser = localStorage.getItem(userKey);
+      existingProfile = savedForUser ? JSON.parse(savedForUser) : null;
+    } catch (e) {}
+
+    const nextProfile = existingProfile && typeof existingProfile === 'object'
+      ? existingProfile
+      : createCleanProfile(user);
+
+    setProfile(nextProfile);
+    try {
+      localStorage.setItem(userKey, JSON.stringify(nextProfile));
+      localStorage.setItem('schemeready_profile', JSON.stringify(nextProfile));
+    } catch (e) {}
+  }, [isAuthenticated, user?.userId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.userId || !profile?.id) return;
+    try {
+      localStorage.setItem(`schemeready_profile_${user.userId}`, JSON.stringify(profile));
       localStorage.setItem('schemeready_profile', JSON.stringify(profile));
     } catch (e) {}
-  }, [profile]);
+  }, [profile, isAuthenticated, user?.userId]);
 
   const [selectedScheme, setSelectedScheme] = useState({
     schemeId: 'NSFDC-MCS-01', schemeName: 'Micro Credit Scheme (MCS)', schemeType: 'Micro Credit',
@@ -107,9 +121,10 @@ function AppShell() {
     ? (profile?.uploadedDocs?.includes('Business quotation') ? 100 : 92) : 72;
 
   const handleResetFresh = () => {
-    const clean = createCleanProfile();
+    const clean = createCleanProfile(user || {});
     setProfile(clean);
     try {
+      if (user?.userId) localStorage.setItem(`schemeready_profile_${user.userId}`, JSON.stringify(clean));
       localStorage.setItem('schemeready_profile', JSON.stringify(clean));
     } catch (e) {}
   };
@@ -129,6 +144,7 @@ function AppShell() {
     setProfile(demoProfile);
     try {
       localStorage.setItem('schemeready_profile', JSON.stringify(demoProfile));
+      if (user?.userId) localStorage.setItem(`schemeready_profile_${user.userId}`, JSON.stringify(demoProfile));
     } catch (e) {}
     setLang('kn');
     setActiveTab('profile');
@@ -139,10 +155,20 @@ function AppShell() {
     if (authUser?.isDemo) {
       handleLoadPersona();
     } else if (authUser) {
-      const fresh = createCleanProfile(authUser);
-      setProfile(fresh);
+      let existingProfile = null;
       try {
-        localStorage.setItem('schemeready_profile', JSON.stringify(fresh));
+        const savedForUser = localStorage.getItem(`schemeready_profile_${authUser.userId}`);
+        existingProfile = savedForUser ? JSON.parse(savedForUser) : null;
+      } catch (e) {}
+
+      const nextProfile = existingProfile && typeof existingProfile === 'object'
+        ? existingProfile
+        : createCleanProfile(authUser);
+
+      setProfile(nextProfile);
+      try {
+        localStorage.setItem(`schemeready_profile_${authUser.userId}`, JSON.stringify(nextProfile));
+        localStorage.setItem('schemeready_profile', JSON.stringify(nextProfile));
       } catch (e) {}
     }
     setActiveTab(requiresAdmin ? 'admin' : 'profile');
@@ -153,16 +179,16 @@ function AppShell() {
       <EntrepreneurLanding 
         onStartOnboarding={() => { 
           setPortalView('app'); 
-          setActiveTab(isAuthenticated ? 'profile' : 'login'); 
+          setActiveTab(isAuthenticated ? 'profile' : 'login');
         }}
         onExploreSchemes={(scheme) => { 
           if (scheme) setSelectedScheme(scheme); 
-          setPortalView('app'); 
-          setActiveTab('schemes'); 
+          setPortalView('app');
+          setActiveTab('schemes');
         }}
         onLoadPersona={() => { 
           handleLoadPersona(); 
-          setPortalView('app'); 
+          setPortalView('app');
           setActiveTab('profile');
         }}
         onOpenAuth={() => { setPortalView('app'); setActiveTab('login'); }}
@@ -207,10 +233,6 @@ function AppShell() {
     );
   }
 
-  // Standalone Enterprise GovTech Authentication View
-  // When activeTab === 'login' or accessing protected sections without a session:
-  // Main workflow navigation tabs (Navbar) are COMPLETELY removed as required.
-  // Only the top sovereign utility header (GovUtilityHeader) and the split-view AuthPortal are rendered.
   if (isAuthView) {
     return (
       <div className={`min-h-screen flex flex-col font-sans bg-[#F8FAFC] ${highContrast ? 'contrast-125' : ''}`}>

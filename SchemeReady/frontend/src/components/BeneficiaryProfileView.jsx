@@ -27,20 +27,12 @@ export default function BeneficiaryProfileView({
   const t = translations[lang] || translations.en;
   const tProf = t.profile || {};
   const [formData, setFormData] = useState({ 
-    cibilScore: profile?.cibilScore ?? 745,
-    businessScale: profile?.businessScale || 'Micro (Up to ₹5 Lakhs)',
-    casteCertificateNo: profile?.casteCertificateNo || '',
-    digilockerVerified: profile?.digilockerVerified || false,
+    cibilScore: profile?.cibilScore ?? '',
+    businessScale: profile?.businessScale ?? '',
+    casteCertificateNo: profile?.casteCertificateNo ?? '',
+    digilockerVerified: profile?.digilockerVerified ?? false,
     ...profile 
   });
-
-  const handleCibilChange = (e) => {
-    const rawValue = e.target.value;
-    setFormData(prev => ({
-      ...prev,
-      cibilScore: rawValue === '' ? '' : Number(rawValue)
-    }));
-  };
 
   useEffect(() => {
     setFormData(prev => ({
@@ -83,6 +75,14 @@ export default function BeneficiaryProfileView({
       ...prev,
       state,
       location: defaultDistrict
+    }));
+  };
+
+  const handleCibilChange = (e) => {
+    const rawValue = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      cibilScore: rawValue === '' ? '' : Number(rawValue)
     }));
   };
 
@@ -144,7 +144,6 @@ export default function BeneficiaryProfileView({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Card 1: Personal & Identity Details */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
             <User className="w-4 h-4 text-emerald-600" />
@@ -154,33 +153,16 @@ export default function BeneficiaryProfileView({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.fullName || "Full Name"}</label>
-              <input
-                type="text"
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600"
-              />
+              <input type="text" required value={formData.fullName} placeholder="Enter your full name" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
-
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.parentsName || "Parents' Name (Father / Mother)"}</label>
-              <input
-                type="text"
-                required
-                value={formData.parentsName}
-                onChange={(e) => setFormData({ ...formData, parentsName: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600"
-              />
+              <input type="text" required value={formData.parentsName} placeholder="Enter parents' name" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, parentsName: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
-
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.gender || "Gender"}</label>
-              <select
-                value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
+              <select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
                 <option value="Male">{tProf.genderMale || "Male"}</option>
                 <option value="Female">{tProf.genderFemale || "Female (Unlocks Mahila Samriddhi Yojana at 4%)"}</option>
                 <option value="Transgender">{tProf.genderOther || "Transgender / Other"}</option>
@@ -191,37 +173,22 @@ export default function BeneficiaryProfileView({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.state || "Pan-India State"}</label>
-              <select
-                value={formData.state || 'Karnataka'}
-                onChange={(e) => handleStateChange(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
-                {Object.keys(statesAndDistricts).map((st) => (
-                  <option key={st} value={st}>{st}</option>
-                ))}
+              <select value={formData.state} onChange={(e) => handleStateChange(e.target.value)} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
+                {Object.keys(statesAndDistricts).map((st) => <option key={st} value={st}>{st}</option>)}
               </select>
             </div>
-
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.district || "District / City"}</label>
-              <select
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
-                {(statesAndDistricts[formData.state || 'Karnataka'] || []).map((dst) => (
-                  <option key={dst} value={dst}>{dst}</option>
-                ))}
+              <select value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
+                {(statesAndDistricts[formData.state] || []).map((dst) => <option key={dst} value={dst}>{dst}</option>)}
               </select>
             </div>
-
             <div>
               <label className="block text-slate-700 font-bold mb-1">{tProf.category || "Social Category"}</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
+              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
                 <option value="SC">{tProf.catSC || "Scheduled Caste (SC) - Targeted Beneficiary"}</option>
                 <option value="Safai Karamchari">{tProf.catSafai || "Safai Karamchari / Scavenger Dependent"}</option>
                 <option value="OBC">{tProf.catOBC || "OBC (Micro Enterprise Window)"}</option>
@@ -229,77 +196,35 @@ export default function BeneficiaryProfileView({
             </div>
           </div>
 
-          {/* Caste Certificate & DigiLocker Integration */}
           <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-emerald-900">{tProf.casteStatus || "Caste Certificate Status:"}</span>
-                {formData.hasCasteCertificate ? (
-                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold inline-flex items-center space-x-1">
-                    <span>{tProf.casteVerified || "✓ Verified via Govt Portal"}</span>
-                  </span>
-                ) : (
-                  <span className="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-full font-bold">
-                    {tProf.castePending || "Pending Verification"}
-                  </span>
-                )}
+                {formData.hasCasteCertificate ? <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold inline-flex items-center space-x-1"><span>{tProf.casteVerified || "✓ Verified via Govt Portal"}</span></span> : <span className="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-full font-bold">{tProf.castePending || "Pending Verification"}</span>}
               </div>
-              <p className="text-[11px] text-emerald-700 font-mono mt-0.5">
-                {tProf.casteRDNumber || "RD Number:"} {formData.casteCertificateNo || 'RD0038921029-SC'} {tProf.casteIssuedBy || "(Issued by Tahsildar / Nadakacheri)"}
-              </p>
+              <p className="text-[11px] text-emerald-700 font-mono mt-0.5">{tProf.casteRDNumber || "RD Number:"} {formData.casteCertificateNo || 'Enter the data or choose from the options'} {tProf.casteIssuedBy || "(Issued by Tahsildar / Nadakacheri)"}</p>
             </div>
-            <button
-              type="button"
-              onClick={handleDigiLockerFetch}
-              disabled={digilockerLoading}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs flex items-center space-x-2 shrink-0 active:scale-95 cursor-pointer"
-            >
+            <button type="button" onClick={handleDigiLockerFetch} disabled={digilockerLoading} className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs flex items-center space-x-2 shrink-0 active:scale-95 cursor-pointer">
               <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
               <span>{digilockerLoading ? (tProf.connectingDigilocker || 'Connecting DigiLocker...') : (tProf.fetchDigilocker || 'Fetch via DigiLocker')}</span>
             </button>
           </div>
         </div>
 
-        {/* Card 2: Income, CIBIL Score & Taxation */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
             <FileCheck className="w-4 h-4 text-emerald-600" />
             <h3 className="text-sm font-bold text-slate-900">{tProf.sec2Title || "2. Income Verification, CIBIL & Credit Standing"}</h3>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <label className="block text-slate-700 font-bold mb-1">
-                {tProf.annualIncome || "Annual Family Income (₹)"} <span className="text-emerald-700 font-bold font-mono">{tProf.incomeCap || "[Cap: ₹5L]"}</span>
-              </label>
-              <input
-                type="number"
-                step="5000"
-                required
-                value={formData.annualFamilyIncome}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  annualFamilyIncome: Number(e.target.value),
-                  householdAnnualIncome: Number(e.target.value)
-                })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-emerald-800 focus:bg-white focus:outline-emerald-600"
-              />
+              <label className="block text-slate-700 font-bold mb-1">{tProf.annualIncome || "Annual Family Income (₹)"} <span className="text-emerald-700 font-bold font-mono">{tProf.incomeCap || "[Cap: ₹5L]"}</span></label>
+              <input type="number" step="5000" required value={formData.annualFamilyIncome} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, annualFamilyIncome: e.target.value === '' ? '' : Number(e.target.value), householdAnnualIncome: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-emerald-800 focus:bg-white focus:outline-emerald-600" />
             </div>
-
             <div>
-              <label className="block text-slate-700 font-bold mb-1">
-                {tProf.cibilScore || "CIBIL / Credit Score"} <span className="text-emerald-600 font-bold">{tProf.cibilRange || "(300 - 900)"}</span>
-              </label>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.cibilScore || "CIBIL / Credit Score"} <span className="text-emerald-600 font-bold">{tProf.cibilRange || "(300 - 900)"}</span></label>
               <div className="relative">
-                <input
-                  type="number"
-                  min="300"
-                  max="900"
-                  inputMode="numeric"
-                  value={formData.cibilScore}
-                  onChange={handleCibilChange}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-                />
+                <input type="number" min="300" max="900" inputMode="numeric" value={formData.cibilScore} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={handleCibilChange} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
                 {formData.cibilScore !== '' && (
                   <span className="absolute right-3 top-2 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
                     {formData.cibilScore >= 750 ? (tProf.cibilExcellent || 'Excellent') : formData.cibilScore >= 680 ? (tProf.cibilGood || 'Good') : (tProf.cibilModerate || 'Moderate')}
@@ -307,230 +232,107 @@ export default function BeneficiaryProfileView({
                 )}
               </div>
             </div>
-
             <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.hasFiledItr || "Has Filed ITR?"}</label>
-              <select
-                value={formData.hasFiledItr ? 'true' : 'false'}
-                onChange={(e) => setFormData({ ...formData, hasFiledItr: e.target.value === 'true' })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
-                <option value="true">{tProf.itrYes || "Yes, Filed ITR"}</option>
-                <option value="false">{tProf.itrNo || "No, Self-Declaration / Tahsildar Cert"}</option>
-              </select>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.estimatedProjectCost || "Estimated Project Cost (₹)"}</label>
+              <input type="number" step="5000" required value={formData.estimatedProjectCost} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, estimatedProjectCost: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
-
             <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.itrAck || "ITR Ack Number"}</label>
-              <input
-                type="text"
-                value={formData.itrAckNumber || ''}
-                placeholder="e.g. ITR-V-2025-8891042"
-                onChange={(e) => setFormData({ ...formData, itrAckNumber: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono text-slate-900 focus:bg-white focus:outline-emerald-600"
-              />
+              <label className="block text-slate-700 font-bold mb-1">{tProf.loanAmount || "Required Loan Amount (₹)"}</label>
+              <input type="number" step="5000" required value={formData.requiredLoanAmount} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, requiredLoanAmount: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
           </div>
         </div>
 
-        {/* Card 3: Academic Qualifications (10th & 12th Marks) */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
-            <GraduationCap className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold text-slate-900">{tProf.sec3Title || "3. Academic Performance (Crucial for Educational Loan Schemes)"}</h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-              <span className="font-bold text-slate-900 block text-xs">{tProf.class10 || "Class 10th (Secondary School)"}</span>
-              <div>
-                <label className="block text-slate-600 font-medium mb-1">{tProf.marksPercentage || "Marks / Percentage (%)"}</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formData.tenthMarksPercentage}
-                  onChange={(e) => setFormData({ ...formData, tenthMarksPercentage: Number(e.target.value) })}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-emerald-600"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 font-medium mb-1">{tProf.schoolName || "School / Board Name"}</label>
-                <input
-                  type="text"
-                  value={formData.tenthSchoolName}
-                  onChange={(e) => setFormData({ ...formData, tenthSchoolName: e.target.value })}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-emerald-600"
-                />
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-              <span className="font-bold text-slate-900 block text-xs">{tProf.class12 || "Class 12th / PUC / Diploma"}</span>
-              <div>
-                <label className="block text-slate-600 font-medium mb-1">{tProf.marksPercentage || "Marks / Percentage (%)"}</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formData.twelfthMarksPercentage}
-                  onChange={(e) => setFormData({ ...formData, twelfthMarksPercentage: Number(e.target.value) })}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-emerald-600"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 font-medium mb-1">{tProf.collegeName || "Junior College / High School Name"}</label>
-                <input
-                  type="text"
-                  value={formData.twelfthSchoolName}
-                  onChange={(e) => setFormData({ ...formData, twelfthSchoolName: e.target.value })}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-emerald-600"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Business Specifications & AI Viability Analysis */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
             <Briefcase className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold text-slate-900">{tProf.sec4Title || "4. Business Scale, Viability & Survival Assessment"}</h3>
+            <h3 className="text-sm font-bold text-slate-900">{tProf.sec3Title || "3. Business / Enterprise Details"}</h3>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.businessScale || "Business Scale / Category"}</label>
-              <select
-                value={formData.businessScale || 'Micro (Up to ₹5 Lakhs)'}
-                onChange={(e) => setFormData({ ...formData, businessScale: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              >
-                <option value="Micro (Up to ₹5 Lakhs)">{tProf.scaleMicro || "Micro / Small (Up to ₹5 Lakhs)"}</option>
-                <option value="Intermediate (₹5L - ₹25L)">{tProf.scaleMedium || "Intermediate / Medium (₹5L - ₹25L)"}</option>
-                <option value="Large (₹25L - ₹50L)">{tProf.scaleLarge || "Large / Commercial (₹25L - ₹50L)"}</option>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.businessType || "Business / Enterprise Type"}</label>
+              <input type="text" required value={formData.businessType} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, businessType: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.businessScale || "Business Scale"}</label>
+              <select value={formData.businessScale} onChange={(e) => setFormData({ ...formData, businessScale: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
+                <option value="Micro (Up to ₹5 Lakhs)">Micro (Up to ₹5 Lakhs)</option>
+                <option value="Small (₹5L - ₹50L)">Small (₹5L - ₹50L)</option>
+                <option value="Medium (₹50L - ₹5Cr)">Medium (₹50L - ₹5Cr)</option>
               </select>
             </div>
-
-            <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.businessType || "Project / Business Type"}</label>
-              <input
-                type="text"
-                required
-                value={formData.businessType}
-                onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.projectCost || "Estimated Project Cost (₹)"}</label>
-              <input
-                type="number"
-                step="10000"
-                required
-                value={formData.estimatedProjectCost}
-                onChange={(e) => setFormData({ ...formData, estimatedProjectCost: Number(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-emerald-800 focus:bg-white focus:outline-emerald-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-700 font-bold mb-1">{tProf.loanAmount || "Loan Amount Requested (₹)"}</label>
-              <input
-                type="number"
-                step="10000"
-                required
-                value={formData.requiredLoanAmount}
-                onChange={(e) => setFormData({ ...formData, requiredLoanAmount: Number(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-emerald-800 focus:bg-white focus:outline-emerald-600"
-              />
-            </div>
           </div>
-
-          <div className="text-xs">
-            <label className="block text-slate-700 font-bold mb-1">{tProf.projectDescription || "Startup Idea & Operational Plan Description"}</label>
-            <textarea
-              rows={3}
-              required
-              value={formData.projectDescription}
-              onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600 leading-relaxed"
-            />
+          <div>
+            <label className="block text-slate-700 font-bold mb-1">{tProf.projectDescription || "Project Description"}</label>
+            <textarea required value={formData.projectDescription} rows={3} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600" />
           </div>
+        </div>
 
-          {/* AI Business Feasibility & Survival Assessment */}
-          <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white p-5 rounded-2xl border border-emerald-800/40 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  {tProf.viabilityEngine || "AI Business Viability Engine"}
-                </span>
-                <span className="text-xs text-slate-300 font-semibold">
-                  {tProf.viabilityForecast || "Feasibility & Market Survival Forecast"}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-slate-400">{tProf.survivalProb || "Business Survival Probability:"}</span>
-                <span className="text-sm font-black text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-lg border border-emerald-500/40">
-                  {tProf.survivalHigh || "92% (High Survival & Low Risk)"}
-                </span>
-              </div>
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
+            <GraduationCap className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-sm font-bold text-slate-900">{tProf.sec4Title || "4. Education & Eligibility"}</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.tenthMarks || "10th Marks (%)"}</label>
+              <input type="number" step="0.1" value={formData.tenthMarksPercentage} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, tenthMarksPercentage: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                <span className="text-slate-400 block text-[11px] font-medium">{tProf.statusForecast || "Business Status Forecast"}</span>
-                <span className="text-emerald-300 font-bold text-xs mt-0.5 block">
-                  {tProf.statusFlourish || "● Will Flourish & Expand (High Local Demand)"}
-                </span>
-                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
-                  {tProf.statusDesc || "Zero risk of sudden closure due to essential electronics repair demand in urban clusters."}
-                </p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                <span className="text-slate-400 block text-[11px] font-medium">{tProf.breakEven || "Break-Even Horizon"}</span>
-                <span className="text-teal-300 font-bold text-xs mt-0.5 block">
-                  {tProf.breakEvenTime || "3.5 Months Post Disbursal"}
-                </span>
-                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
-                  {tProf.breakEvenDesc || "Moratorium gestation buffer of 3 months covers initial store setup and tooling procurement."}
-                </p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                <span className="text-slate-400 block text-[11px] font-medium">{tProf.dscr || "Debt Service Coverage (DSCR)"}</span>
-                <span className="text-emerald-300 font-bold text-xs mt-0.5 block">
-                  {tProf.dscrValue || "2.46 (Healthy > 1.5 Benchmark)"}
-                </span>
-                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
-                  {tProf.dscrDesc || "Net monthly cash flow of ₹22,500 comfortably services ₹3,889 monthly EMI."}
-                </p>
-              </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.tenthSchool || "10th School Name"}</label>
+              <input type="text" value={formData.tenthSchoolName} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, tenthSchoolName: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
-
-            {/* AI Suggestions for the Good Business */}
-            <div className="border-t border-white/10 pt-3">
-              <span className="text-[11px] font-bold text-emerald-300 block mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-emerald-400" />
-                <span>{tProf.growthSuggestions || "AI Growth Suggestions to Maximize Business Longevity:"}</span>
-              </span>
-              <ul className="text-[11px] text-slate-300 space-y-1 list-disc pl-4 leading-relaxed">
-                <li><strong>{tProf.sug1Title || "Warranty Bundling:"}</strong> {tProf.sug1Desc || "Offer 30-day warranty on smartphone display replacement to secure 45% recurring footfall."}</li>
-                <li><strong>{tProf.sug2Title || "Accessory Margin Booster:"}</strong> {tProf.sug2Desc || "Introduce tempered glass and fast chargers (60% gross margin) alongside repair services."}</li>
-                <li><strong>{tProf.sug3Title || "Govt Portal Linkage:"}</strong> {tProf.sug3Desc || "Register on ONDC and GeM to secure corporate and institutional repair contracts."}</li>
-              </ul>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.twelfthMarks || "12th Marks (%)"}</label>
+              <input type="number" step="0.1" value={formData.twelfthMarksPercentage} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, twelfthMarksPercentage: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.twelfthSchool || "12th School / College Name"}</label>
+              <input type="text" value={formData.twelfthSchoolName} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, twelfthSchoolName: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-900 focus:bg-white focus:outline-emerald-600" />
             </div>
           </div>
         </div>
 
-        {/* Submit & Save -> Navigates to Smart Onboarding */}
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="submit"
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black px-8 py-3 rounded-xl text-xs uppercase tracking-wider flex items-center space-x-2 transition-all shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer"
-          >
-            <span>{tProf.saveBtn || "Save & Continue to Smart Onboarding"}</span>
-            <ArrowRight className="w-4 h-4 text-amber-300" />
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
+            <Building className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-sm font-bold text-slate-900">{tProf.sec5Title || "5. Support & Preferences"}</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.supportPreference || "Support Preference"}</label>
+              <select value={formData.supportPreference} onChange={(e) => setFormData({ ...formData, supportPreference: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline / District Office</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.language || "Preferred Language"}</label>
+              <select value={formData.preferredLanguage} onChange={(e) => setFormData({ ...formData, preferredLanguage: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600">
+                <option value="">Enter the data or choose from the options</option>
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="kn">Kannada</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+                <option value="mr">Marathi</option>
+                <option value="bn">Bengali</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">{tProf.age || "Age"}</label>
+              <input type="number" min="18" max="100" value={formData.age} placeholder="Enter the data or choose from the options" title="Enter the data or choose from the options" onChange={(e) => setFormData({ ...formData, age: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-900 focus:bg-white focus:outline-emerald-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center gap-2 active:scale-95">
+            <Save className="w-4 h-4" />
+            {tProf.saveProfile || 'Save & Continue to Eligibility Match'}
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </form>
