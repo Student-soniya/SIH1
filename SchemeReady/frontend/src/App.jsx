@@ -11,6 +11,7 @@ import PartnerRouting from './components/PartnerRouting';
 import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
+import SihPortal from './pages/SihPortal';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import AuthPanel from './auth/AuthPanel';
 import confetti from 'canvas-confetti';
@@ -19,10 +20,15 @@ const ANONYMOUS_VIEWS = ['onboarding', 'schemes', 'emi', 'businessPlan'];
 const ADMIN_VIEWS = ['admin'];
 
 export default function App() {
-  return <AuthProvider><AppShell /></AuthProvider>;
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
 }
 
 function AppShell() {
+  const [portalView, setPortalView] = useState('sih'); // 'sih' = SIH 2026 Homepage, 'schemeready' = SchemeReady App
   const { isAuthenticated, isAdmin, restoring, authMessage } = useAuth();
   const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('onboarding');
@@ -73,6 +79,14 @@ function AppShell() {
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
+  if (portalView === 'sih') {
+    return (
+      <SihPortal 
+        onSwitchToSchemeReady={() => setPortalView('schemeready')} 
+      />
+    );
+  }
+
   const requiresSession = !ANONYMOUS_VIEWS.includes(activeTab);
   const requiresAdmin = ADMIN_VIEWS.includes(activeTab);
   const showAuthPanel = requiresSession && !isAuthenticated;
@@ -90,12 +104,27 @@ function AppShell() {
   };
 
   if (restoring) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="text-center"><div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" /><p className="text-sm text-slate-600">Restoring your session…</p></div></div>;
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-600">Restoring your session…</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-      <Navbar lang={lang} setLang={setLang} activeTab={activeTab} setActiveTab={navigate} onLoadPersona={handleLoadPersona} readinessScore={readinessScore} />
+      <Navbar 
+        lang={lang} 
+        setLang={setLang} 
+        activeTab={activeTab} 
+        setActiveTab={navigate} 
+        onLoadPersona={handleLoadPersona} 
+        readinessScore={readinessScore}
+        onBackToSih={() => setPortalView('sih')}
+      />
       <main className="flex-1 pb-16">
         {showAuthPanel ? <AuthPanel notice={authPanelNotice || authMessage} /> : (
           <>
