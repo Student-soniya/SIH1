@@ -23,6 +23,7 @@ import {
   Calculator, 
   Compass 
 } from 'lucide-react';
+import { SUPPORTED_LANGUAGES } from '../languageCatalog';
 
 export default function EntrepreneurLanding({ 
   onStartOnboarding, 
@@ -35,8 +36,6 @@ export default function EntrepreneurLanding({
 }) {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-500 selection:text-white">
-      
-      {/* 1. National Official Top Banner */}
       <div className="bg-slate-950 text-slate-300 text-[11px] py-1.5 px-4 border-b border-white/10 relative z-50">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-3 font-medium">
@@ -52,7 +51,6 @@ export default function EntrepreneurLanding({
               {tText(l10n.govtOfIndia, lang)}
             </span>
           </div>
-
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <div className="flex items-center space-x-1 text-slate-400">
@@ -75,7 +73,6 @@ export default function EntrepreneurLanding({
         </div>
       </div>
 
-      {/* 2. Main Sticky Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           
