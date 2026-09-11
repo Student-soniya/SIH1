@@ -11,10 +11,12 @@ import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
 import AuthModal from './components/AuthModal';
+import SihPortal from './pages/SihPortal';
 import { translations } from './translations';
 import confetti from 'canvas-confetti';
 
 export default function App() {
+  const [portalView, setPortalView] = useState('sih'); // 'sih' = SIH 2026 Homepage, 'schemeready' = SchemeReady App
   const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('onboarding');
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -124,6 +126,14 @@ export default function App() {
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
+  if (portalView === 'sih') {
+    return (
+      <SihPortal 
+        onSwitchToSchemeReady={() => setPortalView('schemeready')} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
       {/* Navigation Header */}
@@ -137,6 +147,7 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={() => setShowAuthModal(true)}
         onLogout={() => setCurrentUser(null)}
+        onBackToSih={() => setPortalView('sih')}
       />
 
       {/* Main Content Area */}

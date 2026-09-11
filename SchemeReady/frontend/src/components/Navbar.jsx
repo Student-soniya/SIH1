@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { translations } from '../translations';
 import { 
   Sparkles, 
@@ -27,7 +27,8 @@ export default function Navbar({
   readinessScore = 72,
   currentUser,
   onOpenAuth,
-  onLogout
+  onLogout,
+  onBackToSih
 }) {
   const t = translations[lang] || translations.en;
 
@@ -131,6 +132,16 @@ export default function Navbar({
             <span className="hidden sm:inline">{t.demoPersonaBtn}</span>
             <span className="sm:hidden">Ravi Persona</span>
           </button>
+
+          {onBackToSih && (
+            <button
+              onClick={onBackToSih}
+              className="flex items-center space-x-1.5 text-xs font-black bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 px-3.5 py-2 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Return to the Smart India Hackathon 2026 National Portal"
+            >
+              <span>🇮🇳 SIH 2026 Portal</span>
+            </button>
+          )}
         </div>
       </div>
 
