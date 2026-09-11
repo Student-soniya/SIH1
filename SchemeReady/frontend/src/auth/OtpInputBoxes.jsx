@@ -105,7 +105,7 @@ export default function OtpInputBoxes({
             onKeyDown={(e) => handleKeyDown(index, e)}
             onFocus={(e) => e.target.select()}
             aria-label={`Digit ${index + 1} of 6-digit verification code`}
-            className={`w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-mono font-black rounded-xl border transition-all select-none outline-none ${
+            className={`w-11 h-13 sm:w-12 sm:h-14 min-w-[42px] sm:min-w-[48px] min-h-[48px] text-center text-lg sm:text-xl font-mono font-black rounded-xl border transition-all select-none outline-none ${
               hasError
                 ? 'border-rose-400 bg-rose-50/50 text-rose-900 focus:ring-2 focus:ring-rose-300'
                 : isFilled

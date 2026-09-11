@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { translations } from '../translations';
 import { 
   Sparkles, 
@@ -15,7 +15,9 @@ import {
   User,
   LogIn,
   LogOut,
-  UserCircle2
+  UserCircle2,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { SUPPORTED_LANGUAGES } from '../languageCatalog';
@@ -31,6 +33,12 @@ export default function Navbar({
 }) {
   const t = translations[lang] || translations.en;
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSelectTab = (tabId) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false);
+  };
 
   // R5.9 — the admin entry is present only for an Admin session, so a non-admin never sees a
   // control that would only ever be refused.
@@ -72,16 +80,14 @@ export default function Navbar({
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
-                className="bg-transparent text-white font-medium focus:outline-none cursor-pointer text-xs"
+                className="bg-transparent text-white font-medium focus:outline-none cursor-pointer text-xs min-h-[36px]"
                 aria-label={t.navbar?.languageLabel || 'Select website language'}
               >
-                <option value="en" className="text-slate-900">English (EN)</option>
-                <option value="kn" className="text-slate-900">ಕನ್ನಡ (Kannada)</option>
-                <option value="hi" className="text-slate-900">हिन्दी (Hindi)</option>
-                <option value="ta" className="text-slate-900">தமிழ் (Tamil)</option>
-                <option value="te" className="text-slate-900">తెలుగు (Telugu)</option>
-                <option value="mr" className="text-slate-900">मराठी (Marathi)</option>
-                <option value="bn" className="text-slate-900">বাংলা (Bengali)</option>
+                {SUPPORTED_LANGUAGES.map((item) => (
+                  <option key={item.code} value={item.code} className="text-slate-900">
+                    {item.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -113,7 +119,7 @@ export default function Navbar({
             <button
               onClick={onGoToHome}
               className="flex items-center space-x-1.5 text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-2 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
-              title={t.navbar?.homePortal || "Return to the SchemeReady National Concessional Portal Front Page"}
+              title="Return to the SchemeReady National Concessional Portal Front Page"
             >
               <span>{t.navbar?.homePortal || "🏠 Home / Portal"}</span>
             </button>
@@ -121,33 +127,74 @@ export default function Navbar({
 
           {isAuthenticated ? (
             <div className="flex items-center space-x-2">
-              <span className="hidden sm:flex items-center space-x-1.5 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg">
+              <span className="hidden md:flex items-center space-x-1.5 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg">
                 <UserCircle2 className="w-4 h-4 text-slate-500" />
-                <span>{user?.displayName}</span>
+                <span className="truncate max-w-[120px]">{user?.displayName}</span>
               </span>
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 px-3.5 py-2 rounded-lg transition-all active:scale-95 cursor-pointer"
+                className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-lg transition-all active:scale-95 cursor-pointer min-h-[44px]"
               >
                 <LogOut className="w-4 h-4" />
-                <span>{t.navbar?.signOut || "Sign out"}</span>
+                <span className="hidden sm:inline">{t.navbar?.signOut || "Sign out"}</span>
               </button>
             </div>
           ) : (
             <button
               onClick={() => setActiveTab('login')}
-              aria-label={t.navbar?.signIn || t.loginBtn || "Sign in"}
-              className="flex items-center space-x-2 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/30 ring-2 ring-amber-300/60 active:scale-95 cursor-pointer"
+              aria-label="Sign in to SchemeReady"
+              className="flex items-center space-x-1.5 text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-900 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/30 ring-2 ring-amber-300/60 active:scale-95 cursor-pointer min-h-[44px]"
             >
               <LogIn className="w-4 h-4" />
               <span>{t.navbar?.signIn || t.loginBtn || "Sign in"}</span>
             </button>
           )}
+
+          {/* Mobile Hamburger Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="md:hidden flex items-center justify-center p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 active:bg-slate-200 min-h-[44px] min-w-[44px] cursor-pointer"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5 text-slate-900" /> : <Menu className="w-5 h-5 text-slate-900" />}
+          </button>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <nav className="border-t border-slate-100 bg-slate-50/70 overflow-x-auto no-scrollbar" aria-label={t.navbar?.primaryNavigation || 'Primary navigation'}>
+      {/* Mobile Collapsible Navigation Menu Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 bg-white shadow-xl p-3 max-h-[75vh] overflow-y-auto">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1 mb-1">
+            {t.navbar?.topBannerTitle || "Application Navigation"}
+          </div>
+          <div className="grid grid-cols-1 gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelectTab(item.id)}
+                  className={`flex items-center space-x-3 w-full px-3.5 py-3 rounded-xl text-xs font-bold text-left transition-all min-h-[44px] cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-700 text-white shadow-sm'
+                      : item.highlight
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : item.highlight ? 'text-amber-700' : 'text-slate-500'}`} />
+                  <span className="flex-1">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop / Tablet Horizontal Navigation Tabs */}
+      <nav className="border-t border-slate-100 bg-slate-50/70 overflow-x-auto no-scrollbar hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex space-x-1 py-1.5 min-w-max">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -156,7 +203,7 @@ export default function Navbar({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all min-h-[40px] cursor-pointer ${
                   isActive
                     ? 'bg-emerald-700 text-white shadow-sm shadow-emerald-700/20'
                     : item.highlight

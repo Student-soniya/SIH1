@@ -581,25 +581,25 @@ export default function DocumentChecklist({
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
                         {localizeTernary('लाभार्थी का नाम', 'Beneficiary Name', lang)}
                       </span>
-                      <span className="font-bold text-slate-900">{profile.fullName}</span>
+                      <span className="font-bold text-slate-900">{profile?.fullName || 'Beneficiary'}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                        {isHindi ? 'माता-पिता का नाम' : "Parents' Name"}
+                        {localizeTernary('माता-पिता का नाम', "Parents' Name", lang)}
                       </span>
-                      <span className="font-semibold text-slate-800">{profile.parentsName || 'Shri M. Venkataram'}</span>
+                      <span className="font-semibold text-slate-800">{profile?.parentsName || 'Guardian / Parents'}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
                         {localizeTernary('प्रमाण पत्र / संदर्भ संख्या', 'Reference / Certificate ID', lang)}
                       </span>
-                      <span className="font-mono text-emerald-700 font-bold">{profile.casteCertificateNo || 'RD0038921029-SC'}</span>
+                      <span className="font-mono text-emerald-700 font-bold">{profile?.casteCertificateNo || 'RD0038921029-SC'}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
                         {localizeTernary('वार्षिक पारिवारिक आय', 'Annual Family Income', lang)}
                       </span>
-                      <span className="font-bold text-slate-900 font-mono">₹{profile.annualFamilyIncome.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-slate-900 font-mono">₹{Number(profile?.annualFamilyIncome || 0).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
 

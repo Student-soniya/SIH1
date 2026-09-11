@@ -273,7 +273,7 @@ function AppShell() {
         {effectiveTab === 'partners' && <PartnerRouting lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} setNearestPartner={setNearestPartner} />}
         {effectiveTab === 'emi' && <EmiSimulator lang={lang} profile={profile} selectedScheme={selectedScheme} />}
         {effectiveTab === 'pack' && <ApplicationPack lang={lang} profile={profile} selectedScheme={selectedScheme} nearestPartner={nearestPartner} />}
-        {effectiveTab === 'admin' && isAdmin && <AdminPortal />}
+        {effectiveTab === 'admin' && isAdmin && <AdminPortal lang={lang} />}
       </main>
       <AIVoiceAssistant lang={lang} profile={profile} setProfile={setProfile} onNavigate={navigate} />
     </div>

@@ -18,11 +18,20 @@ import {
 import { matchSchemes } from '../api';
 import IllustrativeBadge from './IllustrativeBadge';
 
-function formatVerifiedDate(value, isHindi) {
+function formatVerifiedDate(value, lang = 'en') {
   if (!value) return localizeTernary('दर्ज नहीं', 'Not recorded', lang);
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return localizeTernary('दर्ज नहीं', 'Not recorded', lang);
-  return parsed.toLocaleDateString(localizeTernary('hi-IN', 'en-IN', lang), { day: 'numeric', month: 'long', year: 'numeric' });
+  const localeMap = {
+    hi: 'hi-IN',
+    kn: 'kn-IN',
+    ta: 'ta-IN',
+    te: 'te-IN',
+    mr: 'mr-IN',
+    bn: 'bn-IN',
+    en: 'en-IN'
+  };
+  return parsed.toLocaleDateString(localeMap[lang] || 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function ExplainableSchemeResults({ 
@@ -265,7 +274,7 @@ export default function ExplainableSchemeResults({
                   <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
                     <div className="flex items-center space-x-1 flex-wrap gap-y-1">
                       <Calendar className="w-3 h-3 text-emerald-600" />
-                      <span><strong>{t.schemes.verified}:</strong> {formatVerifiedDate(scheme.lastVerifiedDate, isHindi)}</span>
+                      <span><strong>{t.schemes.verified}:</strong> {formatVerifiedDate(scheme.lastVerifiedDate, lang)}</span>
                       <IllustrativeBadge record={scheme} />
                     </div>
                     <div className="flex items-center space-x-1 flex-wrap gap-y-1 text-slate-400">

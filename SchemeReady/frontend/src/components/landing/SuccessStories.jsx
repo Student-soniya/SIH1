@@ -1,3 +1,4 @@
+import { localizeTernary } from '../../l10n';
 import React from 'react';
 import { 
   Sparkles, 
@@ -89,15 +90,13 @@ export default function SuccessStories({ lang = 'en' }) {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-amber-100 text-amber-800 border border-amber-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Award className="w-3.5 h-3.5 text-amber-600" />
-            <span>{isHindi ? 'जमीनी प्रभाव की कहानियां' : 'Grassroots Impact Stories'}</span>
+            <span>{localizeTernary('जमीनी प्रभाव की कहानियां', 'Grassroots Impact Stories', lang)}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            {isHindi ? 'वास्तविक उद्यमी। वास्तविक रियायती प्रगति।' : 'Real Entrepreneurs. Real Subsidized Growth.'}
+            {localizeTernary('वास्तविक उद्यमी। वास्तविक रियायती प्रगति।', 'Real Entrepreneurs. Real Subsidized Growth.', lang)}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-            {isHindi 
-              ? 'देखें कि कैसे नागरिकों ने असंगठित दैनिक श्रम से आत्मनिर्भर व्यवसाय के स्वामी बनने के लिए भारत सरकार के रियायती ऋण का लाभ उठाया।' 
-              : 'See how grassroots citizens leveraged Government of India concessional credit to transition from unorganized daily labor to self-sustaining business owners.'}
+            {localizeTernary('देखें कि कैसे नागरिकों ने असंगठित दैनिक श्रम से आत्मनिर्भर व्यवसाय के स्वामी बनने के लिए भारत सरकार के रियायती ऋण का लाभ उठाया।', 'See how grassroots citizens leveraged Government of India concessional credit to transition from unorganized daily labor to self-sustaining business owners.', lang)}
           </p>
         </div>
 
@@ -125,11 +124,11 @@ export default function SuccessStories({ lang = 'en' }) {
                 {/* Loan & Impact Metrics Box */}
                 <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-400">{isHindi ? 'स्वीकृत योजना:' : 'Scheme Sanctioned:'}</span>
+                    <span className="text-slate-400">{localizeTernary('स्वीकृत योजना:', 'Scheme Sanctioned:', lang)}</span>
                     <span className="font-bold text-slate-800">{item.loanAmount}</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-400">{isHindi ? 'परिणाम:' : 'Outcome:'}</span>
+                    <span className="text-slate-400">{localizeTernary('परिणाम:', 'Outcome:', lang)}</span>
                     <span className="font-bold text-emerald-700">{item.impact}</span>
                   </div>
                 </div>
