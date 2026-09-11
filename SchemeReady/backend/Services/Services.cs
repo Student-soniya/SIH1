@@ -163,7 +163,12 @@ public class SchemeMatchingService : ISchemeMatchingService
                 OfficialUrl = scheme.OfficialUrl,
                 SourceDocument = scheme.SourceDocument,
                 LastVerifiedDate = scheme.LastVerifiedDate,
-                PartnerAvailability = localPartners.FirstOrDefault()?.InstitutionName ?? "State Channelizing Agency Available"
+                PartnerAvailability = localPartners.FirstOrDefault()?.InstitutionName ?? "State Channelizing Agency Available",
+
+                // Provenance projection only — no scoring or reason-string change (R2.2).
+                // DataProvenance is null when the row is verified, so it is omitted entirely.
+                IsIllustrative = scheme.IsIllustrative,
+                DataProvenance = DataProvenance.For(scheme.IsIllustrative)
             });
         }
 
@@ -517,6 +522,7 @@ public class PartnerRoutingService : IPartnerRoutingService
             query = query.OrderByDescending(p => p.SupportedSchemes.Contains(schemeId));
         }
 
-        return query.ToList();
+        // Provenance projection only — routing order is untouched (R2.2).
+        return DataProvenance.Project(query.ToList());
     }
 }

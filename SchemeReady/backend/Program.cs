@@ -1,7 +1,12 @@
-﻿using SchemeReady.Api.Data;
+using Microsoft.EntityFrameworkCore;
+using SchemeReady.Api.Data;
 using SchemeReady.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// A "--seed-only" run applies migrations, seeds, and exits without binding a listener.
+// Documented in docs/local-build-and-migrations.md.
+bool seedOnly = args.Contains("--seed-only");
 
 // Add Controllers
 builder.Services.AddControllers();
@@ -29,8 +34,26 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// PostgreSQL persistence. The connection string comes from the environment in deployment;
+// appsettings.json carries a non-functional placeholder only.
+var connectionString = builder.Configuration["SCHEMEREADY_DB_CONNECTION"]
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<SchemeReadyDbContext>(options =>
+    options.UseNpgsql(connectionString, npgsql =>
+    {
+        // R1.16: a connection attempt that cannot complete inside 30 seconds fails rather
+        // than hanging the request.
+        npgsql.CommandTimeout(30);
+    }));
+
 // Register Core Domain Services & Repository
-builder.Services.AddSingleton<ISchemeRepository, SchemeRepository>();
+// Scoped, not Singleton: the repository now shares the scoped DbContext lifetime.
+builder.Services.AddScoped<ISchemeRepository, EfSchemeRepository>();
+builder.Services.AddScoped<DatabaseSeeder>();
+// Singleton: it resolves its own scope per write, so it never enlists in a request's
+// transaction (design C9).
+builder.Services.AddSingleton<IAuditWriter, AuditWriter>();
 builder.Services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
 builder.Services.AddScoped<ISchemeMatchingService, SchemeMatchingService>();
 builder.Services.AddScoped<IBusinessPlanService, BusinessPlanService>();
@@ -38,6 +61,23 @@ builder.Services.AddScoped<IReadinessService, ReadinessService>();
 builder.Services.AddScoped<IPartnerRoutingService, PartnerRoutingService>();
 
 var app = builder.Build();
+
+// Apply migrations, then seed. The seeder only inserts rows whose primary key is absent,
+// so this is safe on every start (R1.13, R1.14).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SchemeReadyDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAsync();
+}
+
+if (seedOnly)
+{
+    app.Logger.LogInformation("--seed-only: migrations applied and seed complete. Exiting without serving requests.");
+    return;
+}
 
 // Enable Swagger UI always for development & judging demo
 app.UseSwagger();

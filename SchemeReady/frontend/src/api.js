@@ -1,3 +1,10 @@
+// The canonical provenance notice, byte-for-byte identical to DataProvenance.Text in
+// SchemeReady/backend/Services/DataProvenance.cs. Every fallback Scheme and ChannelPartner
+// below carries it together with isIllustrative: true, so the illustrative badge renders
+// identically whether a record came from the API or from these offline fallbacks (R2.9).
+export const DATA_PROVENANCE =
+  'Interest rate, cited source document and last-verified date are illustrative sample values pending verification against current official NSFDC guidelines.';
+
 ﻿const API_BASE = 'http://localhost:5000/api';
 
 export async function extractEntities(userSpeechOrText, lang = 'en') {
@@ -84,7 +91,9 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/micro-credit-scheme',
       sourceDocument: 'NSFDC Operational Guidelines 2024-26, Clause 4.2',
       lastVerifiedDate: '2026-09-10T00:00:00Z',
-      partnerAvailability: 'Karnataka State Dr. B.R. Ambedkar Development Corporation'
+      partnerAvailability: 'Karnataka State Dr. B.R. Ambedkar Development Corporation',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       schemeId: 'NSFDC-TLS-02',
@@ -108,7 +117,9 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/term-loan-scheme',
       sourceDocument: 'NSFDC Lending Policy Master Circular 2025-26',
       lastVerifiedDate: '2026-09-10T00:00:00Z',
-      partnerAvailability: 'Canara Bank MSME Hub'
+      partnerAvailability: 'Canara Bank MSME Hub',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       schemeId: 'NSFDC-LUY-04',
@@ -132,7 +143,9 @@ export async function matchSchemes(profile) {
       officialUrl: 'https://nsfdc.nic.in/schemes/laghu-udhyami',
       sourceDocument: 'Ministry of Social Justice & Empowerment Notification 2025',
       lastVerifiedDate: '2026-08-25T00:00:00Z',
-      partnerAvailability: 'Canara Bank - MSME Hub'
+      partnerAvailability: 'Canara Bank - MSME Hub',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     }
   ];
 }
@@ -349,7 +362,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar copy', 'Caste certificate (RD number)', 'Income certificate', 'Bank passbook copy', 'Quotation'],
       lastVerifiedDate: '2026-09-10T00:00:00Z',
       isOnlineSubmissionAvailable: false,
-      pincode: '560001'
+      pincode: '560001',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-PSB-02',
@@ -366,7 +381,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['KYC docs', 'Caste certificate', 'Income declaration', 'Business DPR', 'Vendor quotation'],
       lastVerifiedDate: '2026-09-08T00:00:00Z',
       isOnlineSubmissionAvailable: true,
-      pincode: '560001'
+      pincode: '560001',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-MFI-04',
@@ -383,7 +400,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar Card', 'Voter ID', 'Bank statement'],
       lastVerifiedDate: '2026-09-09T00:00:00Z',
       isOnlineSubmissionAvailable: true,
-      pincode: '560011'
+      pincode: '560011',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     {
       id: 'PART-RRB-03',
@@ -400,7 +419,9 @@ export async function getPartners(district = 'Bengaluru', schemeId = null) {
       documentRequirements: ['Aadhaar', 'Ration card', 'Caste cert', 'Quotation'],
       lastVerifiedDate: '2026-09-05T00:00:00Z',
       isOnlineSubmissionAvailable: false,
-      pincode: '560064'
+      pincode: '560064',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     }
   ];
 }
@@ -430,7 +451,9 @@ export async function generateApplicationPack(profile) {
       moratoriumMonths: 3,
       incomeLimit: 300000,
       lastVerifiedDate: '2026-09-10T00:00:00Z',
-      sourceDocument: 'NSFDC Operational Guidelines 2024-26, Clause 4.2'
+      sourceDocument: 'NSFDC Operational Guidelines 2024-26, Clause 4.2',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     eligibilityReasons: [
       'Applicant belongs to the target community (Scheduled Caste).',
@@ -446,7 +469,9 @@ export async function generateApplicationPack(profile) {
       contactPerson: 'Shri M. Nagaraj (District Manager)',
       address: 'No. 9 & 10, Vishweshwaraiah Towers, 9th Floor, Dr. Ambedkar Veedhi, Bengaluru - 560001',
       applicationMode: 'Offline',
-      lastVerifiedDate: '2026-09-10T00:00:00Z'
+      lastVerifiedDate: '2026-09-10T00:00:00Z',
+      isIllustrative: true,
+      dataProvenance: DATA_PROVENANCE
     },
     trackingStatus: 'Ready for Submission',
     handoffReferenceNumber: 'SURAJ-2026-DEMO-7729',

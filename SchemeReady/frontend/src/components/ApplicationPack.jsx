@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateApplicationPack, handoffToSuraj } from '../api';
+import IllustrativeBadge, { anyIllustrative } from './IllustrativeBadge';
 
 export default function ApplicationPack({ 
   lang, 
@@ -170,9 +171,11 @@ export default function ApplicationPack({
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-emerald-950">
                 {pack.selectedScheme.name} ({pack.selectedScheme.id})
+                <IllustrativeBadge record={pack.selectedScheme} className="ml-2" />
               </span>
               <span className="text-xs font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
                 Interest: {pack.selectedScheme.interestRate}% p.a. | Tenure: {pack.selectedScheme.maximumTenureMonths} mo
+                <IllustrativeBadge record={pack.selectedScheme} className="ml-1.5" />
               </span>
             </div>
             <ul className="text-xs text-emerald-900 space-y-1">
@@ -237,6 +240,29 @@ export default function ApplicationPack({
             <strong className="block font-bold mb-0.5">Official Government Disclaimer:</strong>
             {pack.disclaimer}
           </div>
+
+          {/*
+            Shown in addition to — never instead of — the disclaimer above, whenever any
+            scheme in this dossier is still illustrative or omits the flag (R2.8). The
+            printed pack is what a beneficiary carries to a branch counter, so the
+            financial terms on it must be flagged as requiring confirmation there.
+          */}
+          {anyIllustrative([pack.selectedScheme]) && (
+            <div
+              className="bg-rose-50/70 border border-rose-200 rounded-xl p-3.5 text-[11px] text-rose-950 leading-relaxed"
+              data-testid="illustrative-pack-notice"
+            >
+              <strong className="block font-bold mb-0.5 flex items-center gap-1.5">
+                Confirm the financial terms before you submit
+                <IllustrativeBadge record={pack.selectedScheme} />
+              </strong>
+              The scheme financial terms shown in this pack — interest rate, tenure,
+              moratorium, loan ceiling, the cited source document and the last-verified
+              date — are illustrative sample values pending verification against current
+              official NSFDC guidelines. Confirm every one of them with the channel partner
+              named above before submitting this application.
+            </div>
+          )}
           <div className="flex justify-between items-center text-[10px] text-slate-400 pt-3 border-t border-slate-100">
             <span>Powered by SchemeReady GovTech Framework</span>
             <span>Ref: {pack.handoffReferenceNumber}</span>
