@@ -14,31 +14,23 @@ import {
 import confetti from 'canvas-confetti';
 import { getReadiness, uploadDocument } from '../api';
 
-/** The four document keys the server accepts (R6.1). Checklist rows outside this set are
- *  derived, not uploaded, so they get no file control. */
 const UPLOADABLE_KEYS = ['identity', 'caste_cert', 'income_cert', 'quotation'];
-
-/** Mirrors the server's accepted extensions and 5 MiB ceiling so an obviously wrong file gets
- *  instant feedback. The server re-checks everything — including the magic bytes, which a browser
- *  cannot see — so this is a courtesy, never the guarantee. */
 const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
 const MAX_BYTES = 5 * 1024 * 1024;
 
 export default function ReadinessDashboard({
-  lang,
+  lang = 'en',
   profile,
   setProfile,
   onProceedToBusinessPlan
 }) {
   const t = translations[lang] || translations.en;
+  const isHindi = lang === 'hi';
   const [readinessData, setReadinessData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
-  // One upload at a time, with an explicit phase so the UI can show progress, then an
-  // unmistakable success or failure state.
   const [upload, setUpload] = useState({ key: null, phase: 'idle', message: null, fileName: null });
-
   const fileInputs = useRef({});
 
   useEffect(() => {
@@ -53,13 +45,11 @@ export default function ReadinessDashboard({
           setLoadError(null);
         }
       } catch (err) {
-        // R5.11 — the readiness endpoint is protected and has no fallback. Previously loaded
-        // data stays on screen; the banner says the refresh failed rather than inventing one.
         if (!cancelled) {
           setLoadError(
             err?.status === 401
-              ? 'Your session ended before the checklist could refresh. Please sign in again.'
-              : 'The readiness checklist could not be refreshed. The figures below may be out of date.'
+              ? (isHindi ? 'चेकलिस्ट रीफ्रेश होने से पहले आपका सत्र समाप्त हो गया। कृपया दोबारा साइन इन करें।' : 'Your session ended before the checklist could refresh. Please sign in again.')
+              : (isHindi ? 'तत्परता चेकलिस्ट को रीफ्रेश नहीं किया जा सका।' : 'The readiness checklist could not be refreshed. The figures below may be out of date.')
           );
         }
       } finally {
@@ -69,29 +59,32 @@ export default function ReadinessDashboard({
 
     fetchReadiness();
     return () => { cancelled = true; };
-  }, [profile]);
+  }, [profile, isHindi]);
 
-  /** Local pre-check. Returns null when the file looks acceptable. */
   const preCheck = (file) => {
     const name = file.name || '';
     const dot = name.lastIndexOf('.');
     const extension = dot >= 0 ? name.slice(dot).toLowerCase() : '';
 
     if (!ACCEPTED_EXTENSIONS.includes(extension)) {
-      return `Choose a ${ACCEPTED_EXTENSIONS.join(', ')} file. “${name}” is not one of these.`;
+      return isHindi 
+        ? `${ACCEPTED_EXTENSIONS.join(', ')} फ़ाइल चुनें। "${name}" समर्थित नहीं है।`
+        : `Choose a ${ACCEPTED_EXTENSIONS.join(', ')} file. “${name}” is not one of these.`;
     }
     if (file.size === 0) {
-      return 'That file is empty. Please choose the scanned document itself.';
+      return isHindi ? 'वह फ़ाइल खाली है। कृपया स्कैन किया गया दस्तावेज चुनें।' : 'That file is empty. Please choose the scanned document itself.';
     }
     if (file.size > MAX_BYTES) {
-      return `That file is ${(file.size / (1024 * 1024)).toFixed(1)} MB. The limit is 5 MB — try a lower-resolution scan.`;
+      return isHindi 
+        ? `फ़ाइल का आकार ${(file.size / (1024 * 1024)).toFixed(1)} MB है। सीमा 5 MB है।`
+        : `That file is ${(file.size / (1024 * 1024)).toFixed(1)} MB. The limit is 5 MB — try a lower-resolution scan.`;
     }
     return null;
   };
 
   const handleFileChosen = async (key, event) => {
     const file = event.target.files?.[0];
-    event.target.value = '';                 // allow re-picking the same file after a failure
+    event.target.value = '';
     if (!file) return;
 
     const localFailure = preCheck(file);
@@ -108,12 +101,12 @@ export default function ReadinessDashboard({
       setUpload({
         key,
         phase: 'success',
-        message: `Uploaded — readiness is now ${result.readinessScore}%.`,
+        message: isHindi 
+          ? `अपलोड सफल — तत्परता स्कोर अब ${result.readinessScore}% है।`
+          : `Uploaded — readiness is now ${result.readinessScore}%.`,
         fileName: result.originalFileName
       });
 
-      // The score in the 201 body is the authority; the local profile is updated to match so
-      // the header meter and the checklist agree.
       setProfile((prev) => {
         const next = { ...prev };
         if (key === 'caste_cert') next.hasCasteCertificate = true;
@@ -126,9 +119,9 @@ export default function ReadinessDashboard({
           quotation: 'Business quotation'
         }[key];
 
-        next.uploadedDocs = prev.uploadedDocs.includes(label)
+        next.uploadedDocs = prev.uploadedDocs?.includes(label)
           ? prev.uploadedDocs
-          : [...prev.uploadedDocs, label];
+          : [...(prev.uploadedDocs || []), label];
 
         return next;
       });
@@ -139,18 +132,59 @@ export default function ReadinessDashboard({
         key,
         phase: 'error',
         message: err?.status === 401
-          ? 'Your session ended before the upload finished. Please sign in and try again.'
-          : (err?.message || 'The upload was rejected. Nothing was saved — please try again.'),
+          ? (isHindi ? 'सत्र समाप्त हो गया। कृपया साइन इन करें और पुनः प्रयास करें।' : 'Your session ended before the upload finished. Please sign in and try again.')
+          : (err?.message || (isHindi ? 'अपलोड अस्वीकार कर दिया गया। कृपया पुनः प्रयास करें।' : 'The upload was rejected. Nothing was saved — please try again.')),
         fileName: file.name
       });
     }
+  };
+
+  const translateItemTitle = (title) => {
+    if (!isHindi || !title) return title;
+    if (title.includes('Identity') || title.includes('Aadhaar')) return 'पहचान एवं पता प्रमाण (आधार / मतदाता पहचान)';
+    if (title.includes('Caste')) return 'सामुदायिक जाति प्रमाण पत्र (आरडी नंबर)';
+    if (title.includes('Income')) return 'पारिवारिक आय प्रमाण पत्र (सक्षम प्राधिकारी)';
+    if (title.includes('Quotation') || title.includes('Machinery')) return 'व्यावसायिक मशीनरी / स्टॉक कोटेशन';
+    if (title.includes('Project Report') || title.includes('DPR')) return 'व्यवसाय व्यवहार्यता परियोजना रिपोर्ट (डीपीआर)';
+    if (title.includes('Bank')) return 'बैंक खाता एवं आईएफएससी विवरण';
+    return title;
+  };
+
+  const translateItemWhy = (text) => {
+    if (!isHindi || !text) return text;
+    if (text.includes('Scheduled Caste') || text.includes('category')) {
+      return 'रियायती ऋण ब्याज दरों (4%-8%) और लक्षित लाभार्थी सत्यापन के लिए अनिवार्य है।';
+    }
+    if (text.includes('Income') || text.includes('threshold')) {
+      return 'यह पुष्टि करने के लिए आवश्यक है कि परिवार की आय बीपीएल/योजना पात्रता सीमा के भीतर है।';
+    }
+    if (text.includes('Identity') || text.includes('KYC')) {
+      return 'डीबीटी और प्रत्यक्ष बैंक हस्तांतरण के लिए आधार सत्यापन आवश्यक है।';
+    }
+    if (text.includes('Quotation') || text.includes('equipment')) {
+      return 'मशीनरी खरीद और ऋण मूल्यांकन के लिए विक्रेता कोटेशन आवश्यक है।';
+    }
+    if (text.includes('Project') || text.includes('feasibility')) {
+      return 'बैंक ऋण स्वीकृति के लिए डीएससीआर और शुद्ध लाभप्रदता का तकनीकी मूल्यांकन।';
+    }
+    return text;
+  };
+
+  const translateStatus = (st) => {
+    if (!isHindi) return st;
+    if (st === 'Complete' || st === 'Verified') return 'पूर्ण / सत्यापित';
+    if (st === 'Missing') return 'अनुपलब्ध';
+    if (st === 'Pending') return 'समीक्षाधीन';
+    return st;
   };
 
   if (loading && !readinessData) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm text-slate-600">Calculating Application Readiness Score...</p>
+        <p className="text-sm text-slate-600">
+          {isHindi ? 'आवेदन तत्परता स्कोर की गणना की जा रही है...' : 'Calculating Application Readiness Score...'}
+        </p>
       </div>
     );
   }
@@ -160,10 +194,12 @@ export default function ReadinessDashboard({
       <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-3">
         <XCircle className="w-10 h-10 text-rose-500 mx-auto" />
         <p className="text-sm font-semibold text-slate-800">
-          {loadError || 'The readiness checklist is unavailable right now.'}
+          {loadError || (isHindi ? 'तत्परता चेकलिस्ट अभी उपलब्ध नहीं है।' : 'The readiness checklist is unavailable right now.')}
         </p>
         <p className="text-xs text-slate-500">
-          Nothing has been lost — reload once you are signed in and your checklist will reappear.
+          {isHindi 
+            ? 'साइन इन करने के बाद पुनः लोड करें और आपकी चेकलिस्ट फिर से दिखाई देगी।' 
+            : 'Nothing has been lost — reload once you are signed in and your checklist will reappear.'}
         </p>
       </div>
     );
@@ -178,7 +214,7 @@ export default function ReadinessDashboard({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Feature 3: Application Readiness Score</span>
+            <span>{isHindi ? 'सुविधा 3: आवेदन तत्परता स्कोर' : 'Feature 3: Application Readiness Score'}</span>
           </div>
           <h2 className="text-2xl font-bold text-slate-900">{t.readiness.title}</h2>
           <p className="text-sm text-slate-600 mt-1">{t.readiness.subtitle}</p>
@@ -202,8 +238,14 @@ export default function ReadinessDashboard({
             <span className="absolute font-black text-xs text-white">{score}%</span>
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Overall Status</div>
-            <div className="text-sm font-bold">{score >= 80 ? 'High Submission Readiness' : 'Action Required'}</div>
+            <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+              {isHindi ? 'समग्र स्थिति' : 'Overall Status'}
+            </div>
+            <div className="text-sm font-bold">
+              {isHindi 
+                ? (score >= 80 ? 'उच्च प्रस्तुति तत्परता' : 'कार्रवाई आवश्यक') 
+                : (score >= 80 ? 'High Submission Readiness' : 'Action Required')}
+            </div>
           </div>
         </div>
       </div>
@@ -215,19 +257,32 @@ export default function ReadinessDashboard({
         </div>
       )}
 
-      {/* Upload guidance — stated once, up front, so no row has to repeat it */}
+      {/* Upload guidance */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 flex items-start space-x-2">
         <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-bold text-slate-800 text-sm">How to upload a document</p>
-          <p>
-            Use the <strong>Upload</strong> button on any row below and pick the file from your phone or computer.
-            Accepted formats are <strong>PDF, JPG and PNG</strong>, up to <strong>5 MB</strong> each. A clear photo of
-            the full page is fine.
+          <p className="font-bold text-slate-800 text-sm">
+            {isHindi ? 'दस्तावेज कैसे अपलोड करें' : 'How to upload a document'}
           </p>
           <p>
-            Uploading again for the same row replaces the earlier file. Your documents are stored privately and are
-            visible only to you and the channel partner handling your application.
+            {isHindi ? (
+              <>
+                नीचे किसी भी पंक्ति पर <strong>अपलोड</strong> बटन का उपयोग करें और अपने फोन या कंप्यूटर से फाइल चुनें। 
+                स्वीकृत प्रारूप <strong>पीडीएफ, जेपीजी और पीएनजी</strong> हैं, प्रत्येक <strong>5 एमबी</strong> तक।
+              </>
+            ) : (
+              <>
+                Use the <strong>Upload</strong> button on any row below and pick the file from your phone or computer.
+                Accepted formats are <strong>PDF, JPG and PNG</strong>, up to <strong>5 MB</strong> each.
+              </>
+            )}
+          </p>
+          <p>
+            {isHindi ? (
+              'उसी पंक्ति के लिए दोबारा अपलोड करने पर पुरानी फाइल बदल जाती है। आपके दस्तावेज निजी और सुरक्षित हैं।'
+            ) : (
+              'Uploading again for the same row replaces the earlier file. Your documents are stored privately and securely.'
+            )}
           </p>
         </div>
       </div>
@@ -236,13 +291,18 @@ export default function ReadinessDashboard({
       <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center space-x-3 text-emerald-950 text-xs sm:text-sm">
           <Sparkles className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span><strong>Next Recommended Action:</strong> {readinessData.nextRecommendedAction}</span>
+          <span>
+            <strong>{isHindi ? 'अगली अनुशंसित कार्रवाई:' : 'Next Recommended Action:'}</strong>{' '}
+            {isHindi 
+              ? 'रियायती ऋण के लिए बैंक-स्वीकृत 1-पेज एआई प्रोजेक्ट रिपोर्ट (DPR) तैयार करें।' 
+              : readinessData.nextRecommendedAction}
+          </span>
         </div>
         <button
           onClick={onProceedToBusinessPlan}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 flex items-center space-x-1.5"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 flex items-center space-x-1.5 cursor-pointer"
         >
-          <span>AI Project Report</span>
+          <span>{isHindi ? 'AI प्रोजेक्ट रिपोर्ट' : 'AI Project Report'}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -250,8 +310,8 @@ export default function ReadinessDashboard({
       {/* Itemized Readiness Checklist */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs font-bold text-slate-700">
-          <span>Requirement &amp; Verification Item</span>
-          <span>Status &amp; Remediation Action</span>
+          <span>{isHindi ? 'आवश्यकता एवं सत्यापन वस्तु' : 'Requirement & Verification Item'}</span>
+          <span>{isHindi ? 'स्थिति एवं सुधारात्मक कार्रवाई' : 'Status & Remediation Action'}</span>
         </div>
 
         <div className="divide-y divide-slate-100">
@@ -267,20 +327,20 @@ export default function ReadinessDashboard({
                   {/* Left details */}
                   <div className="space-y-1.5 max-w-2xl">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-slate-900 text-sm">{item.title}</span>
+                      <span className="font-bold text-slate-900 text-sm">{translateItemTitle(item.title)}</span>
                       {item.isMandatory ? (
                         <span className="text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md">
-                          Mandatory
+                          {isHindi ? 'अनिवार्य' : 'Mandatory'}
                         </span>
                       ) : (
                         <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
-                          Optional
+                          {isHindi ? 'वैकल्पिक' : 'Optional'}
                         </span>
                       )}
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      <strong>{t.readiness.whyReq}</strong> {item.whyRequired}
+                      <strong>{t.readiness.whyReq}</strong> {translateItemWhy(item.whyRequired)}
                     </p>
 
                     {/* How to obtain banner if missing */}
@@ -290,9 +350,9 @@ export default function ReadinessDashboard({
                           <Info className="w-3.5 h-3.5 text-amber-600" />
                           <span>{t.readiness.howTo}</span>
                         </div>
-                        <p>{item.howToObtain}</p>
+                        <p>{isHindi ? 'तहसीलदार कार्यालय / नादकचेरी या डिजिलॉकर के माध्यम से प्राप्त करें।' : item.howToObtain}</p>
                         <div className="text-[11px] text-amber-700">
-                          <span>Accepted formats: {item.acceptedFormats}</span>
+                          <span>{isHindi ? 'स्वीकृत प्रारूप: पीडीएफ, जेपीजी, पीएनजी' : `Accepted formats: ${item.acceptedFormats}`}</span>
                         </div>
                       </div>
                     )}
@@ -308,14 +368,11 @@ export default function ReadinessDashboard({
                         : 'bg-amber-100 text-amber-800 border border-amber-300'
                     }`}>
                       {isComplete ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-                      <span>{item.status}</span>
+                      <span>{translateStatus(item.status)}</span>
                     </span>
 
                     {canUpload && (
                       <>
-                        {/* The real control. A hidden native input keeps the styled button while
-                            the browser's own file picker does the choosing — there is no simulated
-                            upload path left in this component. */}
                         <input
                           ref={(el) => { fileInputs.current[item.key] = el; }}
                           type="file"
@@ -328,33 +385,32 @@ export default function ReadinessDashboard({
                           type="button"
                           onClick={() => fileInputs.current[item.key]?.click()}
                           disabled={rowUpload?.phase === 'uploading'}
-                          aria-label={`Upload ${item.title} — PDF, JPG or PNG up to 5 MB`}
-                          className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95"
+                          aria-label={`Upload ${item.title}`}
+                          className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
                         >
                           {rowUpload?.phase === 'uploading'
                             ? <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-300" />
                             : <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />}
                           <span>
                             {rowUpload?.phase === 'uploading'
-                              ? 'Uploading…'
-                              : isComplete ? 'Replace file' : t.readiness.uploadBtn}
+                              ? (isHindi ? 'अपलोड हो रहा है…' : 'Uploading…')
+                              : isComplete ? (isHindi ? 'फ़ाइल बदलें' : 'Replace file') : (isHindi ? 'दस्तावेज अपलोड करें' : t.readiness.uploadBtn)}
                           </span>
                         </button>
 
-                        <p className="text-[10px] text-slate-400">PDF, JPG or PNG · up to 5 MB</p>
+                        <p className="text-[10px] text-slate-400">
+                          {isHindi ? 'पीडीएफ, जेपीजी या पीएनजी · अधिकतम 5 एमबी' : 'PDF, JPG or PNG · up to 5 MB'}
+                        </p>
                       </>
                     )}
 
-                    {/* Progress. Deliberately indeterminate: a percentage would have to be
-                        invented, since the response arrives only once the whole file has been
-                        sent and validated. */}
                     {rowUpload?.phase === 'uploading' && (
                       <div className="w-full md:w-56 space-y-1" role="status" aria-live="polite">
                         <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                           <div className="h-full w-1/3 bg-emerald-500 rounded-full animate-pulse" />
                         </div>
                         <p className="text-[11px] text-slate-500 text-right">
-                          Sending {rowUpload.fileName} and checking it…
+                          {isHindi ? `${rowUpload.fileName} भेजा जा रहा है…` : `Sending ${rowUpload.fileName} and checking it…`}
                         </p>
                       </div>
                     )}
@@ -380,8 +436,6 @@ export default function ReadinessDashboard({
                       </div>
                     )}
 
-                    {/* Rendered as a text child, so markup characters in a client-supplied
-                        filename appear as characters (R6.8). */}
                     {isComplete && item.uploadedFileName && (
                       <span className="text-[11px] text-slate-500 font-mono flex items-center space-x-1">
                         <FileText className="w-3 h-3 text-slate-400" />

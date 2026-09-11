@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Globe2, 
   Phone, 
@@ -9,6 +9,7 @@ import {
   Type, 
   ExternalLink 
 } from 'lucide-react';
+import { translations } from '../translations';
 
 export default function GovUtilityHeader({ 
   lang = 'en', 
@@ -19,6 +20,7 @@ export default function GovUtilityHeader({
   highContrast,
   setHighContrast
 }) {
+  const t = translations[lang] || translations.en;
   return (
     <header className="w-full bg-[#0D2A4A] text-slate-200 border-b border-white/10 relative z-50">
       {/* Top Tricolor Accent Ribbon */}
@@ -31,15 +33,15 @@ export default function GovUtilityHeader({
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span className="font-extrabold tracking-wide text-white text-[11px] sm:text-xs">
-              GOVERNMENT OF INDIA
+              {t.govHeader?.govtOfIndia || "GOVERNMENT OF INDIA"}
             </span>
           </div>
           <span className="text-slate-500 hidden sm:inline">|</span>
           <span className="text-slate-300 font-medium hidden md:inline text-[11px]">
-            Ministry of Social Justice &amp; Empowerment &bull; Ministry of MSME
+            {t.govHeader?.ministries || "Ministry of Social Justice & Empowerment • Ministry of MSME"}
           </span>
           <span className="text-amber-400 font-mono text-[10px] hidden lg:inline bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
-            PM-SURAJ &amp; NSFDC Sovereign Portal
+            {t.govHeader?.sovereignPortal || "PM-SURAJ & NSFDC Sovereign Portal"}
           </span>
         </div>
 
@@ -49,7 +51,7 @@ export default function GovUtilityHeader({
           {/* National Helpline */}
           <div className="hidden sm:flex items-center space-x-1.5 text-slate-300 text-[11px]">
             <Phone className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Toll-Free Helpline:</span>
+            <span>{t.govHeader?.tollFree || "Toll-Free Helpline:"}</span>
             <span className="font-mono font-bold text-white tracking-wide">1800-11-2026</span>
           </div>
 
@@ -90,7 +92,7 @@ export default function GovUtilityHeader({
             aria-label="Toggle High Contrast Mode"
           >
             <SunMedium className="w-3.5 h-3.5" />
-            <span className="hidden xl:inline text-[10px]">Contrast</span>
+            <span className="hidden xl:inline text-[10px]">{t.govHeader?.contrast || "Contrast"}</span>
           </button>
 
           {/* Language Selector */}
@@ -120,7 +122,7 @@ export default function GovUtilityHeader({
               title="Return to the Main Portal Homepage"
             >
               <ArrowLeft className="w-3 h-3 text-amber-400" />
-              <span>Portal Home</span>
+              <span>{t.govHeader?.portalHome || "Portal Home"}</span>
             </button>
           )}
 

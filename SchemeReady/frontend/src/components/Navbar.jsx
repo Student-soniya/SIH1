@@ -59,10 +59,10 @@ export default function Navbar({
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2 font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-100 font-semibold text-xs tracking-wide">National Concessional Entrepreneurship &amp; Credit Platform</span>
+            <span className="text-emerald-100 font-semibold text-xs tracking-wide">{t.navbar?.topBannerTitle || "National Concessional Entrepreneurship & Credit Platform"}</span>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-emerald-200 text-[11px]">● Clean Balance Sheet &amp; 0% Overdue Verified</span>
+            <span className="text-emerald-200 text-[11px]">{t.navbar?.cleanBalanceSheet || "● Clean Balance Sheet & 0% Overdue Verified"}</span>
             <div className="flex items-center space-x-1 border-l border-emerald-700 pl-3">
               <Globe2 className="w-3.5 h-3.5 text-emerald-300" />
               <select
@@ -93,7 +93,7 @@ export default function Navbar({
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-black tracking-tight text-slate-900">{t.appTitle}</h1>
               <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md">
-                Citizen Portal
+                {t.navbar?.citizenPortal || "Citizen Portal"}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium">
@@ -102,10 +102,7 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Demo persona, then the session control in the top-right corner.
-            The sign-in button is the highest-contrast element in the header — solid amber on
-            white, where every other header control is a muted emerald outline — because it is
-            the one action an unrecognised visitor needs to find immediately. */}
+        {/* Demo persona, then the session control in the top-right corner */}
         <div className="flex items-center space-x-3 ml-auto">
 
           <button
@@ -115,7 +112,7 @@ export default function Navbar({
           >
             <UserCheck className="w-4 h-4 text-emerald-600" />
             <span className="hidden sm:inline">{t.demoPersonaBtn}</span>
-            <span className="sm:hidden">Ravi Persona</span>
+            <span className="sm:hidden">{t.navbar?.raviPersonaMobile || "Ravi Persona"}</span>
           </button>
 
           {onGoToHome && (
@@ -124,7 +121,7 @@ export default function Navbar({
               className="flex items-center space-x-1.5 text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-2 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
               title="Return to the SchemeReady National Concessional Portal Front Page"
             >
-              <span>🏠 Home / Portal</span>
+              <span>{t.navbar?.homePortal || "🏠 Home / Portal"}</span>
             </button>
           )}
 
@@ -136,20 +133,20 @@ export default function Navbar({
               </span>
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 px-3.5 py-2 rounded-lg transition-all active:scale-95"
+                className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 px-3.5 py-2 rounded-lg transition-all active:scale-95 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Sign out</span>
+                <span>{t.navbar?.signOut || "Sign out"}</span>
               </button>
             </div>
           ) : (
             <button
               onClick={() => setActiveTab('login')}
               aria-label="Sign in to SchemeReady"
-              className="flex items-center space-x-2 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/30 ring-2 ring-amber-300/60 active:scale-95"
+              className="flex items-center space-x-2 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/30 ring-2 ring-amber-300/60 active:scale-95 cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
-              <span>Sign in</span>
+              <span>{t.navbar?.signIn || t.loginBtn || "Sign in"}</span>
             </button>
           )}
         </div>

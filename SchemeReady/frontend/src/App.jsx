@@ -165,6 +165,7 @@ function AppShell() {
         />
         <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
           <AuthPortal
+            lang={lang}
             notice={authPanelNotice || authMessage}
             initialMode={activeTab === 'login' ? 'login' : 'signup'}
             onSuccess={() => {
@@ -192,7 +193,7 @@ function AppShell() {
         onGoToHome={() => setPortalView('landing')}
       />
       <main className="flex-1 pb-16">
-        {effectiveTab === 'profile' && <BeneficiaryProfileView profile={profile} setProfile={setProfile} onSaveDone={() => navigate('onboarding')} />}
+        {effectiveTab === 'profile' && <BeneficiaryProfileView lang={lang} profile={profile} setProfile={setProfile} onSaveDone={() => navigate('onboarding')} />}
         {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} setLang={setLang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
         {effectiveTab === 'schemes' && <ExplainableSchemeResults lang={lang} profile={profile} selectedScheme={selectedScheme} setSelectedScheme={setSelectedScheme} onProceedToReadiness={(s) => { setSelectedScheme(s); navigate('readiness'); }} />}
         {effectiveTab === 'readiness' && <ReadinessDashboard lang={lang} profile={profile} setProfile={setProfile} onProceedToBusinessPlan={() => navigate('businessPlan')} />}

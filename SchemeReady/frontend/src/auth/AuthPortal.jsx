@@ -22,6 +22,7 @@ import {
   LogIn
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
+import { translations } from '../translations';
 import { 
   validateEmail, 
   validatePassword, 
@@ -34,11 +35,14 @@ import {
 } from './validation';
 
 export default function AuthPortal({ 
+  lang = 'en',
   notice, 
   initialMode = 'login', 
   onSuccess, 
   onBackToPortal 
 }) {
+  const t = translations[lang] || translations.en;
+  const tAuth = t.auth || {};
   const { login, signup, authMessage } = useAuth();
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
 
@@ -98,7 +102,7 @@ export default function AuthPortal({
   };
 
   const strengthScore = calculateStrength();
-  const strengthLabels = ['Too Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+  const strengthLabels = tAuth.strengthLevels || ['Too Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
   const strengthColors = [
     'bg-rose-500', 
     'bg-amber-500', 
@@ -241,13 +245,13 @@ export default function AuthPortal({
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-xl font-black tracking-tight text-white">SchemeReady</h1>
+                  <h1 className="text-xl font-black tracking-tight text-white">{t.appTitle}</h1>
                   <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded">
-                    UDYAM SAARTHI
+                    {tAuth.udyamSaarthi || "UDYAM SAARTHI"}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 font-medium">
-                  National Concessional Credit Readiness Portal
+                  {tAuth.readinessPortal || "National Concessional Credit Readiness Portal"}
                 </p>
               </div>
             </div>
@@ -256,13 +260,13 @@ export default function AuthPortal({
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md space-y-1 text-left">
               <div className="flex items-center space-x-2 text-[10px] font-mono uppercase text-amber-400 font-bold">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span>Sovereign Citizen Gateway</span>
+                <span>{tAuth.sovereignGateway || "Sovereign Citizen Gateway"}</span>
               </div>
               <p className="text-xs font-bold text-white">
-                Under NSFDC &amp; Ministry of Social Justice and Empowerment
+                {tAuth.ministrySubtitle || "Under NSFDC & Ministry of Social Justice and Empowerment"}
               </p>
               <p className="text-[11px] text-slate-300 leading-relaxed font-normal">
-                PM-SURAJ Aligned &bull; Concessional loans at 4.0% to 8.0% interest rate for SC, OBC &amp; first-time entrepreneurs.
+                {tAuth.concessionalDescription || "PM-SURAJ Aligned • Concessional loans at 4.0% to 8.0% interest rate for SC, OBC & first-time entrepreneurs."}
               </p>
             </div>
 
@@ -273,9 +277,9 @@ export default function AuthPortal({
                   <Coins className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">AI-Powered Scheme Matching</h4>
+                  <h4 className="text-xs font-bold text-white">{tAuth.aiMatching || "AI-Powered Scheme Matching"}</h4>
                   <p className="text-[11px] text-slate-300 font-normal">
-                    Explainable matching to Micro Credit (5%), MSY (4%), and Term Loans.
+                    {tAuth.aiMatchingDesc || "Explainable matching to Micro Credit (5%), MSY (4%), and Term Loans."}
                   </p>
                 </div>
               </div>
@@ -285,9 +289,9 @@ export default function AuthPortal({
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Zero-Collateral Readiness Check</h4>
+                  <h4 className="text-xs font-bold text-white">{tAuth.collateralFree || "Zero-Collateral Readiness Check"}</h4>
                   <p className="text-[11px] text-slate-300 font-normal">
-                    92% survival probability predictor with pre-calculated bank DSCR.
+                    {tAuth.collateralFreeDesc || "92% survival probability predictor with pre-calculated bank DSCR."}
                   </p>
                 </div>
               </div>
@@ -297,9 +301,9 @@ export default function AuthPortal({
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">DigiLocker 1-Click Verification</h4>
+                  <h4 className="text-xs font-bold text-white">{tAuth.digilocker || "DigiLocker 1-Click Verification"}</h4>
                   <p className="text-[11px] text-slate-300 font-normal">
-                    Official Tahsildar caste and income certificate pull with QR code authenticity.
+                    {tAuth.digilockerDesc || "Official Tahsildar caste and income certificate pull with QR code authenticity."}
                   </p>
                 </div>
               </div>
@@ -309,9 +313,9 @@ export default function AuthPortal({
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Direct Channel Partner Routing</h4>
+                  <h4 className="text-xs font-bold text-white">{tAuth.channelRouting || "Direct Channel Partner Routing"}</h4>
                   <p className="text-[11px] text-slate-300 font-normal">
-                    Direct handoff to 100+ authorized SCAs &amp; RRBs with 0% overdue.
+                    {tAuth.channelRoutingDesc || "Direct handoff to 100+ authorized SCAs & RRBs with 0% overdue."}
                   </p>
                 </div>
               </div>
@@ -324,13 +328,13 @@ export default function AuthPortal({
             <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400">
               <span className="flex items-center space-x-1">
                 <Lock className="w-3 h-3 text-emerald-400" />
-                <span>256-Bit AES Encryption</span>
+                <span>{tAuth.encryption || "256-Bit AES Encryption"}</span>
               </span>
-              <span>DPDP Act 2023 Compliant</span>
+              <span>{tAuth.compliance || "DPDP Act 2023 Compliant"}</span>
             </div>
             <div className="flex items-center space-x-1.5 text-[10px] text-emerald-400 font-mono">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Direct Benefit Transfer (DBT) Ready Infrastructure</span>
+              <span>{tAuth.dbtReady || "Direct Benefit Transfer (DBT) Ready Infrastructure"}</span>
             </div>
           </div>
 
@@ -352,7 +356,7 @@ export default function AuthPortal({
                 }`}
               >
                 <LogIn className="w-4 h-4 text-emerald-600" />
-                <span>Sign In to Account</span>
+                <span>{tAuth.signInTab || "Sign In to Account"}</span>
               </button>
 
               <button
@@ -365,19 +369,19 @@ export default function AuthPortal({
                 }`}
               >
                 <UserPlus className="w-4 h-4 text-[#D4AF37]" />
-                <span>Register (Sign Up)</span>
+                <span>{tAuth.signUpTab || "Register (Sign Up)"}</span>
               </button>
             </div>
 
             {/* Header Description */}
             <div className="space-y-1 mb-5 text-left">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {mode === 'login' ? 'Access Your Beneficiary Dossier' : 'Create Your Citizen Account'}
+                {mode === 'login' ? (tAuth.loginHeading || 'Access Your Beneficiary Dossier') : (tAuth.signupHeading || 'Create Your Citizen Account')}
               </h2>
               <p className="text-xs text-slate-500 font-normal leading-relaxed">
                 {mode === 'login' 
-                  ? 'Sign in to access your business plan, DigiLocker verified documents, and credit readiness report.' 
-                  : 'Register in under a minute to check concessional scheme eligibility and track loan applications.'}
+                  ? (tAuth.loginDesc || 'Sign in to access your business plan, DigiLocker verified documents, and credit readiness report.')
+                  : (tAuth.signupDesc || 'Register in under a minute to check concessional scheme eligibility and track loan applications.')}
               </p>
             </div>
 
@@ -409,12 +413,12 @@ export default function AuthPortal({
                 <div className="space-y-1 text-left">
                   <div className="flex justify-between items-center text-xs">
                     <label htmlFor="signup-name" className="font-bold text-slate-700">
-                      Full Name (as on Aadhaar) <span className="text-rose-500">*</span>
+                      {tAuth.fullNameLabel || "Full Name (as on Aadhaar)"} <span className="text-rose-500">*</span>
                     </label>
                     {touched.displayName && !errors.displayName && (
                       <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
                         <Check className="w-3 h-3" />
-                        <span>Valid Name</span>
+                        <span>{tAuth.validName || "Valid Name"}</span>
                       </span>
                     )}
                   </div>
@@ -447,12 +451,12 @@ export default function AuthPortal({
               <div className="space-y-1 text-left">
                 <div className="flex justify-between items-center text-xs">
                   <label htmlFor="auth-email" className="font-bold text-slate-700">
-                    Email Address <span className="text-rose-500">*</span>
+                    {tAuth.emailLabel || "Email Address"} <span className="text-rose-500">*</span>
                   </label>
                   {touched.email && !errors.email && (
                     <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
                       <Check className="w-3 h-3" />
-                      <span>Valid Email</span>
+                      <span>{tAuth.validEmail || "Valid Email"}</span>
                     </span>
                   )}
                 </div>
@@ -484,7 +488,7 @@ export default function AuthPortal({
               <div className="space-y-1 text-left">
                 <div className="flex justify-between items-center text-xs">
                   <label htmlFor="auth-password" className="font-bold text-slate-700">
-                    Password <span className="text-rose-500">*</span>
+                    {tAuth.passwordLabel || "Password"} <span className="text-rose-500">*</span>
                   </label>
                   {mode === 'login' && (
                     <button
@@ -492,7 +496,7 @@ export default function AuthPortal({
                       onClick={() => setFormMessage('Password recovery instructions will be dispatched to your registered mobile/email.')}
                       className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
                     >
-                      Forgot password?
+                      {tAuth.forgotPassword || "Forgot password?"}
                     </button>
                   )}
                 </div>
@@ -501,7 +505,7 @@ export default function AuthPortal({
                   <input
                     id="auth-password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder={mode === 'signup' ? 'Create a secure password (8+ chars)' : 'Enter your password'}
+                    placeholder={mode === 'signup' ? (tAuth.passwordPlaceholder || 'Create a secure password (8+ chars)') : (tAuth.passwordLoginPlaceholder || 'Enter your password')}
                     value={password}
                     maxLength={PASSWORD_MAX}
                     onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: null })); }}
@@ -531,7 +535,7 @@ export default function AuthPortal({
                 {mode === 'signup' && password.length > 0 && (
                   <div className="space-y-1.5 pt-1">
                     <div className="flex items-center justify-between text-[10px] font-bold">
-                      <span className="text-slate-500">Security Strength:</span>
+                      <span className="text-slate-500">{tAuth.securityStrength || "Security Strength:"}</span>
                       <span className={`font-mono ${strengthScore >= 3 ? 'text-[#138808]' : strengthScore === 2 ? 'text-blue-600' : 'text-amber-600'}`}>
                         {strengthLabels[strengthScore]}
                       </span>
@@ -552,22 +556,22 @@ export default function AuthPortal({
                     <div className="grid grid-cols-2 gap-1.5 pt-1.5 text-[11px]">
                       <div className={`flex items-center space-x-1.5 transition-colors ${hasMinLength ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
                         {hasMinLength ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>8+ Characters</span>
+                        <span>{tAuth.ruleLength || "8+ Characters"}</span>
                       </div>
 
                       <div className={`flex items-center space-x-1.5 transition-colors ${hasNumber ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
                         {hasNumber ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>1+ Number (0-9)</span>
+                        <span>{tAuth.ruleNumber || "1+ Number (0-9)"}</span>
                       </div>
 
                       <div className={`flex items-center space-x-1.5 transition-colors ${hasSpecial ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
                         {hasSpecial ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>1+ Special Symbol</span>
+                        <span>{tAuth.ruleSpecial || "1+ Special Symbol"}</span>
                       </div>
 
                       <div className={`flex items-center space-x-1.5 transition-colors ${hasMatch ? 'text-[#138808] font-bold' : 'text-slate-400'}`}>
                         {hasMatch ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" />}
-                        <span>Passwords Match</span>
+                        <span>{tAuth.ruleMatch || "Passwords Match"}</span>
                       </div>
                     </div>
                   </div>
@@ -579,12 +583,12 @@ export default function AuthPortal({
                 <div className="space-y-1 text-left">
                   <div className="flex justify-between items-center text-xs">
                     <label htmlFor="signup-confirmation" className="font-bold text-slate-700">
-                      Confirm Password <span className="text-rose-500">*</span>
+                      {tAuth.confirmPasswordLabel || "Confirm Password"} <span className="text-rose-500">*</span>
                     </label>
                     {hasMatch && (
                       <span className="text-[10px] text-[#138808] font-bold flex items-center space-x-1">
                         <Check className="w-3 h-3" />
-                        <span>Matches Password</span>
+                        <span>{tAuth.ruleMatch || "Matches Password"}</span>
                       </span>
                     )}
                   </div>
@@ -593,7 +597,7 @@ export default function AuthPortal({
                     <input
                       id="signup-confirmation"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Retype your password"
+                      placeholder={tAuth.confirmPlaceholder || "Retype your password"}
                       value={confirmation}
                       maxLength={PASSWORD_MAX}
                       onChange={(e) => { setConfirmation(e.target.value); setErrors(prev => ({ ...prev, confirmation: null })); }}
@@ -626,7 +630,7 @@ export default function AuthPortal({
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-700 flex items-center space-x-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Security Verification (Captcha) <span className="text-rose-500">*</span></span>
+                    <span>{tAuth.captchaLabel || "Security Verification (Captcha)"} <span className="text-rose-500">*</span></span>
                   </span>
                   <button
                     type="button"
@@ -635,7 +639,7 @@ export default function AuthPortal({
                     title="Generate New Question"
                   >
                     <RefreshCw className="w-3 h-3" />
-                    <span>Refresh</span>
+                    <span>{tAuth.refresh || "Refresh"}</span>
                   </button>
                 </div>
 
@@ -645,7 +649,7 @@ export default function AuthPortal({
                   </div>
                   <input
                     type="number"
-                    placeholder="Enter sum"
+                    placeholder={tAuth.captchaPlaceholder || "Enter sum"}
                     value={captchaAnswer}
                     onChange={(e) => { setCaptchaAnswer(e.target.value); setCaptchaError(null); }}
                     className={`flex-1 px-3.5 py-2 bg-white border rounded-xl text-xs font-bold text-slate-900 focus:outline-none ${
@@ -669,8 +673,8 @@ export default function AuthPortal({
                   />
                   <span>
                     {mode === 'login' 
-                      ? 'Keep me signed in for 30 days' 
-                      : 'I certify that my annual family income is within ₹5.00 Lakhs.'}
+                      ? (tAuth.rememberMe || 'Keep me signed in for 30 days')
+                      : (tAuth.incomeCertification || 'I certify that my annual family income is within ₹5.00 Lakhs.')}
                   </span>
                 </label>
               </div>
@@ -684,11 +688,11 @@ export default function AuthPortal({
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
-                    <span>Processing securely…</span>
+                    <span>{tAuth.processing || "Processing securely…"}</span>
                   </>
                 ) : (
                   <>
-                    <span>{mode === 'login' ? 'Sign In to SchemeReady' : 'Create Citizen Account'}</span>
+                    <span>{mode === 'login' ? (tAuth.signInBtn || 'Sign In to SchemeReady') : (tAuth.signUpBtn || 'Create Citizen Account')}</span>
                     <ArrowRight className="w-4 h-4 text-amber-300" />
                   </>
                 )}
@@ -699,9 +703,9 @@ export default function AuthPortal({
             <div className="mt-6 pt-4 border-t border-slate-100 space-y-2 text-left">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-bold text-slate-400 uppercase tracking-wider">
-                  Evaluator Fast-Access
+                  {tAuth.evaluatorFast || "Evaluator Fast-Access"}
                 </span>
-                <span className="text-emerald-700 font-mono text-[10px] font-bold">1-Click Sign In</span>
+                <span className="text-emerald-700 font-mono text-[10px] font-bold">{tAuth.oneClick || "1-Click Sign In"}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -712,8 +716,8 @@ export default function AuthPortal({
                 >
                   <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                   <div>
-                    <span className="block font-bold text-xs">Ravi Kumar (Beneficiary)</span>
-                    <span className="text-[10px] text-emerald-700 font-mono">SC Micro Lab (₹1.8L)</span>
+                    <span className="block font-bold text-xs">{tAuth.evalRavi || "Ravi Kumar (Beneficiary)"}</span>
+                    <span className="text-[10px] text-emerald-700 font-mono">{tAuth.evalRaviDesc || "SC Micro Lab (₹1.8L)"}</span>
                   </div>
                 </button>
 
@@ -724,8 +728,8 @@ export default function AuthPortal({
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
                   <div>
-                    <span className="block font-bold text-xs">SCA Officer (Admin)</span>
-                    <span className="text-[10px] text-amber-700 font-mono">Dr. B.R. Ambedkar Corp</span>
+                    <span className="block font-bold text-xs">{tAuth.evalOfficer || "SCA Officer (Admin)"}</span>
+                    <span className="text-[10px] text-amber-700 font-mono">{tAuth.evalOfficerDesc || "Dr. B.R. Ambedkar Corp"}</span>
                   </div>
                 </button>
               </div>
@@ -737,24 +741,24 @@ export default function AuthPortal({
           <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
             {mode === 'login' ? (
               <p>
-                Don't have a SchemeReady account yet?{' '}
+                {tAuth.noAccountYet || "Don't have a SchemeReady account yet?"}{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('signup'); setFormMessage(null); setErrors({}); }}
                   className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
                 >
-                  Register new account &rarr;
+                  {tAuth.registerNew || "Register new account →"}
                 </button>
               </p>
             ) : (
               <p>
-                Already have a registered account?{' '}
+                {tAuth.alreadyAccount || "Already have a registered account?"}{' '}
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setFormMessage(null); setErrors({}); }}
                   className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
                 >
-                  Sign in here &rarr;
+                  {tAuth.signInHere || "Sign in here →"}
                 </button>
               </p>
             )}
