@@ -284,7 +284,7 @@ export function AuthProvider({ children }) {
       console.warn('Gateway dispatch handled:', err);
     }
 
-    return { ok: true, target: cleanTarget, channel, isEmail };
+    return { ok: true, target: cleanTarget, channel, isEmail, otp };
   }, []);
 
   const verifyInlinePhoneOtp = useCallback(async (phone, otp) => {
@@ -295,13 +295,13 @@ export function AuthProvider({ children }) {
     } catch (e) {}
 
     const cleanInputOtp = String(otp || '').trim();
-    const validOtp = storedOtp || '123456';
-    if (cleanInputOtp !== validOtp && cleanInputOtp !== '123456' && cleanInputOtp !== '482910') {
-      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code.' };
+    if (!storedOtp || cleanInputOtp !== storedOtp) {
+      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code sent to your mobile.' };
     }
 
     try {
       sessionStorage.setItem(`schemeready_phone_verified_${cleanPhone}`, 'true');
+      sessionStorage.removeItem(`schemeready_otp_${cleanPhone}`);
     } catch (e) {}
 
     return { ok: true, phone: cleanPhone };
@@ -320,9 +320,8 @@ export function AuthProvider({ children }) {
     } catch (e) {}
 
     const cleanInputOtp = String(otp || '').trim();
-    const validOtp = storedOtp || '123456';
-    if (cleanInputOtp !== validOtp && cleanInputOtp !== '123456' && cleanInputOtp !== '482910') {
-      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code.' };
+    if (!storedOtp || cleanInputOtp !== storedOtp) {
+      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code sent to your mobile.' };
     }
 
     try {

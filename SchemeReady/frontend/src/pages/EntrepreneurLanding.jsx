@@ -8,6 +8,7 @@ import ChannelPartnersMap from '../components/landing/ChannelPartnersMap';
 import SuccessStories from '../components/landing/SuccessStories';
 import LandingFaq from '../components/landing/LandingFaq';
 import LandingFooter from '../components/landing/LandingFooter';
+import { l10n, t as tText } from '../l10n';
 import { 
   Sparkles, 
   Globe2, 
@@ -32,8 +33,6 @@ export default function EntrepreneurLanding({
   lang = 'en',
   setLang
 }) {
-  const isHindi = lang === 'hi';
-
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-500 selection:text-white">
       
@@ -43,14 +42,14 @@ export default function EntrepreneurLanding({
           <div className="flex items-center space-x-3 font-medium">
             <span className="flex items-center space-x-1.5 text-emerald-400 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>{isHindi ? 'PM-SURAJ एवं NSFDC चैनल वित्त' : 'PM-SURAJ & NSFDC CHANNEL FINANCE'}</span>
+              <span>{tText(l10n.topGovBanner, lang)}</span>
             </span>
             <span className="text-slate-500">|</span>
             <span className="hidden sm:inline">
-              {isHindi ? 'सामाजिक न्याय और अधिकारिता मंत्रालय • एमएसएमई मंत्रालय' : 'Ministry of Social Justice & Empowerment • Ministry of MSME'}
+              {tText(l10n.ministries, lang)}
             </span>
             <span className="text-slate-400 font-mono text-[10px] hidden md:inline">
-              {isHindi ? 'भारत सरकार' : 'Government of India'}
+              {tText(l10n.govtOfIndia, lang)}
             </span>
           </div>
 
@@ -88,14 +87,14 @@ export default function EntrepreneurLanding({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900">
-                  {isHindi ? 'स्कीम रेडी' : 'SchemeReady'}
+                  {tText(l10n.portalName, lang)}
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded">
-                  {isHindi ? 'उद्यम सारथी AI' : 'Udyam Saarthi AI'}
+                  {tText(l10n.subPortalName, lang)}
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 font-medium tracking-wide">
-                {isHindi ? 'राष्ट्रीय रियायती उद्यमिता एवं ऋण पोर्टल' : 'National Concessional Entrepreneurship & Credit Portal'}
+                {tText(l10n.portalTagline, lang)}
               </p>
             </div>
           </div>
@@ -103,19 +102,19 @@ export default function EntrepreneurLanding({
           {/* Nav Links */}
           <nav className="hidden lg:flex items-center space-x-1 text-xs font-semibold text-slate-600">
             <a href="#schemes" className="px-3 py-2 rounded-lg hover:text-emerald-700 hover:bg-slate-100 transition-colors">
-              {isHindi ? 'योजना निर्देशिका' : 'Schemes Directory'}
+              {tText(l10n.navSchemes, lang)}
             </a>
             <a href="#process" className="px-3 py-2 rounded-lg hover:text-emerald-700 hover:bg-slate-100 transition-colors">
-              {isHindi ? 'यह कैसे काम करता है' : 'How It Works'}
+              {tText(l10n.navHowItWorks, lang)}
             </a>
             <a href="#viability" className="px-3 py-2 rounded-lg hover:text-emerald-700 hover:bg-slate-100 transition-colors">
-              {isHindi ? 'एआई व्यवहार्यता इंजन' : 'AI Viability Engine'}
+              {tText(l10n.navViability, lang)}
             </a>
             <a href="#partners" className="px-3 py-2 rounded-lg hover:text-emerald-700 hover:bg-slate-100 transition-colors">
-              {isHindi ? 'चैनल पार्टनर्स' : 'Channel Partners'}
+              {tText(l10n.navPartners, lang)}
             </a>
             <a href="#faqs" className="px-3 py-2 rounded-lg hover:text-emerald-700 hover:bg-slate-100 transition-colors">
-              {isHindi ? 'अक्सर पूछे जाने वाले प्रश्न' : 'FAQs'}
+              {tText(l10n.navFaqs, lang)}
             </a>
           </nav>
 
@@ -126,7 +125,7 @@ export default function EntrepreneurLanding({
               className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>{isHindi ? 'आवेदन शुरू करें' : 'Start Application'}</span>
+              <span>{tText(l10n.startApplicationBtn, lang)}</span>
             </button>
 
             <button
@@ -134,7 +133,7 @@ export default function EntrepreneurLanding({
               className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 transition-all cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5 text-slate-600" />
-              <span>{isHindi ? 'साइन इन' : 'Sign In'}</span>
+              <span>{tText(l10n.signInBtn, lang)}</span>
             </button>
           </div>
 
@@ -157,9 +156,9 @@ export default function EntrepreneurLanding({
               <Coins className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 font-mono">₹5.00 {isHindi ? 'लाख' : 'Lakhs'}</div>
+              <div className="text-2xl font-black text-slate-900 font-mono">₹5.00 {tText(l10n.lakhs, lang)}</div>
               <p className="text-xs text-slate-500 font-medium">
-                {isHindi ? 'वार्षिक पारिवारिक आय सीमा' : 'Annual Family Income Ceiling'}
+                {tText(l10n.statCeiling, lang)}
               </p>
             </div>
           </div>
@@ -171,7 +170,7 @@ export default function EntrepreneurLanding({
             <div>
               <div className="text-2xl font-black text-slate-900 font-mono">4.0% - 8.0%</div>
               <p className="text-xs text-slate-500 font-medium">
-                {isHindi ? 'रियायती रियायती ब्याज दरें' : 'Subsidized Concessional Rates'}
+                {tText(l10n.statRates, lang)}
               </p>
             </div>
           </div>
@@ -181,9 +180,9 @@ export default function EntrepreneurLanding({
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 font-mono">{isHindi ? '90% तक' : 'Up to 90%'}</div>
+              <div className="text-2xl font-black text-slate-900 font-mono">{tText(l10n.upTo90, lang)}</div>
               <p className="text-xs text-slate-500 font-medium">
-                {isHindi ? 'सरकार द्वारा वित्तपोषित परियोजना लागत' : 'Project Cost Financed by Govt'}
+                {tText(l10n.statCoverage, lang)}
               </p>
             </div>
           </div>
@@ -193,9 +192,9 @@ export default function EntrepreneurLanding({
               <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 font-mono">{isHindi ? '100+ पार्टनर्स' : '100+ Partners'}</div>
+              <div className="text-2xl font-black text-slate-900 font-mono">{tText(l10n.partners100, lang)}</div>
               <p className="text-xs text-slate-500 font-medium">
-                {isHindi ? 'राज्य एससीए एवं बैंक शाखाएं' : 'State SCAs & Bank Branches'}
+                {tText(l10n.statPartners, lang)}
               </p>
             </div>
           </div>

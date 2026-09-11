@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from '../translations';
+import { getOnboardingQuestions, l10n, t as tText } from '../l10n';
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -43,190 +44,9 @@ export default function ConversationalOnboarding({
     });
   }, [profile, lang]);
 
-  // Comprehensive localized questions
-  const questions = [
-    {
-      id: 'preferredLanguage',
-      title: isHindi ? 'अपनी पसंदीदा भाषा चुनें' : 'Choose Your Preferred Language',
-      subTitle: isHindi ? 'जिस भाषा में आप काम करना चाहते हैं उसे चुनें' : 'ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ / Choose portal language',
-      question: isHindi ? 'स्कीम रेडी में आप किस भाषा में आगे बढ़ना चाहते हैं?' : 'In which language would you like to proceed with SchemeReady?',
-      options: [
-        { label: 'ಕನ್ನಡ (Kannada)', value: 'kn', icon: '🟡', hint: 'ಕರ್ನಾಟಕ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು' },
-        { label: 'English (EN)', value: 'en', icon: '🔵', hint: isHindi ? 'राष्ट्रीय मानक पोर्टल' : 'National Portal Standard' },
-        { label: 'हिन्दी (Hindi)', value: 'hi', icon: '🟠', hint: isHindi ? 'राष्ट्रीय योजनाएं (सक्रिय)' : 'राष्ट्रीय योजनाएं' },
-        { label: 'தமிழ் (Tamil)', value: 'ta', icon: '🟢', hint: 'அரசு மானியத் திட்டங்கள்' },
-        { label: 'తెలుగు (Telugu)', value: 'te', icon: '🟣', hint: 'ప్రభుత్వ పథకాలు' },
-        { label: 'मराठी (Marathi)', value: 'mr', icon: '🔴', hint: 'शासकीय योजना' },
-        { label: 'বাংলা (Bengali)', value: 'bn', icon: '🟤', hint: 'সরকারি ঋণ প্রকল্প' }
-      ]
-    },
-    {
-      id: 'businessType',
-      title: isHindi ? 'प्रस्तावित व्यवसाय या उद्यम' : 'Proposed Business or Enterprise',
-      subTitle: isHindi ? 'आप कौन सा उद्यम शुरू या विस्तार करना चाहते हैं?' : 'ನೀವು ಯಾವ ವ್ಯವಹಾರವನ್ನು ಪ್ರಾರಂಭಿಸಲು ಬಯಸುತ್ತೀರಿ?',
-      question: isHindi ? 'आप किस प्रकार का व्यवसाय या परियोजना शुरू करना चाहते हैं?' : 'What type of business or project do you want to start and pursue?',
-      options: [
-        { 
-          label: isHindi ? 'सिलाई / परिधान कार्यशाला' : 'Tailoring / Garments Workshop', 
-          value: 'tailoring', 
-          icon: '🧵', 
-          hint: isHindi ? 'NSFDC MSY एवं MCS संरेखित' : 'NSFDC MSY & MCS Aligned' 
-        },
-        { 
-          label: isHindi ? 'मोबाइल एवं इलेक्ट्रॉनिक्स रिपेयर लैब' : 'Mobile & Electronics Repair Lab', 
-          value: 'mobile repair', 
-          icon: '📱', 
-          hint: isHindi ? 'उच्च मार्जिन सूक्ष्म इकाई' : 'High Margin Micro Unit' 
-        },
-        { 
-          label: isHindi ? 'फूड कार्ट / बेकरी / टी स्टॉल' : 'Food Cart / Bakery / Tea Stall', 
-          value: 'food stall', 
-          icon: '🍲', 
-          hint: isHindi ? 'दैनिक नकद प्रवाह व्यवसाय' : 'Daily Cash Flow Business' 
-        },
-        { 
-          label: isHindi ? 'ई-रिक्शा / यात्री परिवहन' : 'E-Rickshaw / Passenger Transport', 
-          value: 'e-rickshaw', 
-          icon: '🛺', 
-          hint: isHindi ? 'हरित व्यापार योजना (6% ब्याज)' : 'Green Business Scheme 6%' 
-        },
-        { 
-          label: isHindi ? 'किराना / प्रोविजन स्टोर' : 'Grocery / Kirana / Provision Store', 
-          value: 'grocery', 
-          icon: '🛒', 
-          hint: isHindi ? 'आवश्यक दैनिक खुदरा स्टोर' : 'Essential Retail Store' 
-        },
-        { 
-          label: isHindi ? 'बढ़ईगीरी / लकड़ी का फर्नीचर' : 'Carpentry / Wooden Furniture', 
-          value: 'carpentry', 
-          icon: '🪚', 
-          hint: isHindi ? 'कुशल कारीगर कार्यशाला' : 'Skilled Artisan Workshop' 
-        },
-        { 
-          label: isHindi ? 'ब्यूटी पार्लर / हेयर सैलून' : 'Beauty Parlour / Hair Salon', 
-          value: 'beauty salon', 
-          icon: '✂️', 
-          hint: isHindi ? 'महिला उद्यमी विशेष योजना' : 'Women Entrepreneur Focus' 
-        },
-        { 
-          label: isHindi ? 'डेयरी / पोल्ट्री / कृषि प्रसंस्करण' : 'Dairy / Poultry / Agro Processing', 
-          value: 'dairy', 
-          icon: '🥛', 
-          hint: isHindi ? 'ग्रामीण आजीविका योजना' : 'Rural Livelihood Scheme' 
-        },
-        { 
-          label: isHindi ? 'चर्म शिल्प / जूता निर्माण इकाई' : 'Leather Crafts / Footwear Unit', 
-          value: 'leather craft', 
-          icon: '👞', 
-          hint: isHindi ? 'पारंपरिक कारीगर रियायती ऋण' : 'Traditional Artisan Credit' 
-        },
-        { 
-          label: isHindi ? 'अन्य व्यवसाय (कस्टम नाम दर्ज करें)' : 'Other Business (Enter Custom)', 
-          value: 'other', 
-          icon: '✨', 
-          hint: isHindi ? 'अपना अनूठा उद्यम निर्दिष्ट करें' : 'Specify your unique venture' 
-        }
-      ]
-    },
-    {
-      id: 'location',
-      title: isHindi ? 'लक्षित जिला / स्थान' : 'Target District / Location',
-      subTitle: isHindi ? 'आपकी व्यावसायिक इकाई का स्थान' : 'ನಿಮ್ಮ ವ್ಯಾಪಾರ ಸ್ಥಳ',
-      question: isHindi ? 'आपका व्यवसाय या परियोजना कहाँ स्थित होगी?' : 'Where will your business or project be located?',
-      options: [
-        { label: isHindi ? 'बेंगलुरु (शहरी)' : 'Bengaluru (Urban)', value: 'Bengaluru', icon: '🏙️' },
-        { label: isHindi ? 'बेंगलुरु ग्रामीण' : 'Bengaluru Rural', value: 'Bengaluru Rural', icon: '🌳' },
-        { label: isHindi ? 'मैसूरु' : 'Mysuru', value: 'Mysuru', icon: '🏰' },
-        { label: isHindi ? 'हुबली-धारवाड़' : 'Hubballi-Dharwad', value: 'Hubballi-Dharwad', icon: '🏭' },
-        { label: isHindi ? 'बेलगावी' : 'Belagavi', value: 'Belagavi', icon: '🏛️' },
-        { label: isHindi ? 'कलबुर्गी' : 'Kalaburagi', value: 'Kalaburagi', icon: '🌾' }
-      ]
-    },
-    {
-      id: 'estimatedProjectCost',
-      title: isHindi ? 'अनुमानित कुल परियोजना लागत' : 'Estimated Total Project Cost',
-      subTitle: isHindi ? 'मशीनरी, उपकरण एवं कच्चा माल लागत' : 'ಅಂದಾಜು ಯೋಜನಾ ವೆಚ್ಚ',
-      question: isHindi ? 'मशीनरी और स्टॉक के लिए अनुमानित कुल सेटअप लागत क्या है?' : 'What is the estimated total setup cost for machinery and stock?',
-      options: [
-        { label: isHindi ? '₹1.0 लाख (सूक्ष्म इकाई)' : '₹1.0 Lakh (Micro)', value: 100000 },
-        { label: isHindi ? '₹1.2 लाख (सिलाई / खाद्य)' : '₹1.2 Lakh (Tailoring / Food)', value: 120000 },
-        { label: isHindi ? '₹1.8 लाख (मोबाइल लैब - मानक)' : '₹1.8 Lakh (Mobile Lab - Standard)', value: 180000 },
-        { label: isHindi ? '₹2.5 लाख (परिवहन / वर्कशॉप)' : '₹2.5 Lakh (Transport / Workshop)', value: 250000 },
-        { label: isHindi ? '₹5.0 लाख (लघु उद्यम)' : '₹5.0 Lakh (Small Enterprise)', value: 500000 },
-        { label: isHindi ? '₹10.0 लाख+ (विनिर्माण)' : '₹10.0 Lakh+ (Manufacturing)', value: 1000000 }
-      ]
-    },
-    {
-      id: 'annualFamilyIncome',
-      title: isHindi ? 'वार्षिक पारिवारिक घरेलू आय' : 'Annual Family Household Income',
-      subTitle: isHindi ? 'परिवार के सभी सदस्यों की कुल आय' : 'ವಾರ್ಷಿಕ ಕುಟುಂಬದ ಆದಾಯ',
-      question: isHindi ? 'सभी स्रोतों से आपकी कुल वार्षिक पारिवारिक आय कितनी है?' : 'What is your total annual household income from all sources?',
-      options: [
-        { label: isHindi ? '₹1.5 लाख से कम (बीपीएल प्राथमिकता)' : 'Under ₹1.5 Lakh (BPL Priority)', value: 150000 },
-        { label: isHindi ? '₹2.5 लाख' : '₹2.5 Lakh', value: 250000 },
-        { label: isHindi ? '₹3.6 लाख (मानक मध्यम आय)' : '₹3.6 Lakh (Standard Medium Income)', value: 360000 },
-        { label: isHindi ? '₹4.5 लाख (पात्र सीमा)' : '₹4.5 Lakh (Eligible)', value: 450000 },
-        { label: isHindi ? '₹5.0 लाख से अधिक (सामान्य एमएसएमई)' : 'Above ₹5.0 Lakh (General MSME)', value: 550000 }
-      ]
-    },
-    {
-      id: 'userType',
-      title: isHindi ? 'उद्यमशीलता अनुभव' : 'Entrepreneurial Experience',
-      subTitle: isHindi ? 'व्यावसायिक अनुभव का स्तर' : 'ಅನುಭವದ ವಿವರ',
-      question: isHindi ? 'व्यवसाय में आपकी वर्तमान स्थिति का सबसे अच्छा वर्णन क्या है?' : 'What best describes your current stage in business?',
-      options: [
-        { label: isHindi ? 'पहली बार उद्यमी (नया व्यवसाय)' : 'First-time Entrepreneur', value: 'new_entrepreneur', icon: '🌱' },
-        { label: isHindi ? 'मौजूदा लघु व्यवसाय स्वामी' : 'Existing Small Business Owner', value: 'existing_entrepreneur', icon: '💼' },
-        { label: isHindi ? 'छात्र / व्यावसायिक प्रशिक्षु' : 'Student / Vocational Trainee', value: 'student', icon: '📚' }
-      ]
-    },
-    {
-      id: 'hasCasteCertificate',
-      title: isHindi ? 'सामुदायिक जाति प्रमाण पत्र' : 'Community Caste Certificate',
-      subTitle: isHindi ? 'राजस्व विभाग प्रमाण पत्र' : 'ಜಾತಿ ಪ್ರಮಾಣಪತ್ರ',
-      question: isHindi ? 'क्या आपके पास तहसीलदार द्वारा जारी वैध जाति प्रमाण पत्र (आरडी नंबर) है?' : 'Do you possess a valid Caste Certificate issued by the Tahsildar (RD Number)?',
-      options: [
-        { label: isHindi ? 'हाँ, वैध आरडी नंबर प्रमाण पत्र उपलब्ध है' : 'Yes, Have Valid RD Number Certificate', value: true, icon: '✅' },
-        { label: isHindi ? 'नहीं / प्रक्रियाधीन (अनुपलब्ध)' : 'No / In-Progress (Missing)', value: false, icon: '⚠️' }
-      ]
-    },
-    {
-      id: 'hasIncomeCertificate',
-      title: isHindi ? 'आय प्रमाण पत्र स्थिति' : 'Income Certificate Status',
-      subTitle: isHindi ? 'सक्षम प्राधिकारी द्वारा सत्यापित' : 'ಆದಾಯ ಪ್ರಮಾಣಪತ್ರ',
-      question: isHindi ? 'क्या आपके पास तहसीलदार द्वारा सत्यापित वर्तमान आय प्रमाण पत्र है?' : 'Do you have a current Tahsildar-attested Income Certificate?',
-      options: [
-        { label: isHindi ? 'हाँ, हालिया आय प्रमाण पत्र उपलब्ध है' : 'Yes, Have Recent Income Certificate', value: true, icon: '✅' },
-        { label: isHindi ? 'नहीं / समाप्त हो गया' : 'No / Expired', value: false, icon: '⚠️' }
-      ]
-    },
-    {
-      id: 'requiredLoanAmount',
-      title: isHindi ? 'रियायती ऋण की आवश्यकता' : 'Concessional Loan Required',
-      subTitle: isHindi ? 'चैनल पार्टनर से वित्तीय सहायता' : 'ಅಗತ್ಯವಿರುವ ಸಾಲದ ಮೊತ್ತ',
-      question: isHindi ? 'चैनल भागीदारों से आपको कितनी रियायती ऋण सहायता की आवश्यकता है?' : 'How much subsidized credit assistance do you need from Channel Partners?',
-      options: [
-        { label: isHindi ? '₹1.0 लाख' : '₹1.0 Lakh', value: 100000 },
-        { label: isHindi ? '₹1.2 लाख (सिलाई)' : '₹1.2 Lakh (Tailoring)', value: 120000 },
-        { label: isHindi ? '₹1.5 लाख (मोबाइल रिपेयर लैब)' : '₹1.5 Lakh (Mobile Repair Lab)', value: 150000 },
-        { label: isHindi ? '₹2.2 लाख' : '₹2.2 Lakh', value: 220000 },
-        { label: isHindi ? '₹4.0 लाख (पूर्ण पैमाना)' : '₹4.0 Lakh (Full Scale)', value: 400000 }
-      ]
-    },
-    {
-      id: 'supportPreference',
-      title: isHindi ? 'आवेदन चैनल प्राथमिकता' : 'Application Channel Preference',
-      subTitle: isHindi ? 'आवेदन जमा करने का माध्यम' : 'ಅರ್ಜಿ ಸಲ್ಲಿಕೆ ಆದ್ಯತೆ',
-      question: isHindi ? 'आप अपना ऋण आवेदन कैसे जमा और अनुवर्ती कार्रवाई करना पसंद करेंगे?' : 'How would you prefer to submit and follow up on your loan application?',
-      options: [
-        { label: isHindi ? 'ऑफलाइन एससीए / निगम कार्यालय सहायता' : 'Offline SCA / Corporation Office Support', value: 'offline', icon: '🏛️' },
-        { label: isHindi ? 'ऑनलाइन / बैंक डिजिटल प्रोसेसिंग' : 'Online / Bank Digital Processing', value: 'online', icon: '💻' },
-        { label: isHindi ? 'दोनों / हाइब्रिड चैनल रूटिंग' : 'Either / Hybrid Channel Routing', value: 'any', icon: '🤝' }
-      ]
-    }
-  ];
-
-  const currentQ = questions[currentStep];
+  // Comprehensive 7-language localized questions
+  const questions = getOnboardingQuestions(lang);
+  const currentQ = questions[currentStep] || questions[0];
 
   const handleSelectOption = (field, val) => {
     if (field === 'preferredLanguage') {
@@ -259,7 +79,16 @@ export default function ConversationalOnboarding({
   };
 
   const handleConfirmCustomBusiness = () => {
-    const chosen = customBusiness.trim() || (isHindi ? 'कस्टम उद्यम' : 'Custom Enterprise');
+    const chosen = customBusiness.trim() || tText({
+      en: 'Custom Enterprise',
+      hi: 'कस्टम उद्यम',
+      kn: 'ಕಸ್ಟಮ್ ಉದ್ಯಮ',
+      ta: 'தனிப்பயன் தொழில்',
+      te: 'కస్టమ్ పరిశ్రమ',
+      mr: 'कस्टम उद्योग',
+      bn: 'কাস্টম উদ্যোগ'
+    }, lang);
+
     setProfile(prev => ({ ...prev, businessType: chosen }));
     setExtractedJson(prev => ({ ...prev, business_type: chosen }));
     setIsOtherSelected(false);
@@ -270,32 +99,30 @@ export default function ConversationalOnboarding({
 
   // Localized business display name in summary card
   const getBusinessDisplay = (type) => {
-    if (!isHindi) return type;
-    const map = {
-      'tailoring': 'सिलाई / परिधान कार्यशाला',
-      'mobile repair': 'मोबाइल एवं इलेक्ट्रॉनिक्स रिपेयर लैब',
-      'food stall': 'फूड कार्ट / बेकरी / टी स्टॉल',
-      'e-rickshaw': 'ई-रिक्शा यात्री परिवहन',
-      'grocery': 'किराना / प्रोविजन स्टोर',
-      'carpentry': 'बढ़ईगीरी / लकड़ी का फर्नीचर',
-      'beauty salon': 'ब्यूटी पार्लर / हेयर सैलून',
-      'dairy': 'डेयरी / पोल्ट्री / कृषि प्रसंस्करण',
-      'leather craft': 'चर्म शिल्प / जूता निर्माण'
+    const businessNames = {
+      'tailoring': { en: 'Tailoring / Garments Workshop', hi: 'सिलाई / परिधान कार्यशाला', kn: 'தையல் / ಉಡುಪು ಕಾರ್ಯಾಗಾರ', ta: 'தையல் / ஆடை பட்டறை', te: 'టైలరింగ్ / దుస్తుల వర్క్‌షాప్', mr: 'शिलाई / कपडे कार्यशाळा', bn: 'দর্জি / পোশাক কর্মশালা' },
+      'mobile repair': { en: 'Mobile & Electronics Repair Lab', hi: 'मोबाइल एवं इलेक्ट्रॉनिक्स रिपेयर लैब', kn: 'ಮೊಬೈಲ್ ಮತ್ತು ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್ ರಿಪೇರಿ ಲ್ಯಾಬ್', ta: 'மொபைல் மற்றும் எலக்ட்ரானிக்ஸ் பழுதுபார்க்கும் லேப்', te: 'మొబైల్ & ఎలక్ట్రానిక్స్ రిపేర్ ల్యాబ్', mr: 'मोबाईल आणि इलेक्ट्रॉनिक्स दुरुस्ती लॅब', bn: 'মোবাইল ও ইলেকট্রনিক্স মেরামতের ল্যাব' },
+      'food stall': { en: 'Food Cart / Bakery / Tea Stall', hi: 'फूड कार्ट / बेकरी / टी स्टॉल', kn: 'ಆಹಾರ ಕಾರ್ಟ್ / ಬೇಕರಿ / ಟೀ ಸ್ಟಾಲ್', ta: 'உணவு வண்டி / பேக்கரி / டீ கடை', te: 'ఫుడ్ కార్ట్ / బేకరీ / టీ స్టాల్', mr: 'फूड कार्ट / बेकरी / टी स्टॉल', bn: 'ফুড কার্ট / বেকারি / চায়ের স্টল' },
+      'e-rickshaw': { en: 'E-Rickshaw / Passenger Transport', hi: 'ई-रिक्शा यात्री परिवहन', kn: 'ಇ-ರಿಕ್ಷಾ / ಸಾರಿಗೆ ಸೇವೆ', ta: 'இ-ரிக்ஷா / பயணிகள் போக்குவரத்து', te: 'ఇ-రిక్షా / ప్రయాణీకుల రవాణా', mr: 'ई-रिक्षा / प्रवासी वाहतूक', bn: 'ই-রিকশা / যাত্রী পরিবহন' },
+      'grocery': { en: 'Grocery / Kirana / Provision Store', hi: 'किराना / प्रोविजन स्टोर', kn: 'ಕಿರಾಣಿ / ಪ್ರಾವಿಷನ್ ಸ್ಟೋರ್', ta: 'மளிகை கடை / பிராவிஷன் ஸ்டோர்', te: 'కిరాణా / ప్రొవిజన్ స్టోర్', mr: 'किराणा / प्रोव्हिजन स्टोअर', bn: 'মুদি দোকান / প্রোভিশন স্টোর' },
+      'carpentry': { en: 'Carpentry / Wooden Furniture', hi: 'बढ़ईगीरी / लकड़ी का फर्नीचर', kn: 'ಮರಗೆಲಸ / ಪೀಠೋಪಕರಣಗಳು', ta: 'மரவேலை / மர தளபாடங்கள்', te: 'చెక్క పని / చెక్క ఫర్నిచర్', mr: 'सुतारकाम / लाकडी फर्निचर', bn: 'ছুতোর কাজ / কাঠের আসবাব' },
+      'beauty salon': { en: 'Beauty Parlour / Hair Salon', hi: 'ब्यूटी पार्लर / हेयर सैलून', kn: 'ಬ್ಯೂಟಿ ಪಾರ್ಲರ್ / ಹೇರ್ ಸಲೂನ್', ta: 'பியூட்டி பார்லர் / சலூன்', te: 'బ్యూటీ పార్లర్ / హెయిర్ సెలూన్', mr: 'ब्युटी पार्लर / हेअर सलून', bn: 'বিউটি পার্লার / হেয়ার সেলুন' },
+      'dairy': { en: 'Dairy / Poultry / Agro Processing', hi: 'डेयरी / पोल्ट्री / कृषि प्रसंस्करण', kn: 'ಡೈರಿ / ಕೋಳಿ ಸಾಕಾಣಿಕೆ / ಕೃಷಿ ಸಂಸ್ಕರಣೆ', ta: 'பால் பண்ணை / கோழி பண்ணை / வேளாண்மை', te: 'డైరీ / పౌల్ట్రీ / వ్యవసాయ ప్రాసెసింగ్', mr: 'डेअरी / पोल्ट्री / कृषी प्रक्रिया', bn: 'দুগ্ধ খামার / পোল্ট্রি / কৃষি প্রক্রিয়াকরণ' },
+      'leather craft': { en: 'Leather Crafts / Footwear Unit', hi: 'चर्म शिल्प / जूता निर्माण', kn: 'ಚರ್ಮದ ಕರಕುಶಲ / ಪಾದರಕ್ಷೆಗಳ ಘಟಕ', ta: 'தோல் கைவினை / காலணி பிரிவு', te: 'తోలు హస్తకళలు / పాదరక్షల యూనిట్', mr: 'चर्मकला / पादत्राणे उत्पादन', bn: 'চামড়ার কারুশিল্প / পাদুকা ইউনিট' }
     };
-    return map[type] || type;
+    return businessNames[type] ? tText(businessNames[type], lang) : type;
   };
 
   const getLocationDisplay = (loc) => {
-    if (!isHindi) return loc;
-    const map = {
-      'Bengaluru': 'बेंगलुरु (शहरी)',
-      'Bengaluru Rural': 'बेंगलुरु ग्रामीण',
-      'Mysuru': 'मैसूरु',
-      'Hubballi-Dharwad': 'हुबली-धारवाड़',
-      'Belagavi': 'बेलगावी',
-      'Kalaburagi': 'कलबुर्गी'
+    const locNames = {
+      'Bengaluru': { en: 'Bengaluru (Urban)', hi: 'बेंगलुरु (शहरी)', kn: 'ಬೆಂಗಳೂರು (ನಗರ)', ta: 'பெங்களூரு (நகர்ப்புறம்)', te: 'బెంగళూరు (పట్టణ)', mr: 'बंगळुरू (शहरी)', bn: 'বেঙ্গালুরু (শহুরে)' },
+      'Bengaluru Rural': { en: 'Bengaluru Rural', hi: 'बेंगलुरु ग्रामीण', kn: 'ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ', ta: 'பெங்களூரு ஊரகம்', te: 'బెంగళూరు గ్రామీణ', mr: 'बंगळुरू ग्रामीण', bn: 'বেঙ্গালুরু গ্রামীণ' },
+      'Mysuru': { en: 'Mysuru', hi: 'मैसूरु', kn: 'ಮೈಸೂರು', ta: 'மைசூரு', te: 'మైసూరు', mr: 'म्हैसूर', bn: 'মহীশূর' },
+      'Hubballi-Dharwad': { en: 'Hubballi-Dharwad', hi: 'हुबली-धारवाड़', kn: 'ಹುಬ್ಬಳ್ಳಿ-ಧಾರವಾಡ', ta: 'ஹூப்ளி-தார்வாட்', te: 'హుబ్లీ-ధార్వాడ్', mr: 'हुबळी-धारवाड', bn: 'হুবলি-ধারওয়াদ' },
+      'Belagavi': { en: 'Belagavi', hi: 'बेलगावी', kn: 'ಬೆಳಗಾವಿ', ta: 'பெலகாவி', te: 'బెల్గాం', mr: 'बेळगाव', bn: 'বেলগাভি' },
+      'Kalaburagi': { en: 'Kalaburagi', hi: 'कलबुर्गी', kn: 'ಕಲಬುರಗಿ', ta: 'கலபுரகி', te: 'కలబురగి', mr: 'कलबुर्गी', bn: 'কলবুরগি' }
     };
-    return map[loc] || loc;
+    return locNames[loc] ? tText(locNames[loc], lang) : loc;
   };
 
   return (
@@ -306,22 +133,19 @@ export default function ConversationalOnboarding({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <Bot className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? 'स्मार्ट निर्देशित ऑनबोर्डिंग' : 'Smart Guided Onboarding'}</span>
+            <span>{tText(l10n.onboardingBadge, lang)}</span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-slate-900">
-            {isHindi ? 'हमें अपनी उद्यमशीलता परियोजना के बारे में बताएं' : 'Tell Us About Your Entrepreneurial Project'}
+            {tText(l10n.onboardingHeading, lang)}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal leading-relaxed">
-            {isHindi 
-              ? 'सटीक योजना पात्रता, सब्सिडी सीमा और बैंक तत्परता निर्धारित करने के लिए कुछ सरल प्रश्नों के उत्तर दें।'
-              : 'Answer a few simple questions to determine exact scheme eligibility, subsidy limits, and bank readiness.'
-            }
+            {tText(l10n.onboardingSubheading, lang)}
           </p>
         </div>
 
         <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600">
           <Globe2 className="w-4 h-4 text-emerald-600" />
-          <span className="font-semibold">{isHindi ? 'वर्तमान भाषा:' : 'Current Language:'}</span>
+          <span className="font-semibold">{tText(l10n.currentLangLabel, lang)}</span>
           <span className="font-mono font-bold uppercase text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
             {lang}
           </span>
@@ -337,10 +161,10 @@ export default function ConversationalOnboarding({
             {/* Step Progress Bar */}
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
               <span className="font-bold text-slate-700">
-                {isHindi ? `प्रश्न ${currentStep + 1} / ${questions.length}` : `Question ${currentStep + 1} of ${questions.length}`}
+                {tText(l10n.questionProgress, lang)} {currentStep + 1} {tText(l10n.ofTotal, lang)} {questions.length}
               </span>
               <span className="font-mono text-emerald-700 font-bold">
-                {Math.round(((currentStep + 1) / questions.length) * 100)}% {isHindi ? 'पूर्ण' : 'Completed'}
+                {Math.round(((currentStep + 1) / questions.length) * 100)}% {tText(l10n.completedStatus, lang)}
               </span>
             </div>
             
@@ -355,96 +179,93 @@ export default function ConversationalOnboarding({
             <div className="mb-5 text-left">
               <div className="flex items-center space-x-2">
                 <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md">
-                  {isHindi ? `चरण ${currentStep + 1}` : `Step ${currentStep + 1}`}
+                  {tText(l10n.stepLabel, lang)} {currentStep + 1}
                 </span>
                 <span className="text-xs font-semibold text-slate-400">
-                  {currentQ.title}
+                  {currentQ.subTitle}
                 </span>
               </div>
-              <h3 className="text-xl font-black text-slate-900 mt-2 tracking-tight">
+              <h3 className="text-lg font-black text-slate-900 mt-2">
                 {currentQ.question}
               </h3>
-              {currentQ.subTitle && (
-                <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                  {currentQ.subTitle}
-                </p>
-              )}
             </div>
 
-            {/* Answer Options Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {currentQ.options.map((opt, idx) => {
-                const isSelected = currentQ.id === 'preferredLanguage' 
-                  ? (profile.preferredLanguage === opt.value || lang === opt.value)
-                  : (isOtherSelected && opt.value === 'other') || (!isOtherSelected && profile[currentQ.id] === opt.value);
-                
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSelectOption(currentQ.id, opt.value)}
-                    className={`flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer active:scale-[0.99] ${
-                      isSelected
-                        ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 shadow-xs ring-1 ring-emerald-500/40'
-                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 text-slate-800'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2.5 min-w-0">
-                      {opt.icon && <span className="text-base shrink-0">{opt.icon}</span>}
-                      <div className="truncate">
-                        <span className="block truncate">{opt.label}</span>
-                        {opt.hint && <span className="block text-[10px] font-normal text-slate-400">{opt.hint}</span>}
-                      </div>
-                    </div>
-                    {isSelected && <Check className="w-4 h-4 text-emerald-600 shrink-0 ml-2" />}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Interactive "Others" Custom Business Input */}
-            {currentQ.id === 'businessType' && isOtherSelected && (
-              <div className="mt-4 p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-3 text-left animate-in fade-in duration-200">
-                <label className="block text-xs font-bold text-slate-800">
-                  {isHindi ? 'अपने व्यवसाय या उद्यम का नाम दर्ज करें:' : 'Enter your business or project name:'}
+            {/* Custom Business Input Field */}
+            {isOtherSelected && currentQ.id === 'businessType' && (
+              <div className="mb-4 p-4 bg-emerald-50/90 border border-emerald-200 rounded-xl space-y-2 text-left animate-in fade-in">
+                <label className="text-xs font-bold text-emerald-950 block">
+                  {tText(l10n.customBusinessPrompt, lang)}
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={customBusiness}
                     onChange={(e) => setCustomBusiness(e.target.value)}
-                    placeholder={isHindi ? 'उदा. सोलर रूफटॉप, मिट्टी के बर्तन, मोमबत्ती निर्माण, बेकरी...' : 'e.g. Solar rooftop installation, Pottery, Candle making, Bakery...'}
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                    placeholder={tText(l10n.customBusinessPlaceholder, lang)}
+                    className="flex-1 px-3 py-2 bg-white border border-emerald-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleConfirmCustomBusiness();
+                    }}
                   />
                   <button
                     type="button"
                     onClick={handleConfirmCustomBusiness}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-xs cursor-pointer"
+                    className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow-xs cursor-pointer"
                   >
-                    {isHindi ? 'पुष्टि करें और आगे बढ़ें →' : 'Confirm & Proceed →'}
+                    {tText(l10n.confirmAndContinue, lang)}
                   </button>
                 </div>
               </div>
             )}
 
+            {/* Question Options Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {currentQ.options.map((opt, idx) => {
+                const isSelected = profile[currentQ.id] === opt.value || 
+                                  (currentQ.id === 'preferredLanguage' && (profile.preferredLanguage || lang) === opt.value);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectOption(currentQ.id, opt.value)}
+                    className={`p-3.5 rounded-xl border text-left flex items-start space-x-3 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-emerald-600 bg-emerald-50/70 text-slate-900 ring-2 ring-emerald-500/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 text-slate-700'
+                    }`}
+                  >
+                    <span className="text-xl shrink-0 mt-0.5">{opt.icon || '📌'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-xs leading-snug flex items-center justify-between">
+                        <span className="truncate">{opt.label}</span>
+                        {isSelected && (
+                          <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 ml-1">
+                            <Check className="w-2.5 h-2.5" />
+                          </span>
+                        )}
+                      </div>
+                      {opt.hint && (
+                        <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">{opt.hint}</p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Navigation Controls */}
-          <div className="flex items-center justify-between pt-5 border-t border-slate-100 mt-6">
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
             <button
-              disabled={currentStep === 0}
               onClick={() => {
                 setIsOtherSelected(false);
                 setCurrentStep(prev => Math.max(0, prev - 1));
               }}
-              className={`flex items-center space-x-1 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentStep === 0
-                  ? 'text-slate-300 cursor-not-allowed'
-                  : 'text-slate-600 hover:bg-slate-100 cursor-pointer'
-              }`}
+              disabled={currentStep === 0}
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{isHindi ? 'पीछे' : 'Back'}</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>{tText(l10n.prevButton, lang)}</span>
             </button>
 
             {currentStep < questions.length - 1 ? (
@@ -455,7 +276,7 @@ export default function ConversationalOnboarding({
                 }}
                 className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
-                <span>{isHindi ? 'आगे बढ़ें' : 'Next'}</span>
+                <span>{tText(l10n.nextButton, lang)}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             ) : (
@@ -463,7 +284,7 @@ export default function ConversationalOnboarding({
                 onClick={onProceedToMatching}
                 className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-md shadow-emerald-600/20 cursor-pointer active:scale-95"
               >
-                <span>{isHindi ? 'योजना मिलान पर आगे बढ़ें' : 'Proceed to Scheme Matcher'}</span>
+                <span>{tText(l10n.finishOnboardingBtn, lang)}</span>
                 <Sparkles className="w-4 h-4 text-amber-300" />
               </button>
             )}
@@ -477,53 +298,137 @@ export default function ConversationalOnboarding({
               <div className="flex items-center space-x-2">
                 <Code2 className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  {isHindi ? 'लाइव लाभार्थी प्रोफाइल' : 'Live Beneficiary Profile'}
+                  {tText(l10n.liveDossierTitle, lang)}
                 </span>
               </div>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">
-                {isHindi ? 'सत्यापित' : 'Verified'}
+                {tText(l10n.autoExtractingBadge, lang)}
               </span>
             </div>
 
             <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
-              {isHindi ? 'योजना मिलान हेतु कॉन्फ़िगर किए गए प्रोफाइल पैरामीटर:' : 'Profile parameters configured for deterministic scheme matching:'}
+              {tText({
+                en: "Profile parameters configured for deterministic scheme matching:",
+                hi: "योजना मिलान हेतु कॉन्फ़िगर किए गए प्रोफाइल पैरामीटर:",
+                kn: "ಯೋಜನೆ ಹೊಂದಾಣಿಕೆಗಾಗಿ ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾದ ಪ್ರೊಫೈಲ್ ನಿಯತಾಂಕಗಳು:",
+                ta: "திட்ட பொருத்தத்திற்கு கட்டமைக்கப்பட்ட சுயவிவர அளவுருக்கள்:",
+                te: "పథకం సరిపోలిక కోసం కాన్ఫిగర్ చేయబడిన ప్రొఫైల్ పారామితులు:",
+                mr: "योजना जुळणीसाठी कॉन्फिगर केलेले प्रोफाइल पॅरामीटर्स:",
+                bn: "স্কিম মেলানোর জন্য কনফিগার করা প্রোফাইল প্যারামিটার:"
+              }, lang)}
             </p>
 
             {/* Formatted Summary Box */}
             <div className="space-y-2 text-xs">
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'चयनित भाषा:' : 'Selected Language:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Selected Language:",
+                    hi: "चयनित भाषा:",
+                    kn: "ಆಯ್ಕೆಮಾಡಿದ ಭಾಷೆ:",
+                    ta: "தேர்ந்தெடுக்கப்பட்ட மொழி:",
+                    te: "ఎంచుకున్న భాష:",
+                    mr: "निवडलेली भाषा:",
+                    bn: "নির্বাচিত ভাষা:"
+                  }, lang)}
+                </span>
                 <span className="font-bold text-amber-400 uppercase font-mono">{profile.preferredLanguage || lang}</span>
               </div>
 
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'व्यावसायिक उद्यम:' : 'Business Venture:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Business Venture:",
+                    hi: "व्यावसायिक उद्यम:",
+                    kn: "ವ್ಯಾಪಾರ ಉದ್ಯಮ:",
+                    ta: "வணிகத் தொழில்:",
+                    te: "వ్యాపార పరిశ్రమ:",
+                    mr: "व्यावसायिक उद्योग:",
+                    bn: "বাণিজ্যিক উদ্যোগ:"
+                  }, lang)}
+                </span>
                 <span className="font-bold text-white capitalize truncate ml-2 max-w-[170px]" title={profile.businessType}>
                   {getBusinessDisplay(profile.businessType)}
                 </span>
               </div>
 
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'स्थान / जिला:' : 'Location / District:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Location / District:",
+                    hi: "स्थान / जिला:",
+                    kn: "ಸ್ಥಳ / ಜಿಲ್ಲೆ:",
+                    ta: "இடம் / மாவட்டம்:",
+                    te: "ప్రదేశం / జిల్లా:",
+                    mr: "स्थान / जिल्हा:",
+                    bn: "অবস্থান / জেলা:"
+                  }, lang)}
+                </span>
                 <span className="font-bold text-white">{getLocationDisplay(profile.location)}</span>
               </div>
 
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'आवश्यक ऋण:' : 'Required Loan:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Required Loan:",
+                    hi: "आवश्यक ऋण:",
+                    kn: "ಅಗತ್ಯವಿರುವ ಸಾಲ:",
+                    ta: "தேவையான கடன்:",
+                    te: "అవసరమైన రుణం:",
+                    mr: "आवश्यक कर्ज:",
+                    bn: "প্রয়োজনীয় ঋণ:"
+                  }, lang)}
+                </span>
                 <span className="font-bold text-emerald-400 font-mono">₹{profile.requiredLoanAmount.toLocaleString()}</span>
               </div>
 
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'वार्षिक पारिवारिक आय:' : 'Annual Family Income:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Annual Family Income:",
+                    hi: "वार्षिक पारिवारिक आय:",
+                    kn: "ವಾರ್ಷಿಕ ಕುಟುಂಬ ಆದಾಯ:",
+                    ta: "ஆண்டு குடும்ப வருமானம்:",
+                    te: "వార్షిక కుటుంబ ఆదాయం:",
+                    mr: "वार्षिक कौटुंबिक उत्पन्न:",
+                    bn: "বার্ষিক পারিবারিক আয়:"
+                  }, lang)}
+                </span>
                 <span className="font-bold text-white font-mono">₹{profile.annualFamilyIncome.toLocaleString()}</span>
               </div>
 
               <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400 text-[11px]">{isHindi ? 'जाति प्रमाण पत्र:' : 'Caste Certificate:'}</span>
+                <span className="text-slate-400 text-[11px]">
+                  {tText({
+                    en: "Caste Certificate:",
+                    hi: "जाति प्रमाण पत्र:",
+                    kn: "ಜಾತಿ ಪ್ರಮಾಣಪತ್ರ:",
+                    ta: "சாதி சான்றிதழ்:",
+                    te: "కుల ధృవీకరణ పత్రం:",
+                    mr: "जातीचे प्रमाणपत्र:",
+                    bn: "জাতিগত শংসাপত্র:"
+                  }, lang)}
+                </span>
                 <span className={`font-bold ${profile.hasCasteCertificate ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {profile.hasCasteCertificate 
-                    ? (isHindi ? 'आरडी सत्यापित' : 'RD Verified') 
-                    : (isHindi ? 'अनुपलब्ध / प्रक्रियाधीन' : 'Missing / In-Progress')
+                    ? tText({
+                        en: "RD Verified",
+                        hi: "आरडी सत्यापित",
+                        kn: "RD ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+                        ta: "RD சரிபார்க்கப்பட்டது",
+                        te: "RD ధృవీకరించబడింది",
+                        mr: "RD सत्यापित",
+                        bn: "RD যাচাইকৃত"
+                      }, lang)
+                    : tText({
+                        en: "Missing / In-Progress",
+                        hi: "अनुपलब्ध / प्रक्रियाधीन",
+                        kn: "ಲಭ್ಯವಿಲ್ಲ / ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿದೆ",
+                        ta: "இல்லை / செயல்பாட்டில் உள்ளது",
+                        te: "లేదు / పురోగతిలో ఉంది",
+                        mr: "अनुपलब्ध / प्रक्रियेत आहे",
+                        bn: "অনুপস্থিত / প্রক্রিয়াধীন"
+                      }, lang)
                   }
                 </span>
               </div>
@@ -534,7 +439,17 @@ export default function ConversationalOnboarding({
             onClick={onProceedToMatching}
             className="w-full mt-5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 shadow-md cursor-pointer"
           >
-            <span>{isHindi ? 'रियायती योजनाओं का मिलान करें' : 'Match Concessional Schemes'}</span>
+            <span>
+              {tText({
+                en: "Match Concessional Schemes",
+                hi: "रियायती योजनाओं का मिलान करें",
+                kn: "ರಿಯಾಯಿತಿ ಯೋಜನೆಗಳನ್ನು ಹೊಂದಿಸಿ",
+                ta: "சலுகைத் திட்டங்களைப் பொருத்துங்கள்",
+                te: "రాయితీ పథకాలను సరిపోల్చండి",
+                mr: "सवलतीच्या योजना जुळवा",
+                bn: "রেয়াতযোগ্য স্কিমগুলি মেলান"
+              }, lang)}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

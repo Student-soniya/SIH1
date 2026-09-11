@@ -1,3 +1,4 @@
+import { localizeTernary } from "../l10n";
 import React, { useState, useEffect } from 'react';
 import { translations } from '../translations';
 import { 
@@ -57,7 +58,7 @@ export default function BusinessPlanBuilder({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{isHindi ? 'सुविधा 4: AI बिजनेस-प्लान एवं प्रोजेक्ट रिपोर्ट बिल्डर' : 'Feature 4: AI Business-Plan Builder'}</span>
+            <span>{localizeTernary('सुविधा 4: AI बिजनेस-प्लान एवं प्रोजेक्ट रिपोर्ट बिल्डर', 'Feature 4: AI Business-Plan Builder', lang)}</span>
           </div>
           <h2 className="text-2xl font-bold text-slate-900">{t.businessPlan.title}</h2>
           <p className="text-sm text-slate-600 mt-1">{t.businessPlan.subtitle}</p>
@@ -69,7 +70,7 @@ export default function BusinessPlanBuilder({
             className="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>{isHindi ? 'रिपोर्ट प्रिंट करें' : 'Print Report'}</span>
+            <span>{localizeTernary('रिपोर्ट प्रिंट करें', 'Print Report', lang)}</span>
           </button>
         </div>
       </div>
@@ -80,16 +81,16 @@ export default function BusinessPlanBuilder({
         <div className="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 className="text-sm font-bold text-slate-900">
-              {isHindi ? 'परियोजना इनपुट एवं वित्तीय पैरामीटर' : 'Project Inputs & Parameters'}
+              {localizeTernary('परियोजना इनपुट एवं वित्तीय पैरामीटर', 'Project Inputs & Parameters', lang)}
             </h3>
             <span className="text-[10px] bg-slate-100 font-mono text-slate-600 px-2 py-0.5 rounded">
-              {isHindi ? 'निश्चित अनुपात' : 'Deterministic Ratios'}
+              {localizeTernary('निश्चित अनुपात', 'Deterministic Ratios', lang)}
             </span>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              {isHindi ? 'व्यवसाय का प्रकार' : 'Business Type'}
+              {localizeTernary('व्यवसाय का प्रकार', 'Business Type', lang)}
             </label>
             <input
               type="text"
@@ -102,7 +103,7 @@ export default function BusinessPlanBuilder({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'स्थान / जिला' : 'Location'}
+                {localizeTernary('स्थान / जिला', 'Location', lang)}
               </label>
               <input
                 type="text"
@@ -113,7 +114,7 @@ export default function BusinessPlanBuilder({
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'कर्मचारी संख्या' : 'Employees'}
+                {localizeTernary('कर्मचारी संख्या', 'Employees', lang)}
               </label>
               <input
                 type="number"
@@ -126,7 +127,7 @@ export default function BusinessPlanBuilder({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              {isHindi ? 'आवश्यक उपकरण एवं मशीनरी' : 'Equipment Required'}
+              {localizeTernary('आवश्यक उपकरण एवं मशीनरी', 'Equipment Required', lang)}
             </label>
             <textarea
               rows={2}
@@ -139,7 +140,7 @@ export default function BusinessPlanBuilder({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'परियोजना निवेश (₹)' : 'Project Investment (₹)'}
+                {localizeTernary('परियोजना निवेश (₹)', 'Project Investment (₹)', lang)}
               </label>
               <input
                 type="number"
@@ -151,7 +152,7 @@ export default function BusinessPlanBuilder({
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'मासिक बिक्री (₹)' : 'Monthly Sales (₹)'}
+                {localizeTernary('मासिक बिक्री (₹)', 'Monthly Sales (₹)', lang)}
               </label>
               <input
                 type="number"
@@ -166,7 +167,7 @@ export default function BusinessPlanBuilder({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'कच्चा माल / स्पेयर (₹)' : 'Raw Material / Spares (₹)'}
+                {localizeTernary('कच्चा माल / स्पेयर (₹)', 'Raw Material / Spares (₹)', lang)}
               </label>
               <input
                 type="number"
@@ -177,7 +178,7 @@ export default function BusinessPlanBuilder({
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {isHindi ? 'दुकान किराया एवं बिजली (₹)' : 'Shop Rent & Power (₹)'}
+                {localizeTernary('दुकान किराया एवं बिजली (₹)', 'Shop Rent & Power (₹)', lang)}
               </label>
               <input
                 type="number"
@@ -196,7 +197,7 @@ export default function BusinessPlanBuilder({
             <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
             <span>
               {generating 
-                ? (isHindi ? 'व्यवहार्यता की गणना हो रही है...' : 'Calculating Viability...') 
+                ? (localizeTernary('व्यवहार्यता की गणना हो रही है...', 'Calculating Viability...', lang)) 
                 : t.businessPlan.generateBtn}
             </span>
           </button>
@@ -210,11 +211,11 @@ export default function BusinessPlanBuilder({
                 <div className="flex items-center space-x-2">
                   <FileText className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-bold text-slate-900 text-base">
-                    {isHindi ? 'एक-पेज विस्तृत परियोजना रिपोर्ट (डीपीआर)' : 'One-Page Detailed Project Report (DPR)'}
+                    {localizeTernary('एक-पेज विस्तृत परियोजना रिपोर्ट (डीपीआर)', 'One-Page Detailed Project Report (DPR)', lang)}
                   </h3>
                 </div>
                 <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
-                  {isHindi ? 'बैंक-स्वीकृत प्रारूप' : 'Bank-Ready Format'}
+                  {localizeTernary('बैंक-स्वीकृत प्रारूप', 'Bank-Ready Format', lang)}
                 </span>
               </div>
 
@@ -222,29 +223,29 @@ export default function BusinessPlanBuilder({
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
                   <span className="text-[10px] uppercase font-bold text-emerald-800 block">
-                    {isHindi ? 'आवश्यक बैंक ऋण' : 'Bank Loan Needed'}
+                    {localizeTernary('आवश्यक बैंक ऋण', 'Bank Loan Needed', lang)}
                   </span>
                   <span className="text-lg font-black text-emerald-950">₹{report.bankLoanRequired.toLocaleString()}</span>
                   <span className="text-[10px] text-emerald-700 block">
-                    {isHindi ? 'कुल लागत का 95%' : '95% of Total Cost'}
+                    {localizeTernary('कुल लागत का 95%', '95% of Total Cost', lang)}
                   </span>
                 </div>
                 <div className="bg-teal-50 border border-teal-200 p-3 rounded-xl">
                   <span className="text-[10px] uppercase font-bold text-teal-800 block">
-                    {isHindi ? 'शुद्ध मासिक लाभ' : 'Net Monthly Profit'}
+                    {localizeTernary('शुद्ध मासिक लाभ', 'Net Monthly Profit', lang)}
                   </span>
                   <span className="text-lg font-black text-teal-950">₹{report.netMonthlyProfit.toLocaleString()}</span>
                   <span className="text-[10px] text-teal-700 block">
-                    {isHindi ? 'सभी खर्चों के बाद' : 'After all expenses'}
+                    {localizeTernary('सभी खर्चों के बाद', 'After all expenses', lang)}
                   </span>
                 </div>
                 <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-xl">
                   <span className="text-[10px] uppercase font-bold text-indigo-800 block">
-                    {isHindi ? 'डीएससीआर कवरेज' : 'DSCR Coverage'}
+                    {localizeTernary('डीएससीआर कवरेज', 'DSCR Coverage', lang)}
                   </span>
                   <span className="text-lg font-black text-indigo-950">{report.debtServiceCoverageRatio}x</span>
                   <span className="text-[10px] text-indigo-700 block">
-                    {isHindi ? 'बैंक मानक > 1.5x' : 'Bank Norm > 1.5x'}
+                    {localizeTernary('बैंक मानक > 1.5x', 'Bank Norm > 1.5x', lang)}
                   </span>
                 </div>
               </div>
@@ -253,7 +254,7 @@ export default function BusinessPlanBuilder({
               <div className="space-y-3 text-xs text-slate-700">
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <strong className="text-slate-900 block font-bold mb-0.5">
-                    {isHindi ? '1. कार्यकारी सारांश:' : '1. Executive Summary:'}
+                    {localizeTernary('1. कार्यकारी सारांश:', '1. Executive Summary:', lang)}
                   </strong>
                   <p>
                     {isHindi
@@ -263,7 +264,7 @@ export default function BusinessPlanBuilder({
                 </div>
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <strong className="text-slate-900 block font-bold mb-0.5">
-                    {isHindi ? '2. ऋण का उद्देश्य:' : '2. Purpose of Loan:'}
+                    {localizeTernary('2. ऋण का उद्देश्य:', '2. Purpose of Loan:', lang)}
                   </strong>
                   <p>
                     {isHindi
@@ -278,55 +279,55 @@ export default function BusinessPlanBuilder({
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 text-slate-700 font-bold">
                     <tr>
-                      <th className="p-2.5">{isHindi ? 'वित्तीय घटक' : 'Financial Component'}</th>
-                      <th className="p-2.5 text-right">{isHindi ? 'राशि (₹)' : 'Amount (₹)'}</th>
-                      <th className="p-2.5 text-right">{isHindi ? 'टिप्पणी' : 'Notes'}</th>
+                      <th className="p-2.5">{localizeTernary('वित्तीय घटक', 'Financial Component', lang)}</th>
+                      <th className="p-2.5 text-right">{localizeTernary('राशि (₹)', 'Amount (₹)', lang)}</th>
+                      <th className="p-2.5 text-right">{localizeTernary('टिप्पणी', 'Notes', lang)}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     <tr>
                       <td className="p-2.5 text-slate-800 font-medium">
-                        {isHindi ? 'उपकरण एवं मशीनरी' : 'Equipment & Tools'}
+                        {localizeTernary('उपकरण एवं मशीनरी', 'Equipment & Tools', lang)}
                       </td>
                       <td className="p-2.5 text-right font-bold">₹{report.equipmentCost.toLocaleString()}</td>
                       <td className="p-2.5 text-right text-slate-500">
-                        {isHindi ? 'पूंजीगत संपत्ति' : 'Capital Asset'}
+                        {localizeTernary('पूंजीगत संपत्ति', 'Capital Asset', lang)}
                       </td>
                     </tr>
                     <tr>
                       <td className="p-2.5 text-slate-800 font-medium">
-                        {isHindi ? 'कार्यशील पूंजी एवं स्पेयर' : 'Working Capital & Spares'}
+                        {localizeTernary('कार्यशील पूंजी एवं स्पेयर', 'Working Capital & Spares', lang)}
                       </td>
                       <td className="p-2.5 text-right font-bold">₹{report.workingCapital.toLocaleString()}</td>
                       <td className="p-2.5 text-right text-slate-500">
-                        {isHindi ? '30% प्रारंभिक बफर' : '30% Gestation Buffer'}
+                        {localizeTernary('30% प्रारंभिक बफर', '30% Gestation Buffer', lang)}
                       </td>
                     </tr>
                     <tr className="bg-slate-50 font-bold">
                       <td className="p-2.5 text-slate-900">
-                        {isHindi ? 'कुल परियोजना परिव्यय' : 'Total Project Outlay'}
+                        {localizeTernary('कुल परियोजना परिव्यय', 'Total Project Outlay', lang)}
                       </td>
                       <td className="p-2.5 text-right text-emerald-800">₹{report.totalProjectCost.toLocaleString()}</td>
                       <td className="p-2.5 text-right text-slate-600">
-                        {isHindi ? '100% परिव्यय' : '100% Outlay'}
+                        {localizeTernary('100% परिव्यय', '100% Outlay', lang)}
                       </td>
                     </tr>
                     <tr>
                       <td className="p-2.5 text-slate-800 font-medium">
-                        {isHindi ? 'प्रवर्तक मार्जिन (5%)' : 'Promoter Margin (5%)'}
+                        {localizeTernary('प्रवर्तक मार्जिन (5%)', 'Promoter Margin (5%)', lang)}
                       </td>
                       <td className="p-2.5 text-right font-semibold">₹{report.marginMoneyPromoterContribution.toLocaleString()}</td>
                       <td className="p-2.5 text-right text-slate-500">
-                        {isHindi ? 'स्वयं का अंशदान' : 'Own Funds'}
+                        {localizeTernary('स्वयं का अंशदान', 'Own Funds', lang)}
                       </td>
                     </tr>
                     <tr className="bg-emerald-50/70 font-bold">
                       <td className="p-2.5 text-emerald-950">
-                        {isHindi ? 'योजना के तहत शुद्ध ऋण' : 'Net Term Loan Under Scheme'}
+                        {localizeTernary('योजना के तहत शुद्ध ऋण', 'Net Term Loan Under Scheme', lang)}
                       </td>
                       <td className="p-2.5 text-right text-emerald-900 font-black">₹{report.bankLoanRequired.toLocaleString()}</td>
                       <td className="p-2.5 text-right text-emerald-800">
-                        {isHindi ? '95% रियायती' : '95% Concessional'}
+                        {localizeTernary('95% रियायती', '95% Concessional', lang)}
                       </td>
                     </tr>
                   </tbody>
@@ -338,7 +339,7 @@ export default function BusinessPlanBuilder({
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div>
                   <strong className="block font-bold">
-                    {isHindi ? 'पुनर्भुगतान क्षमता मूल्यांकन:' : 'Repayment Assessment:'}
+                    {localizeTernary('पुनर्भुगतान क्षमता मूल्यांकन:', 'Repayment Assessment:', lang)}
                   </strong>
                   <span>
                     {isHindi 
@@ -353,14 +354,14 @@ export default function BusinessPlanBuilder({
                   onClick={onProceedToPartners}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-2 cursor-pointer"
                 >
-                  <span>{isHindi ? 'चैनल पार्टनर खोजें' : 'Locate Channel Partners'}</span>
+                  <span>{localizeTernary('चैनल पार्टनर खोजें', 'Locate Channel Partners', lang)}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </>
           ) : (
             <div className="py-12 text-center text-slate-500 text-xs">
-              {isHindi ? 'पैरामीटर भरें और "प्रोजेक्ट रिपोर्ट बनाएं" पर क्लिक करें।' : 'Fill in the parameters and click "Generate Project Report".'}
+              {localizeTernary('पैरामीटर भरें और "प्रोजेक्ट रिपोर्ट बनाएं" पर क्लिक करें।', 'Fill in the parameters and click "Generate Project Report".', lang)}
             </div>
           )}
         </div>

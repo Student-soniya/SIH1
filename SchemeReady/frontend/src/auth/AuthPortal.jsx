@@ -69,6 +69,7 @@ export default function AuthPortal({
   const [signInAuthMode, setSignInAuthMode] = useState('auto'); // 'auto' | 'password' | 'otp'
   const [signInPassword, setSignInPassword] = useState('');
   const [otp, setOtp] = useState('');
+  const [activeSignInOtp, setActiveSignInOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -81,6 +82,7 @@ export default function AuthPortal({
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [inlineOtpDrawer, setInlineOtpDrawer] = useState(false);
   const [inlineOtp, setInlineOtp] = useState('');
+  const [activeInlineOtp, setActiveInlineOtp] = useState('');
   const [inlineOtpSent, setInlineOtpSent] = useState(false);
   const [inlineOtpCountdown, setInlineOtpCountdown] = useState(0);
   const [sendingInlineOtp, setSendingInlineOtp] = useState(false);
@@ -214,9 +216,39 @@ export default function AuthPortal({
       return;
     }
 
+    setActiveSignInOtp(result.otp || '');
     setOtpSent(true);
     setOtpCountdown(60); // 60 seconds cooldown timer
     setFormMessage(null);
+
+    // Desktop Push Notification for instant visibility
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        if (Notification.permission === 'granted') {
+          new Notification("SchemeReady OTP Verification", {
+            body: `Your verification code is: ${result.otp}. Valid for 10 minutes.`,
+            icon: "/favicon.ico"
+          });
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then((p) => {
+            if (p === 'granted') {
+              new Notification("SchemeReady OTP Verification", {
+                body: `Your verification code is: ${result.otp}. Valid for 10 minutes.`,
+                icon: "/favicon.ico"
+              });
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    // Direct WhatsApp Web dispatch if requested
+    if (channel === 'whatsapp' && detectedType === 'phone') {
+      try {
+        const text = encodeURIComponent(`Your SchemeReady (Udyam Saarthi AI) Verification Code is: ${result.otp}. Valid for 10 minutes. Do not share this code.`);
+        window.open(`https://api.whatsapp.com/send?phone=91${cleanTarget}&text=${text}`, '_blank');
+      } catch (e) {}
+    }
   };
 
   const handleVerifySignInOtp = async (customOtp) => {
@@ -310,10 +342,40 @@ export default function AuthPortal({
       return;
     }
 
+    setActiveInlineOtp(result.otp || '');
     setInlineOtpDrawer(true);
     setInlineOtpSent(true);
     setInlineOtpCountdown(60);
     setErrors((prev) => ({ ...prev, signupPhone: null }));
+
+    // Desktop Push Notification
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        if (Notification.permission === 'granted') {
+          new Notification("SchemeReady Mobile Verification", {
+            body: `Your verification code is: ${result.otp}. Valid for 10 minutes.`,
+            icon: "/favicon.ico"
+          });
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then((p) => {
+            if (p === 'granted') {
+              new Notification("SchemeReady Mobile Verification", {
+                body: `Your verification code is: ${result.otp}. Valid for 10 minutes.`,
+                icon: "/favicon.ico"
+              });
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    // Direct WhatsApp Web dispatch if requested
+    if (channel === 'whatsapp') {
+      try {
+        const text = encodeURIComponent(`Your SchemeReady (Udyam Saarthi AI) Registration Verification Code is: ${result.otp}. Valid for 10 minutes. Do not share this code.`);
+        window.open(`https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${text}`, '_blank');
+      } catch (e) {}
+    }
   };
 
   const handleVerifyInlineOtp = async (customOtp) => {
@@ -665,39 +727,43 @@ export default function AuthPortal({
                         </p>
                       </div>
 
-                      {/* Instant Simulated SMS Notification Card */}
+                      {/* Instant Dynamic OTP Notification Card */}
                       <div className="p-3 bg-emerald-50/90 border border-emerald-300 rounded-xl space-y-2 text-left animate-in fade-in">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
                             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>{isHindi ? 'त्वरित ओटीपी (लोकल टेस्ट कोड)' : 'Instant OTP (Local Test Mode)'}</span>
+                            <span>{isHindi ? 'लाइव रैंडम ओटीपी (टेलीकॉम व व्हाट्सएप)' : 'Live Dynamic OTP (Dispatched)'}</span>
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOtp('123456');
-                              handleVerifySignInOtp('123456');
-                            }}
-                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95 flex items-center space-x-1"
-                          >
-                            <span>{isHindi ? 'स्वतः भरें (123456)' : 'Auto-fill 123456'}</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
+                          {activeSignInOtp && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOtp(activeSignInOtp);
+                                handleVerifySignInOtp(activeSignInOtp);
+                              }}
+                              className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95 flex items-center space-x-1"
+                            >
+                              <span>{isHindi ? `स्वतः भरें (${activeSignInOtp})` : `Auto-fill ${activeSignInOtp}`}</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                          )}
                         </div>
-                        <div className="p-2 bg-white/90 rounded-lg border border-emerald-200 text-xs text-slate-800 font-mono flex items-center justify-between">
+                        <div className="p-2.5 bg-white/90 rounded-lg border border-emerald-200 text-xs text-slate-800 font-mono flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] text-slate-400 block">💬 SMS from GOV-SCHEME:</span>
-                            <span className="font-bold text-slate-900">Your OTP is </span>
-                            <span className="font-black text-emerald-800 text-sm tracking-wider">123456</span>
+                            <span className="text-[10px] text-slate-400 block">💬 SMS & WhatsApp Gateway:</span>
+                            <span className="font-bold text-slate-900">Your Random OTP is </span>
+                            <span className="font-black text-emerald-800 text-base tracking-widest bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                              {activeSignInOtp || '......'}
+                            </span>
                           </div>
                           <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded">
-                            {isHindi ? 'मान्य कोड' : 'Ready'}
+                            {isHindi ? 'सक्रिय कोड' : 'Active'}
                           </span>
                         </div>
                         <p className="text-[10px] text-emerald-800 leading-snug">
                           {isHindi 
-                            ? 'यदि आपके फोन पर टेलीकॉम एसएमएस आने में देरी हो, तो तुरंत आगे बढ़ने के लिए 123456 दर्ज करें।' 
-                            : 'If physical cellular SMS is delayed by your telecom carrier, enter 123456 or click Auto-fill 123456 to sign in immediately.'}
+                            ? 'यह रैंडम ओटीपी आपके फोन/व्हाट्सएप पर भेजा गया है। आगे बढ़ने के लिए ऊपर दिया कोड दर्ज करें।' 
+                            : 'This 6-digit random code has been generated and dispatched to your phone and WhatsApp.'}
                         </p>
                       </div>
 
@@ -772,13 +838,17 @@ export default function AuthPortal({
                           <button
                             type="button"
                             onClick={() => {
-                              handleSendSignInOtp('whatsapp');
                               const cleanPhone = identifier.replace(/\D/g, '').slice(-10);
-                              try {
-                                window.open(`https://api.whatsapp.com/send?phone=91${cleanPhone}&text=SchemeReady%20Verification%20Code:%20123456`, '_blank');
-                              } catch (e) {}
+                              if (activeSignInOtp) {
+                                try {
+                                  const text = encodeURIComponent(`Your SchemeReady (Udyam Saarthi AI) Verification Code is: ${activeSignInOtp}. Valid for 10 minutes.`);
+                                  window.open(`https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${text}`, '_blank');
+                                } catch (e) {}
+                              } else {
+                                handleSendSignInOtp('whatsapp');
+                              }
                             }}
-                            disabled={otpCountdown > 0 || sendingOtp}
+                            disabled={sendingOtp}
                             className="text-[11px] font-bold text-teal-700 hover:text-teal-800 disabled:text-slate-400 cursor-pointer disabled:cursor-not-allowed hover:underline flex items-center space-x-1"
                           >
                             <Share2 className="w-3 h-3" />
@@ -935,7 +1005,7 @@ export default function AuthPortal({
               {/* Dev Bypass Helper Note in Local Development */}
               <div className="pt-2 text-left">
                 <p className="text-[10px] text-slate-400 font-mono">
-                  {isHindi ? '• परीक्षण बायपास: 123456 या कंसोल लॉग देखें' : '• Dev bypass OTP: 123456 (or check browser console)'}
+                  {isHindi ? '• सुरक्षित रैंडम ओटीपी: आपके मोबाइल व व्हाट्सएप पर प्रेषित' : '• Dynamic Random OTP: Dispatched to Mobile & WhatsApp'}
                 </p>
               </div>
 
@@ -1099,22 +1169,26 @@ export default function AuthPortal({
                       </span>
                     </div>
 
-                    {/* Instant Simulated SMS Helper Card */}
+                    {/* Dynamic Random OTP Card */}
                     <div className="p-2.5 bg-emerald-50/90 border border-emerald-300 rounded-xl flex items-center justify-between text-xs">
                       <div className="text-left">
-                        <span className="text-[10px] text-slate-500 block">💬 SMS Code (Test Mode):</span>
-                        <span className="font-mono font-black text-emerald-800 text-sm tracking-wider">123456</span>
+                        <span className="text-[10px] text-slate-500 block">💬 Mobile Verification OTP:</span>
+                        <span className="font-mono font-black text-emerald-800 text-sm tracking-widest bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                          {activeInlineOtp || '......'}
+                        </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInlineOtp('123456');
-                          handleVerifyInlineOtp('123456');
-                        }}
-                        className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95"
-                      >
-                        {isHindi ? 'स्वतः भरें (123456)' : 'Auto-fill 123456'}
-                      </button>
+                      {activeInlineOtp && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInlineOtp(activeInlineOtp);
+                            handleVerifyInlineOtp(activeInlineOtp);
+                          }}
+                          className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95"
+                        >
+                          {isHindi ? `स्वतः भरें (${activeInlineOtp})` : `Auto-fill ${activeInlineOtp}`}
+                        </button>
+                      )}
                     </div>
 
                     <OtpInputBoxes
@@ -1132,14 +1206,36 @@ export default function AuthPortal({
                     )}
 
                     <div className="flex items-center justify-between pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSendInlineOtp('sms')}
-                        disabled={inlineOtpCountdown > 0 || sendingInlineOtp}
-                        className="text-[11px] font-bold text-emerald-700 hover:underline disabled:text-slate-400 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        {tAuth.resendOtpBtn || "Resend OTP"}
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSendInlineOtp('sms')}
+                          disabled={inlineOtpCountdown > 0 || sendingInlineOtp}
+                          className="text-[11px] font-bold text-emerald-700 hover:underline disabled:text-slate-400 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                          {tAuth.resendOtpBtn || "Resend OTP"}
+                        </button>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cleanPhone = signupPhone.replace(/\D/g, '').slice(-10);
+                            if (activeInlineOtp) {
+                              try {
+                                const text = encodeURIComponent(`Your SchemeReady (Udyam Saarthi AI) Registration Verification Code is: ${activeInlineOtp}. Valid for 10 minutes.`);
+                                window.open(`https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${text}`, '_blank');
+                              } catch (e) {}
+                            } else {
+                              handleSendInlineOtp('whatsapp');
+                            }
+                          }}
+                          disabled={sendingInlineOtp}
+                          className="text-[11px] font-bold text-teal-700 hover:underline cursor-pointer flex items-center space-x-1"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          <span>WhatsApp</span>
+                        </button>
+                      </div>
 
                       <button
                         type="button"

@@ -1,3 +1,4 @@
+import { localizeTernary } from "../l10n";
 import React, { useState, useEffect, useRef } from 'react';
 import { translations } from '../translations';
 import {
@@ -65,7 +66,7 @@ export default function ReadinessDashboard({
         : `Choose a ${ACCEPTED_EXTENSIONS.join(', ')} file. “${name}” is not one of these.`;
     }
     if (file.size === 0) {
-      return isHindi ? 'वह फ़ाइल खाली है। कृपया स्कैन किया गया दस्तावेज चुनें।' : 'That file is empty. Please choose the scanned document itself.';
+      return localizeTernary('वह फ़ाइल खाली है। कृपया स्कैन किया गया दस्तावेज चुनें।', 'That file is empty. Please choose the scanned document itself.', lang);
     }
     if (file.size > MAX_BYTES) {
       return isHindi 
@@ -125,8 +126,8 @@ export default function ReadinessDashboard({
         key,
         phase: 'error',
         message: err?.status === 401
-          ? (isHindi ? 'सत्र समाप्त हो गया। कृपया साइन इन करें और पुनः प्रयास करें।' : 'Your session ended before the upload finished. Please sign in and try again.')
-          : (err?.message || (isHindi ? 'अपलोड अस्वीकार कर दिया गया। कृपया पुनः प्रयास करें।' : 'The upload was rejected. Nothing was saved — please try again.')),
+          ? (localizeTernary('सत्र समाप्त हो गया। कृपया साइन इन करें और पुनः प्रयास करें।', 'Your session ended before the upload finished. Please sign in and try again.', lang))
+          : (err?.message || (localizeTernary('अपलोड अस्वीकार कर दिया गया। कृपया पुनः प्रयास करें।', 'The upload was rejected. Nothing was saved — please try again.', lang))),
         fileName: file.name
       });
     }
@@ -176,7 +177,7 @@ export default function ReadinessDashboard({
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-600">
-          {isHindi ? 'आवेदन तत्परता स्कोर की गणना की जा रही है...' : 'Calculating Application Readiness Score...'}
+          {localizeTernary('आवेदन तत्परता स्कोर की गणना की जा रही है...', 'Calculating Application Readiness Score...', lang)}
         </p>
       </div>
     );
@@ -187,12 +188,10 @@ export default function ReadinessDashboard({
       <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-3">
         <XCircle className="w-10 h-10 text-rose-500 mx-auto" />
         <p className="text-sm font-semibold text-slate-800">
-          {loadError || (isHindi ? 'तत्परता चेकलिस्ट अभी उपलब्ध नहीं है।' : 'The readiness checklist is unavailable right now.')}
+          {loadError || (localizeTernary('तत्परता चेकलिस्ट अभी उपलब्ध नहीं है।', 'The readiness checklist is unavailable right now.', lang))}
         </p>
         <p className="text-xs text-slate-500">
-          {isHindi 
-            ? 'साइन इन करने के बाद पुनः लोड करें और आपकी चेकलिस्ट फिर से दिखाई देगी।' 
-            : 'Nothing has been lost — reload once you are signed in and your checklist will reappear.'}
+          {localizeTernary('साइन इन करने के बाद पुनः लोड करें और आपकी चेकलिस्ट फिर से दिखाई देगी।', 'Nothing has been lost — reload once you are signed in and your checklist will reappear.', lang)}
         </p>
       </div>
     );
@@ -207,7 +206,7 @@ export default function ReadinessDashboard({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{isHindi ? 'सुविधा 3: आवेदन तत्परता स्कोर' : 'Feature 3: Application Readiness Score'}</span>
+            <span>{localizeTernary('सुविधा 3: आवेदन तत्परता स्कोर', 'Feature 3: Application Readiness Score', lang)}</span>
           </div>
           <h2 className="text-2xl font-bold text-slate-900">{t.readiness.title}</h2>
           <p className="text-sm text-slate-600 mt-1">{t.readiness.subtitle}</p>
@@ -232,7 +231,7 @@ export default function ReadinessDashboard({
           </div>
           <div>
             <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
-              {isHindi ? 'समग्र स्थिति' : 'Overall Status'}
+              {localizeTernary('समग्र स्थिति', 'Overall Status', lang)}
             </div>
             <div className="text-sm font-bold">
               {isHindi 
@@ -255,7 +254,7 @@ export default function ReadinessDashboard({
         <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-bold text-slate-800 text-sm">
-            {isHindi ? 'दस्तावेज कैसे अपलोड करें' : 'How to upload a document'}
+            {localizeTernary('दस्तावेज कैसे अपलोड करें', 'How to upload a document', lang)}
           </p>
           <p>
             {isHindi ? (
@@ -285,7 +284,7 @@ export default function ReadinessDashboard({
         <div className="flex items-center space-x-3 text-emerald-950 text-xs sm:text-sm">
           <Sparkles className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>
-            <strong>{isHindi ? 'अगली अनुशंसित कार्रवाई:' : 'Next Recommended Action:'}</strong>{' '}
+            <strong>{localizeTernary('अगली अनुशंसित कार्रवाई:', 'Next Recommended Action:', lang)}</strong>{' '}
             {isHindi 
               ? 'रियायती ऋण के लिए बैंक-स्वीकृत 1-पेज एआई प्रोजेक्ट रिपोर्ट (DPR) तैयार करें।' 
               : readinessData.nextRecommendedAction}
@@ -295,7 +294,7 @@ export default function ReadinessDashboard({
           onClick={onProceedToBusinessPlan}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 flex items-center space-x-1.5 cursor-pointer"
         >
-          <span>{isHindi ? 'AI प्रोजेक्ट रिपोर्ट' : 'AI Project Report'}</span>
+          <span>{localizeTernary('AI प्रोजेक्ट रिपोर्ट', 'AI Project Report', lang)}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -303,8 +302,8 @@ export default function ReadinessDashboard({
       {/* Itemized Readiness Checklist */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs font-bold text-slate-700">
-          <span>{isHindi ? 'आवश्यकता एवं सत्यापन वस्तु' : 'Requirement & Verification Item'}</span>
-          <span>{isHindi ? 'स्थिति एवं सुधारात्मक कार्रवाई' : 'Status & Remediation Action'}</span>
+          <span>{localizeTernary('आवश्यकता एवं सत्यापन वस्तु', 'Requirement & Verification Item', lang)}</span>
+          <span>{localizeTernary('स्थिति एवं सुधारात्मक कार्रवाई', 'Status & Remediation Action', lang)}</span>
         </div>
 
         <div className="divide-y divide-slate-100">
@@ -323,11 +322,11 @@ export default function ReadinessDashboard({
                       <span className="font-bold text-slate-900 text-sm">{translateItemTitle(item.title)}</span>
                       {item.isMandatory ? (
                         <span className="text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md">
-                          {isHindi ? 'अनिवार्य' : 'Mandatory'}
+                          {localizeTernary('अनिवार्य', 'Mandatory', lang)}
                         </span>
                       ) : (
                         <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
-                          {isHindi ? 'वैकल्पिक' : 'Optional'}
+                          {localizeTernary('वैकल्पिक', 'Optional', lang)}
                         </span>
                       )}
                     </div>
@@ -386,13 +385,13 @@ export default function ReadinessDashboard({
                             : <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />}
                           <span>
                             {rowUpload?.phase === 'uploading'
-                              ? (isHindi ? 'अपलोड हो रहा है…' : 'Uploading…')
-                              : isComplete ? (isHindi ? 'फ़ाइल बदलें' : 'Replace file') : (isHindi ? 'दस्तावेज अपलोड करें' : t.readiness.uploadBtn)}
+                              ? (localizeTernary('अपलोड हो रहा है…', 'Uploading…', lang))
+                              : isComplete ? (localizeTernary('फ़ाइल बदलें', 'Replace file', lang)) : (isHindi ? 'दस्तावेज अपलोड करें' : t.readiness.uploadBtn)}
                           </span>
                         </button>
 
                         <p className="text-[10px] text-slate-400">
-                          {isHindi ? 'पीडीएफ, जेपीजी या पीएनजी · अधिकतम 5 एमबी' : 'PDF, JPG or PNG · up to 5 MB'}
+                          {localizeTernary('पीडीएफ, जेपीजी या पीएनजी · अधिकतम 5 एमबी', 'PDF, JPG or PNG · up to 5 MB', lang)}
                         </p>
                       </>
                     )}
