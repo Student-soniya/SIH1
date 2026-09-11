@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SlidersHorizontal, Save, Eye, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { SlidersHorizontal, Save, Eye, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { getAdminRules, saveAdminRules, previewAdminRules } from '../api';
 
@@ -59,10 +59,6 @@ export default function AdminRuleEditor() {
   useEffect(() => {
     if (isAdmin) load();
   }, [isAdmin, load]);
-
-  // R7.12 — no rule input, no weight input, no save control without an Admin session. Checked
-  // before any request is made, so an unauthorised viewer does not even provoke a 403.
-  if (!isAdmin) return null;
 
   const bounds = payload?.bounds;
 
@@ -206,6 +202,9 @@ export default function AdminRuleEditor() {
       setSaving(false);
     }
   };
+
+  // R7.12 — no rule input, no weight input, no save control without an Admin session.
+  if (!isAdmin) return null;
 
   if (loading) {
     return (

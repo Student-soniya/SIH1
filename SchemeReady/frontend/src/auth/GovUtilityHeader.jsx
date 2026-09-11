@@ -56,25 +56,28 @@ export default function GovUtilityHeader({
           </div>
 
           {/* Accessibility Font Size Buttons */}
-          <div className="flex items-center space-x-1 bg-slate-900/80 px-2 py-1 rounded-lg border border-white/10 text-[10px] font-bold">
+          <div className="flex items-center space-x-1 bg-slate-900/80 px-1.5 py-0.5 rounded-lg border border-white/10 text-xs font-bold">
             <button
               onClick={() => setFontSize && setFontSize('sm')}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors ${fontSize === 'sm' ? 'text-amber-400 font-black' : 'text-slate-400'}`}
-              title="Standard Font Size"
+              className={`min-w-[32px] sm:min-w-[36px] min-h-[36px] sm:min-h-[40px] flex items-center justify-center rounded-md hover:bg-white/10 transition-colors ${fontSize === 'sm' ? 'text-amber-400 font-black bg-white/10' : 'text-slate-400'}`}
+              title="Standard Font Size (A-)"
+              aria-label="Decrease font size"
             >
               A-
             </button>
             <button
               onClick={() => setFontSize && setFontSize('md')}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors ${fontSize === 'md' ? 'text-amber-400 font-black' : 'text-slate-400'}`}
-              title="Medium Font Size"
+              className={`min-w-[32px] sm:min-w-[36px] min-h-[36px] sm:min-h-[40px] flex items-center justify-center rounded-md hover:bg-white/10 transition-colors ${fontSize === 'md' ? 'text-amber-400 font-black bg-white/10' : 'text-slate-400'}`}
+              title="Medium Font Size (A)"
+              aria-label="Default font size"
             >
               A
             </button>
             <button
               onClick={() => setFontSize && setFontSize('lg')}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors ${fontSize === 'lg' ? 'text-amber-400 font-black' : 'text-slate-400'}`}
-              title="Large Font Size"
+              className={`min-w-[32px] sm:min-w-[36px] min-h-[36px] sm:min-h-[40px] flex items-center justify-center rounded-md hover:bg-white/10 transition-colors ${fontSize === 'lg' ? 'text-amber-400 font-black bg-white/10' : 'text-slate-400'}`}
+              title="Large Font Size (A+)"
+              aria-label="Increase font size"
             >
               A+
             </button>
@@ -83,7 +86,7 @@ export default function GovUtilityHeader({
           {/* High Contrast Toggle */}
           <button
             onClick={() => setHighContrast && setHighContrast(!highContrast)}
-            className={`p-1.5 rounded-lg border text-[11px] transition-colors flex items-center space-x-1 ${
+            className={`min-h-[36px] sm:min-h-[40px] px-2.5 rounded-lg border text-xs transition-colors flex items-center space-x-1.5 cursor-pointer ${
               highContrast 
                 ? 'bg-amber-400 text-slate-950 border-amber-400 font-bold' 
                 : 'bg-slate-900/80 text-slate-300 border-white/10 hover:bg-white/10'
@@ -91,8 +94,8 @@ export default function GovUtilityHeader({
             title="Toggle High Contrast Mode"
             aria-label="Toggle High Contrast Mode"
           >
-            <SunMedium className="w-3.5 h-3.5" />
-            <span className="hidden xl:inline text-[10px]">{t.govHeader?.contrast || "Contrast"}</span>
+            <SunMedium className="w-4 h-4 shrink-0" />
+            <span className="hidden xl:inline text-[11px]">{t.govHeader?.contrast || "Contrast"}</span>
           </button>
 
           {/* Language Selector */}

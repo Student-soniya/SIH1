@@ -236,16 +236,16 @@ export default function ConversationalOnboarding({
                   >
                     <span className="text-xl shrink-0 mt-0.5">{opt.icon || '📌'}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-xs leading-snug flex items-center justify-between">
-                        <span className="truncate">{opt.label}</span>
+                      <div className="font-bold text-xs leading-snug flex items-center justify-between gap-2">
+                        <span className="break-words">{opt.label}</span>
                         {isSelected && (
-                          <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 ml-1">
+                          <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
                             <Check className="w-2.5 h-2.5" />
                           </span>
                         )}
                       </div>
                       {opt.hint && (
-                        <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">{opt.hint}</p>
+                        <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{opt.hint}</p>
                       )}
                     </div>
                   </button>

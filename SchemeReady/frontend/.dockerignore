@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/bin
+**/obj
+**/.git
+**/.github
+**/.vscode
+**/.idea
+**/*.user
+**/*.lock

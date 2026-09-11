@@ -1,3 +1,4 @@
+import { localizeTernary } from '../../l10n';
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, Sparkles } from 'lucide-react';
 
@@ -5,7 +6,7 @@ export default function LandingFaq({ lang = 'en' }) {
   const isHindi = lang === 'hi';
   const [openIndex, setOpenIndex] = useState(0);
 
-  const faqs = isHindi ? [
+  const faqs = (lang === 'hi' || lang === 'mr') ? [
     {
       q: 'एनएसएफडीसी और सरकारी रियायती उद्यमिता योजनाओं के लिए कौन पात्र है?',
       a: 'अनुसूचित जाति (SC), अन्य पिछड़ा वर्ग (OBC), विमुक्त जनजातियों या सफाई कर्मचारी परिवारों से संबंधित कोई भी भारतीय नागरिक, जिनकी कुल वार्षिक पारिवारिक आय ₹5.00 लाख तक है, वे रियायती वित्तीय सहायता के पात्र हैं।'
@@ -73,15 +74,13 @@ export default function LandingFaq({ lang = 'en' }) {
         <div className="text-center space-y-3">
           <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? 'लाभार्थी सहायता संबंधी अक्सर पूछे जाने वाले प्रश्न' : 'Beneficiary Assistance FAQs'}</span>
+            <span>{localizeTernary('लाभार्थी सहायता संबंधी अक्सर पूछे जाने वाले प्रश्न', 'Beneficiary Assistance FAQs', lang)}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            {isHindi ? 'अक्सर पूछे जाने वाले प्रश्न' : 'Frequently Asked Questions'}
+            {localizeTernary('अक्सर पूछे जाने वाले प्रश्न', 'Frequently Asked Questions', lang)}
           </h2>
           <p className="text-sm text-slate-600 font-normal">
-            {isHindi 
-              ? 'पात्रता, ब्याज सब्सिडी, चैनल पार्टनर्स और दस्तावेज सत्यापन के बारे में आवश्यक सभी जानकारी।' 
-              : 'Everything you need to know about eligibility, interest subsidies, Channel Partners, and document verification.'}
+            {localizeTernary('पात्रता, ब्याज सब्सिडी, चैनल पार्टनर्स और दस्तावेज सत्यापन के बारे में आवश्यक सभी जानकारी।', 'Everything you need to know about eligibility, interest subsidies, Channel Partners, and document verification.', lang)}
           </p>
         </div>
 

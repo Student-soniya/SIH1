@@ -19,11 +19,20 @@ import {
 import { getPartners } from '../api';
 import IllustrativeBadge from './IllustrativeBadge';
 
-function formatVerifiedDate(value, isHindi) {
+function formatVerifiedDate(value, lang = 'en') {
   if (!value) return localizeTernary('दर्ज नहीं', 'not recorded', lang);
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return localizeTernary('दर्ज नहीं', 'not recorded', lang);
-  return parsed.toLocaleDateString(localizeTernary('hi-IN', 'en-IN', lang), { day: 'numeric', month: 'long', year: 'numeric' });
+  const localeMap = {
+    hi: 'hi-IN',
+    kn: 'kn-IN',
+    ta: 'ta-IN',
+    te: 'te-IN',
+    mr: 'mr-IN',
+    bn: 'bn-IN',
+    en: 'en-IN'
+  };
+  return parsed.toLocaleDateString(localeMap[lang] || 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function PartnerRouting({ 
@@ -36,8 +45,8 @@ export default function PartnerRouting({
   const t = translations[lang] || translations.en;
   const isHindi = lang === 'hi';
   const [partners, setPartners] = useState([]);
-  const [selectedState, setSelectedState] = useState(profile.state || 'Karnataka');
-  const [selectedDistrict, setSelectedDistrict] = useState(profile.location || 'Bengaluru');
+  const [selectedState, setSelectedState] = useState(profile?.state || 'Karnataka');
+  const [selectedDistrict, setSelectedDistrict] = useState(profile?.location || 'Bengaluru');
   const [selectedType, setSelectedType] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
@@ -173,9 +182,7 @@ export default function PartnerRouting({
 
               <div className="bg-white/10 rounded-xl p-3 text-xs text-emerald-200 border border-white/10">
                 <strong>{localizeTernary('स्मार्ट रूटिंग सिफारिश:', 'Smart Routing Recommendation:', lang)}</strong>{' '}
-                {isHindi 
-                  ? `${recommendedPartner.institutionName}, ${recommendedPartner.distanceKm} किमी दूर, ${recommendedPartner.applicationMode === 'Offline' ? 'ऑफलाइन' : 'ऑनलाइन'} आवेदन स्वीकार करता है, चयनित योजना का समर्थन करता है, अंतिम सत्यापन ${formatVerifiedDate(recommendedPartner.lastVerifiedDate, isHindi)}।`
-                  : `${recommendedPartner.institutionName}, ${recommendedPartner.distanceKm} km away, accepts ${recommendedPartner.applicationMode.toLowerCase()} applications, supports the selected scheme, last verified ${formatVerifiedDate(recommendedPartner.lastVerifiedDate, false)}.`}
+                {`${recommendedPartner.institutionName}, ${recommendedPartner.distanceKm} ${localizeTernary('किमी दूर', 'km away', lang)}, ${localizeTernary(recommendedPartner.applicationMode === 'Offline' ? 'ऑफलाइन आवेदन स्वीकार करता है' : 'ऑनलाइन आवेदन स्वीकार करता है', `accepts ${recommendedPartner.applicationMode.toLowerCase()} applications`, lang)}, ${localizeTernary('चयनित योजना का समर्थन करता है', 'supports the selected scheme', lang)}, ${localizeTernary('अंतिम सत्यापन', 'last verified', lang)} ${formatVerifiedDate(recommendedPartner.lastVerifiedDate, lang)}.`}
               </div>
             </div>
 

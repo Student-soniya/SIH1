@@ -1,3 +1,4 @@
+import { localizeTernary } from '../../l10n';
 import React, { useState } from 'react';
 import { 
   Building2, 
@@ -31,102 +32,100 @@ export default function ChannelPartnersMap({ onSelectPartner, lang = 'en' }) {
   const partnersData = {
     'Karnataka': [
       {
-        name: isHindi ? 'कर्नाटक राज्य डॉ. बी.आर. अंबेडकर विकास निगम (SCA)' : 'Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)',
-        district: isHindi ? 'बेंगलुरु शहरी एवं ग्रामीण' : 'Bengaluru Urban & Rural',
-        address: isHindi 
-          ? 'नं. 9 और 10, विश्वेश्वरैया टावर्स, 9वीं मंजिल, डॉ. अंबेडकर वीथि, बेंगलुरु - 560001' 
-          : 'No. 9 & 10, Vishweshwaraiah Towers, 9th Floor, Dr. Ambedkar Veedhi, Bengaluru - 560001',
-        contact: isHindi ? 'श्री एम. नागराज (जिला प्रबंधक) | +91 80 2286 4521' : 'Shri M. Nagaraj (District Manager) | +91 80 2286 4521',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AAA शीर्ष प्रदर्शन' : 'AAA Top Performing',
-        allocation: isHindi ? '₹18.40 करोड़ उपलब्ध' : '₹18.40 Cr Available',
-        mode: isHindi ? 'ऑफलाइन एवं डिजिटल हैंडऑफ' : 'Offline & Digital Handoff'
+        name: localizeTernary('कर्नाटक राज्य डॉ. बी.आर. अंबेडकर विकास निगम (SCA)', 'Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)', lang),
+        district: localizeTernary('बेंगलुरु शहरी एवं ग्रामीण', 'Bengaluru Urban & Rural', lang),
+        address: localizeTernary('नं. 9 और 10, विश्वेश्वरैया टावर्स, 9वीं मंजिल, डॉ. अंबेडकर वीथि, बेंगलुरु - 560001', 'No. 9 & 10, Vishweshwaraiah Towers, 9th Floor, Dr. Ambedkar Veedhi, Bengaluru - 560001', lang),
+        contact: localizeTernary('श्री एम. नागराज (जिला प्रबंधक) | +91 80 2286 4521', 'Shri M. Nagaraj (District Manager) | +91 80 2286 4521', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AAA शीर्ष प्रदर्शन', 'AAA Top Performing', lang),
+        allocation: localizeTernary('₹18.40 करोड़ उपलब्ध', '₹18.40 Cr Available', lang),
+        mode: localizeTernary('ऑफलाइन एवं डिजिटल हैंडऑफ', 'Offline & Digital Handoff', lang)
       },
       {
-        name: isHindi ? 'कर्नाटक ग्रामीण बैंक (RRB)' : 'Karnataka Gramin Bank (RRB)',
-        district: isHindi ? 'बल्लारी, कोप्पल और रायचूर' : 'Ballari, Koppal & Raichur',
-        address: isHindi ? 'प्रधान कार्यालय, गांधी नगर, बल्लारी - 583103' : 'Head Office, Gandhi Nagar, Ballari - 583103',
-        contact: isHindi ? 'मुख्य प्रबंधक (प्राथमिकता ऋण) | +91 8392 278000' : 'Chief Manager (Priority Credit) | +91 8392 278000',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AA उच्च वितरण' : 'AA High Disbursal',
-        allocation: isHindi ? '₹12.20 करोड़ उपलब्ध' : '₹12.20 Cr Available',
-        mode: isHindi ? 'प्रत्यक्ष शाखा' : 'Branch Direct'
+        name: localizeTernary('कर्नाटक ग्रामीण बैंक (RRB)', 'Karnataka Gramin Bank (RRB)', lang),
+        district: localizeTernary('बल्लारी, कोप्पल और रायचूर', 'Ballari, Koppal & Raichur', lang),
+        address: localizeTernary('प्रधान कार्यालय, गांधी नगर, बल्लारी - 583103', 'Head Office, Gandhi Nagar, Ballari - 583103', lang),
+        contact: localizeTernary('मुख्य प्रबंधक (प्राथमिकता ऋण) | +91 8392 278000', 'Chief Manager (Priority Credit) | +91 8392 278000', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AA उच्च वितरण', 'AA High Disbursal', lang),
+        allocation: localizeTernary('₹12.20 करोड़ उपलब्ध', '₹12.20 Cr Available', lang),
+        mode: localizeTernary('प्रत्यक्ष शाखा', 'Branch Direct', lang)
       }
     ],
     'Maharashtra': [
       {
-        name: isHindi ? 'महात्मा फुले पिछड़ा वर्ग विकास निगम (MPBCDC)' : 'Mahatma Phule Backward Class Development Corporation (MPBCDC)',
-        district: isHindi ? 'मुंबई एवं ठाणे' : 'Mumbai & Thane',
-        address: isHindi ? 'जुहू सुप्रीम शॉपिंग सेंटर, गुलमोहर क्रॉस रोड नं. 9, जुहू, मुंबई - 400049' : 'Juhu Supreme Shopping Centre, Gulmohar Cross Rd No 9, Juhu, Mumbai - 400049',
-        contact: isHindi ? 'श्रीमती अंजलि शिंदे (जीएम ऑपरेशंस) | +91 22 2620 4578' : 'Smt. Anjali Shinde (GM Operations) | +91 22 2620 4578',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AAA शीर्ष प्रदर्शन' : 'AAA Top Performing',
-        allocation: isHindi ? '₹24.50 करोड़ उपलब्ध' : '₹24.50 Cr Available',
-        mode: isHindi ? 'ऑफलाइन एवं डिजिटल हैंडऑफ' : 'Offline & Digital Handoff'
+        name: localizeTernary('महात्मा फुले पिछड़ा वर्ग विकास निगम (MPBCDC)', 'Mahatma Phule Backward Class Development Corporation (MPBCDC)', lang),
+        district: localizeTernary('मुंबई एवं ठाणे', 'Mumbai & Thane', lang),
+        address: localizeTernary('जुहू सुप्रीम शॉपिंग सेंटर, गुलमोहर क्रॉस रोड नं. 9, जुहू, मुंबई - 400049', 'Juhu Supreme Shopping Centre, Gulmohar Cross Rd No 9, Juhu, Mumbai - 400049', lang),
+        contact: localizeTernary('श्रीमती अंजलि शिंदे (जीएम ऑपरेशंस) | +91 22 2620 4578', 'Smt. Anjali Shinde (GM Operations) | +91 22 2620 4578', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AAA शीर्ष प्रदर्शन', 'AAA Top Performing', lang),
+        allocation: localizeTernary('₹24.50 करोड़ उपलब्ध', '₹24.50 Cr Available', lang),
+        mode: localizeTernary('ऑफलाइन एवं डिजिटल हैंडऑफ', 'Offline & Digital Handoff', lang)
       },
       {
-        name: isHindi ? 'महाराष्ट्र ग्रामीण बैंक' : 'Maharashtra Gramin Bank',
-        district: isHindi ? 'औरंगाबाद एवं नांदेड़' : 'Aurangabad & Nanded',
-        address: isHindi ? 'गोलवाड़ी, वालुज महानगर, औरंगाबाद - 431136' : 'Golwadi, Waluj Mahanagar, Aurangabad - 431136',
-        contact: isHindi ? 'जोनल हेड (समावेशी ऋण) | +91 240 248 1000' : 'Zonal Head (Inclusive Credit) | +91 240 248 1000',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.2% अतिदेय' : '0.2% Overdue',
-        rating: isHindi ? 'AA उच्च वितरण' : 'AA High Disbursal',
-        allocation: isHindi ? '₹9.80 करोड़ उपलब्ध' : '₹9.80 Cr Available',
-        mode: isHindi ? 'प्रत्यक्ष शाखा' : 'Branch Direct'
+        name: localizeTernary('महाराष्ट्र ग्रामीण बैंक', 'Maharashtra Gramin Bank', lang),
+        district: localizeTernary('औरंगाबाद एवं नांदेड़', 'Aurangabad & Nanded', lang),
+        address: localizeTernary('गोलवाड़ी, वालुज महानगर, औरंगाबाद - 431136', 'Golwadi, Waluj Mahanagar, Aurangabad - 431136', lang),
+        contact: localizeTernary('जोनल हेड (समावेशी ऋण) | +91 240 248 1000', 'Zonal Head (Inclusive Credit) | +91 240 248 1000', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.2% अतिदेय', '0.2% Overdue', lang),
+        rating: localizeTernary('AA उच्च वितरण', 'AA High Disbursal', lang),
+        allocation: localizeTernary('₹9.80 करोड़ उपलब्ध', '₹9.80 Cr Available', lang),
+        mode: localizeTernary('प्रत्यक्ष शाखा', 'Branch Direct', lang)
       }
     ],
     'Uttar Pradesh': [
       {
-        name: isHindi ? 'यूपी अनुसूचित जाति वित्त एवं विकास निगम (UPSCDC)' : 'UP Scheduled Castes Finance & Development Corp (UPSCDC)',
-        district: isHindi ? 'लखनऊ एवं बाराबंकी' : 'Lucknow & Barabanki',
-        address: isHindi ? 'बी-ब्लॉक, दूसरी मंजिल, इंदिरा भवन, अशोक मार्ग, लखनऊ - 226001' : 'B-Block, 2nd Floor, Indira Bhawan, Ashok Marg, Lucknow - 226001',
-        contact: isHindi ? 'श्री आर.के. वर्मा (उप निदेशक) | +91 522 228 6789' : 'Shri R.K. Verma (Dy. Director) | +91 522 228 6789',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AAA शीर्ष प्रदर्शन' : 'AAA Top Performing',
-        allocation: isHindi ? '₹32.00 करोड़ उपलब्ध' : '₹32.00 Cr Available',
-        mode: isHindi ? 'ऑफलाइन एवं डिजिटल हैंडऑफ' : 'Offline & Digital Handoff'
+        name: localizeTernary('यूपी अनुसूचित जाति वित्त एवं विकास निगम (UPSCDC)', 'UP Scheduled Castes Finance & Development Corp (UPSCDC)', lang),
+        district: localizeTernary('लखनऊ एवं बाराबंकी', 'Lucknow & Barabanki', lang),
+        address: localizeTernary('बी-ब्लॉक, दूसरी मंजिल, इंदिरा भवन, अशोक मार्ग, लखनऊ - 226001', 'B-Block, 2nd Floor, Indira Bhawan, Ashok Marg, Lucknow - 226001', lang),
+        contact: localizeTernary('श्री आर.के. वर्मा (उप निदेशक) | +91 522 228 6789', 'Shri R.K. Verma (Dy. Director) | +91 522 228 6789', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AAA शीर्ष प्रदर्शन', 'AAA Top Performing', lang),
+        allocation: localizeTernary('₹32.00 करोड़ उपलब्ध', '₹32.00 Cr Available', lang),
+        mode: localizeTernary('ऑफलाइन एवं डिजिटल हैंडऑफ', 'Offline & Digital Handoff', lang)
       },
       {
-        name: isHindi ? 'आर्यावर्त बैंक (RRB)' : 'Aryavart Bank (RRB)',
-        district: isHindi ? 'लखनऊ एवं अयोध्या क्षेत्र' : 'Lucknow & Ayodhya Region',
-        address: isHindi ? 'प्रधान कार्यालय, ए-2/46, विजय खंड, गोमती नगर, लखनऊ - 226010' : 'Head Office, A-2/46, Vijay Khand, Gomti Nagar, Lucknow - 226010',
-        contact: isHindi ? 'महाप्रबंधक (ऋण) | +91 522 239 8871' : 'General Manager (Credit) | +91 522 239 8871',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.1% अतिदेय' : '0.1% Overdue',
-        rating: isHindi ? 'AA उच्च वितरण' : 'AA High Disbursal',
-        allocation: isHindi ? '₹15.60 करोड़ उपलब्ध' : '₹15.60 Cr Available',
-        mode: isHindi ? 'प्रत्यक्ष शाखा' : 'Branch Direct'
+        name: localizeTernary('आर्यावर्त बैंक (RRB)', 'Aryavart Bank (RRB)', lang),
+        district: localizeTernary('लखनऊ एवं अयोध्या क्षेत्र', 'Lucknow & Ayodhya Region', lang),
+        address: localizeTernary('प्रधान कार्यालय, ए-2/46, विजय खंड, गोमती नगर, लखनऊ - 226010', 'Head Office, A-2/46, Vijay Khand, Gomti Nagar, Lucknow - 226010', lang),
+        contact: localizeTernary('महाप्रबंधक (ऋण) | +91 522 239 8871', 'General Manager (Credit) | +91 522 239 8871', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.1% अतिदेय', '0.1% Overdue', lang),
+        rating: localizeTernary('AA उच्च वितरण', 'AA High Disbursal', lang),
+        allocation: localizeTernary('₹15.60 करोड़ उपलब्ध', '₹15.60 Cr Available', lang),
+        mode: localizeTernary('प्रत्यक्ष शाखा', 'Branch Direct', lang)
       }
     ],
     'Tamil Nadu': [
       {
-        name: isHindi ? 'तमिलनाडु आदि द्रविड़ आवास एवं विकास निगम (TAHDCO)' : 'Tamil Nadu Adi Dravidar Housing & Dev Corp (TAHDCO)',
-        district: isHindi ? 'चेन्नई एवं कांचीपुरम' : 'Chennai & Kanchipuram',
-        address: isHindi ? 'नं. 31, सेनोटैफ रोड, तेनामपेट, चेन्नई - 600018' : 'No. 31, Cenotaph Road, Teynampet, Chennai - 600018',
-        contact: isHindi ? 'जिला प्रबंधक (ऋण) | +91 44 2434 2205' : 'District Manager (Credit) | +91 44 2434 2205',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AAA शीर्ष प्रदर्शन' : 'AAA Top Performing',
-        allocation: isHindi ? '₹21.00 करोड़ उपलब्ध' : '₹21.00 Cr Available',
-        mode: isHindi ? 'ऑफलाइन एवं डिजिटल हैंडऑफ' : 'Offline & Digital Handoff'
+        name: localizeTernary('तमिलनाडु आदि द्रविड़ आवास एवं विकास निगम (TAHDCO)', 'Tamil Nadu Adi Dravidar Housing & Dev Corp (TAHDCO)', lang),
+        district: localizeTernary('चेन्नई एवं कांचीपुरम', 'Chennai & Kanchipuram', lang),
+        address: localizeTernary('नं. 31, सेनोटैफ रोड, तेनामपेट, चेन्नई - 600018', 'No. 31, Cenotaph Road, Teynampet, Chennai - 600018', lang),
+        contact: localizeTernary('जिला प्रबंधक (ऋण) | +91 44 2434 2205', 'District Manager (Credit) | +91 44 2434 2205', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AAA शीर्ष प्रदर्शन', 'AAA Top Performing', lang),
+        allocation: localizeTernary('₹21.00 करोड़ उपलब्ध', '₹21.00 Cr Available', lang),
+        mode: localizeTernary('ऑफलाइन एवं डिजिटल हैंडऑफ', 'Offline & Digital Handoff', lang)
       }
     ],
     'West Bengal': [
       {
-        name: isHindi ? 'पश्चिम बंगाल एससी, एसटी एवं ओबीसी विकास निगम' : 'West Bengal SC, ST & OBC Development Corporation',
-        district: isHindi ? 'कोलकाता एवं उत्तर 24 परगना' : 'Kolkata & North 24 Parganas',
-        address: isHindi ? 'सीएफ-217/ए/1, सेक्टर-I, साल्ट लेक, कोलकाता - 700064' : 'CF-217/A/1, Sector-I, Salt Lake, Kolkata - 700064',
-        contact: isHindi ? 'प्रबंध निदेशक सचिवालय | +91 33 2321 0012' : 'Managing Director Secretariat | +91 33 2321 0012',
-        status: isHindi ? 'सक्रिय विंडो' : 'Active Window',
-        overdueRate: isHindi ? '0.0% अतिदेय' : '0.0% Overdue',
-        rating: isHindi ? 'AAA शीर्ष प्रदर्शन' : 'AAA Top Performing',
-        allocation: isHindi ? '₹14.80 करोड़ उपलब्ध' : '₹14.80 Cr Available',
-        mode: isHindi ? 'ऑफलाइन एवं डिजिटल हैंडऑफ' : 'Offline & Digital Handoff'
+        name: localizeTernary('पश्चिम बंगाल एससी, एसटी एवं ओबीसी विकास निगम', 'West Bengal SC, ST & OBC Development Corporation', lang),
+        district: localizeTernary('कोलकाता एवं उत्तर 24 परगना', 'Kolkata & North 24 Parganas', lang),
+        address: localizeTernary('सीएफ-217/ए/1, सेक्टर-I, साल्ट लेक, कोलकाता - 700064', 'CF-217/A/1, Sector-I, Salt Lake, Kolkata - 700064', lang),
+        contact: localizeTernary('प्रबंध निदेशक सचिवालय | +91 33 2321 0012', 'Managing Director Secretariat | +91 33 2321 0012', lang),
+        status: localizeTernary('सक्रिय विंडो', 'Active Window', lang),
+        overdueRate: localizeTernary('0.0% अतिदेय', '0.0% Overdue', lang),
+        rating: localizeTernary('AAA शीर्ष प्रदर्शन', 'AAA Top Performing', lang),
+        allocation: localizeTernary('₹14.80 करोड़ उपलब्ध', '₹14.80 Cr Available', lang),
+        mode: localizeTernary('ऑफलाइन एवं डिजिटल हैंडऑफ', 'Offline & Digital Handoff', lang)
       }
     ]
   };
@@ -141,15 +140,13 @@ export default function ChannelPartnersMap({ onSelectPartner, lang = 'en' }) {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? '100+ अधिकृत चैनल पार्टनर्स नेटवर्क' : '100+ Authorized Channel Partners Network'}</span>
+            <span>{localizeTernary('100+ अधिकृत चैनल पार्टनर्स नेटवर्क', '100+ Authorized Channel Partners Network', lang)}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            {isHindi ? 'अधिकृत चैनल पार्टनर्स से सीधे जुड़ें' : 'Connect Directly to Authorized Channel Partners'}
+            {localizeTernary('अधिकृत चैनल पार्टनर्स से सीधे जुड़ें', 'Connect Directly to Authorized Channel Partners', lang)}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-            {isHindi 
-              ? 'सरकारी आदेश के अनुसार, खुदरा आवेदकों को कभी भी सीधे ऋण वितरित नहीं किया जाता — यह केवल राज्य चैनलाइजिंग एजेंसियों (SCAs), क्षेत्रीय ग्रामीण बैंकों (RRBs) और सरकारी बैंकों के माध्यम से होता है। स्कीम रेडी आपको 0% अतिदेय वाली सक्रिय शाखाओं से जोड़ता है।' 
-              : 'By government mandate, concessional funds are never disbursed directly to retail applicants—they route exclusively through State Channelizing Agencies (SCAs), RRBs, and Public Sector Banks. SchemeReady matches you to active branches with 0% overdue.'}
+            {localizeTernary('सरकारी आदेश के अनुसार, खुदरा आवेदकों को कभी भी सीधे ऋण वितरित नहीं किया जाता — यह केवल राज्य चैनलाइजिंग एजेंसियों (SCAs), क्षेत्रीय ग्रामीण बैंकों (RRBs) और सरकारी बैंकों के माध्यम से होता है। स्कीम रेडी आपको 0% अतिदेय वाली सक्रिय शाखाओं से जोड़ता है।', 'By government mandate, concessional funds are never disbursed directly to retail applicants—they route exclusively through State Channelizing Agencies (SCAs), RRBs, and Public Sector Banks. SchemeReady matches you to active branches with 0% overdue.', lang)}
           </p>
         </div>
 
@@ -205,13 +202,13 @@ export default function ChannelPartnersMap({ onSelectPartner, lang = 'en' }) {
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 text-[11px]">
                   <div>
                     <span className="text-slate-400 block">
-                      {isHindi ? 'वर्तमान ऋण आवंटन' : 'Current Lending Allocation'}
+                      {localizeTernary('वर्तमान ऋण आवंटन', 'Current Lending Allocation', lang)}
                     </span>
                     <span className="font-bold text-emerald-700 font-mono">{partner.allocation}</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block">
-                      {isHindi ? 'आवेदन सबमिशन माध्यम' : 'Application Submission Mode'}
+                      {localizeTernary('आवेदन सबमिशन माध्यम', 'Application Submission Mode', lang)}
                     </span>
                     <span className="font-bold text-slate-800">{partner.mode}</span>
                   </div>
@@ -222,7 +219,7 @@ export default function ChannelPartnersMap({ onSelectPartner, lang = 'en' }) {
                 onClick={() => onSelectPartner ? onSelectPartner(partner) : null}
                 className="w-full py-2.5 rounded-xl bg-white hover:bg-emerald-600 hover:text-white text-slate-900 border border-slate-300 hover:border-emerald-600 font-bold text-xs transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
               >
-                <span>{isHindi ? 'आवेदन को इस पार्टनर के लिए रूट करें' : 'Route Application to This Partner'}</span>
+                <span>{localizeTernary('आवेदन को इस पार्टनर के लिए रूट करें', 'Route Application to This Partner', lang)}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

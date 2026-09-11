@@ -78,11 +78,12 @@ export default function ApplicationPack({
   };
 
   const handleShareWhatsApp = () => {
-    const text = encodeURIComponent(
-      isHindi
-        ? `नमस्ते, मैंने ${selectedScheme?.schemeName || 'माइक्रो क्रेडिट योजना'} के लिए अपना आधिकारिक स्कीम रेडी आवेदन पैक तैयार किया है। आवेदन आईडी: ${pack?.applicationId || 'APP-2026-BLR-0941'}। तत्परता स्कोर: 92%। ${nearestPartner?.institutionName || 'डॉ. बी.आर. अंबेडकर विकास निगम'} में जमा करने के लिए तैयार।`
-        : `Hello, I have generated my official SchemeReady Application Pack for the ${selectedScheme?.schemeName || 'Micro Credit Scheme'}. Application ID: ${pack?.applicationId || 'APP-2026-BLR-0941'}. Readiness Score: 92%. Ready for submission at ${nearestPartner?.institutionName || 'Karnataka State Dr. B.R. Ambedkar Development Corporation'}.`
-    );
+    const greeting = localizeTernary('नमस्ते', 'Hello', lang);
+    const readyText = localizeTernary('मैंने आधिकारिक स्कीम रेडी आवेदन पैक तैयार किया है।', 'I have generated my official SchemeReady Application Pack.', lang);
+    const forScheme = `${localizeTernary('योजना:', 'Scheme:', lang)} ${selectedScheme?.schemeName || 'Micro Credit'}`;
+    const appId = `${localizeTernary('आवेदन आईडी:', 'App ID:', lang)} ${pack?.applicationId || 'APP-2026-BLR-0941'}`;
+    const partner = `${localizeTernary('निकटतम चैनल पार्टनर:', 'Nearest Partner:', lang)} ${nearestPartner?.institutionName || 'Dr. Ambedkar Corp'}`;
+    const text = encodeURIComponent(`${greeting}, ${readyText}\n${forScheme}\n${appId}\n${partner}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
@@ -155,9 +156,9 @@ export default function ApplicationPack({
       </div>
 
       {/* Official Printable Dossier Container */}
-      <div className="bg-white rounded-3xl border border-slate-300 shadow-lg p-8 sm:p-10 space-y-8 print:border-none print:shadow-none print:p-0">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-300 shadow-lg p-4 sm:p-8 sm:p-10 space-y-6 sm:space-y-8 print:border-none print:shadow-none print:p-0">
         {/* Government Header */}
-        <div className="border-b-2 border-slate-900 pb-6 flex justify-between items-start">
+        <div className="border-b-2 border-slate-900 pb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="space-y-1">
             <div className="text-[11px] uppercase tracking-widest font-black text-slate-500">
               {localizeTernary('राष्ट्रीय अनुसूचित जाति वित्त एवं विकास निगम (NSFDC)', 'NATIONAL SCHEDULED CASTES FINANCE AND DEVELOPMENT CORPORATION (NSFDC)', lang)}

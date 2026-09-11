@@ -89,9 +89,9 @@ export async function matchSchemes(profile) {
       isRecommended: true,
       positiveReasons: [
         'Applicant belongs to the target community (Scheduled Caste).',
-        `Declared family income (Rs ${profile.annualFamilyIncome.toLocaleString()}) is within configured threshold (Rs 3,00,000).`,
-        `Project cost (Rs ${profile.estimatedProjectCost.toLocaleString()}) fits the micro-credit scheme limit (Rs 10,000 - Rs 1,50,000).`,
-        `Business type '${profile.businessType}' is actively supported.`,
+        `Declared family income (Rs ${Number(profile?.annualFamilyIncome || 0).toLocaleString()}) is within configured threshold (Rs 3,00,000).`,
+        `Project cost (Rs ${Number(profile?.estimatedProjectCost || 0).toLocaleString()}) fits the micro-credit scheme limit (Rs 10,000 - Rs 1,50,000).`,
+        `Business type '${profile?.businessType || 'general'}' is actively supported.`,
         'Suitable partner (Karnataka State Dr. B.R. Ambedkar Dev Corp) is available in applicant district (4.2 km).'
       ],
       negativeReasons: [
@@ -120,7 +120,7 @@ export async function matchSchemes(profile) {
         'Applicant age is within permissible term loan brackets.'
       ],
       negativeReasons: [
-        `Required amount (Rs ${profile.estimatedProjectCost.toLocaleString()}) is lower than the recommended minimum of Rs 2,00,000.`,
+        `Required amount (Rs ${Number(profile?.estimatedProjectCost || 0).toLocaleString()}) is lower than the recommended minimum of Rs 2,00,000.`,
         'Higher documentation needed: Detailed Project Report (DPR) and shop premises agreement.'
       ],
       missingDocuments: ['DPR / Detailed Project Report', 'Premises agreement'],
@@ -317,11 +317,13 @@ export async function calculateEmi(req) {
 
   const p = Math.max(1000, Number(req.loanAmount) - Number(req.subsidyContribution || 0));
   const r = (Number(req.annualInterestRate) / 100) / 12;
-  const n = Number(req.tenureMonths);
-  const emi = Math.round((p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
-  const morat = Number(req.moratoriumMonths || 0);
-  const moratInterest = Math.round(p * r * morat);
-  const regularInterest = Math.round((emi * n) - p);
+  const n = Math.max(1, Number(req.tenureMonths || 36));
+  const emi = r <= 0 
+    ? Math.round(p / n) 
+    : Math.round((p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+  const morat = Math.max(0, Number(req.moratoriumMonths || 0));
+  const moratInterest = r <= 0 ? 0 : Math.round(p * r * morat);
+  const regularInterest = Math.max(0, Math.round((emi * n) - p));
   const totalInterest = moratInterest + regularInterest;
 
   const schedule = [];

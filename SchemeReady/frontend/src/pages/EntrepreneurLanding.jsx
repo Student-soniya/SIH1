@@ -21,9 +21,10 @@ import {
   Building2, 
   CheckCircle2, 
   Calculator, 
-  Compass 
+  Compass,
+  Menu,
+  X
 } from 'lucide-react';
-import { SUPPORTED_LANGUAGES } from '../languageCatalog';
 
 export default function EntrepreneurLanding({ 
   onStartOnboarding, 
@@ -34,8 +35,11 @@ export default function EntrepreneurLanding({
   lang = 'en',
   setLang
 }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-500 selection:text-white">
+      
+      {/* 1. National Official Top Banner */}
       <div className="bg-slate-950 text-slate-300 text-[11px] py-1.5 px-4 border-b border-white/10 relative z-50">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-3 font-medium">
@@ -51,6 +55,7 @@ export default function EntrepreneurLanding({
               {tText(l10n.govtOfIndia, lang)}
             </span>
           </div>
+
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <div className="flex items-center space-x-1 text-slate-400">
@@ -73,6 +78,7 @@ export default function EntrepreneurLanding({
         </div>
       </div>
 
+      {/* 2. Main Sticky Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           
@@ -116,10 +122,10 @@ export default function EntrepreneurLanding({
           </nav>
 
           {/* Header Action Buttons */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={onStartOnboarding}
-              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
+              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer min-h-[44px]"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>{tText(l10n.startApplicationBtn, lang)}</span>
@@ -127,14 +133,65 @@ export default function EntrepreneurLanding({
 
             <button
               onClick={onOpenAuth}
-              className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 transition-all cursor-pointer"
+              className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-300 transition-all cursor-pointer min-h-[44px]"
             >
               <Lock className="w-3.5 h-3.5 text-slate-600" />
-              <span>{tText(l10n.signInBtn, lang)}</span>
+              <span className="hidden sm:inline">{tText(l10n.signInBtn, lang)}</span>
+            </button>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(prev => !prev)}
+              aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+              className="lg:hidden flex items-center justify-center p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 min-h-[44px] min-w-[44px] cursor-pointer"
+            >
+              {mobileNavOpen ? <X className="w-5 h-5 text-slate-900" /> : <Menu className="w-5 h-5 text-slate-900" />}
             </button>
           </div>
 
         </div>
+
+        {/* Mobile Navigation Dropdown Drawer */}
+        {mobileNavOpen && (
+          <div className="lg:hidden border-t border-slate-200 bg-white/98 shadow-xl px-4 py-3 space-y-1">
+            <a
+              href="#schemes"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] flex items-center"
+            >
+              {tText(l10n.navSchemes, lang)}
+            </a>
+            <a
+              href="#process"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] flex items-center"
+            >
+              {tText(l10n.navHowItWorks, lang)}
+            </a>
+            <a
+              href="#viability"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] flex items-center"
+            >
+              {tText(l10n.navViability, lang)}
+            </a>
+            <a
+              href="#partners"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] flex items-center"
+            >
+              {tText(l10n.navPartners, lang)}
+            </a>
+            <a
+              href="#faqs"
+              onClick={() => setMobileNavOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] flex items-center"
+            >
+              {tText(l10n.navFaqs, lang)}
+            </a>
+          </div>
+        )}
       </header>
 
       {/* 3. Hero Carousel with Quick Eligibility Finder */}

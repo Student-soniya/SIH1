@@ -1,3 +1,4 @@
+import { localizeTernary } from '../../l10n';
 import React from 'react';
 import { 
   MessageSquare, 
@@ -13,7 +14,7 @@ import {
 export default function ProcessWalkthrough({ onStartOnboarding, lang = 'en' }) {
   const isHindi = lang === 'hi';
 
-  const steps = isHindi ? [
+  const steps = (lang === 'hi' || lang === 'mr') ? [
     {
       step: '01',
       title: 'संवादात्मक ऑनबोर्डिंग',
@@ -109,15 +110,13 @@ export default function ProcessWalkthrough({ onStartOnboarding, lang = 'en' }) {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? 'शुरू से अंत तक लाभार्थी यात्रा' : 'End-to-End Beneficiary Journey'}</span>
+            <span>{localizeTernary('शुरू से अंत तक लाभार्थी यात्रा', 'End-to-End Beneficiary Journey', lang)}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            {isHindi ? 'स्कीम रेडी से ऋण कैसे प्राप्त करें' : 'How SchemeReady Gets You Funded'}
+            {localizeTernary('स्कीम रेडी से ऋण कैसे प्राप्त करें', 'How SchemeReady Gets You Funded', lang)}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-            {isHindi 
-              ? 'आपके पहले विचार से लेकर आपके बैंक खाते में राशि पहुंचने के दिन तक — एक स्पष्ट, पारदर्शी 6-चरणीय मार्ग जो प्रशासनिक अस्वीकृतियों को समाप्त करता है।' 
-              : 'From your very first idea to the day funds hit your bank account—a clear, transparent, 6-step pathway designed to eliminate bureaucratic rejections.'}
+            {localizeTernary('आपके पहले विचार से लेकर आपके बैंक खाते में राशि पहुंचने के दिन तक — एक स्पष्ट, पारदर्शी 6-चरणीय मार्ग जो प्रशासनिक अस्वीकृतियों को समाप्त करता है।', 'From your very first idea to the day funds hit your bank account—a clear, transparent, 6-step pathway designed to eliminate bureaucratic rejections.', lang)}
           </p>
         </div>
 
@@ -168,7 +167,7 @@ export default function ProcessWalkthrough({ onStartOnboarding, lang = 'en' }) {
             onClick={onStartOnboarding}
             className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm px-8 py-4 rounded-2xl shadow-xl shadow-emerald-600/25 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
-            <span>{isHindi ? 'चरण 01 शुरू करें: संवादात्मक ऑनबोर्डिंग' : 'Start Step 01: Conversational Onboarding'}</span>
+            <span>{localizeTernary('चरण 01 शुरू करें: संवादात्मक ऑनबोर्डिंग', 'Start Step 01: Conversational Onboarding', lang)}</span>
             <ArrowRight className="w-4 h-4 text-white" />
           </button>
         </div>

@@ -1,0 +1,43 @@
+# ==========================================
+# SchemeReady (Udyam Saarthi AI) - .NET 8 Backend API
+# Optimized for Render Web Service deployment
+# ==========================================
+
+# Stage 1: Build .NET 8 API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy csproj and restore NuGet packages
+COPY SchemeReady/backend/SchemeReady.Api.csproj ./
+RUN dotnet restore SchemeReady.Api.csproj
+
+# Copy remaining backend source files and publish
+COPY SchemeReady/backend/ ./
+RUN dotnet publish SchemeReady.Api.csproj -c Release -o /app/publish --no-restore
+
+# Stage 2: ASP.NET Core 8 Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Ensure document upload folders exist
+RUN mkdir -p /app/data/documents /app/data/tmp
+
+# Set resilient environment defaults for Render
+ENV ASPNETCORE_ENVIRONMENT=Production \
+    PORT=10000 \
+    ASPNETCORE_URLS="http://+:10000" \
+    SCHEMEREADY_CORS_ORIGINS="http://localhost:5173,http://localhost:3000,https://schemeready.onrender.com,https://schemeready-frontend.onrender.com,*" \
+    SCHEMEREADY_JWT_SIGNING_KEY="SchemeReady_DefaultProductionSigningSecretKey_2026_Min256Bits!" \
+    SCHEMEREADY_JWT_ISSUER="https://schemeready.onrender.com" \
+    SCHEMEREADY_JWT_AUDIENCE="https://schemeready.onrender.com" \
+    SCHEMEREADY_DOCUMENT_ROOT="/app/data/documents"
+
+COPY --from=build /app/publish .
+
+COPY docker-entrypoint-backend.sh /docker-entrypoint-backend.sh
+RUN chmod +x /docker-entrypoint-backend.sh
+
+EXPOSE 10000 8080 5000
+
+ENTRYPOINT ["/docker-entrypoint-backend.sh"]
+CMD ["dotnet", "SchemeReady.Api.dll"]

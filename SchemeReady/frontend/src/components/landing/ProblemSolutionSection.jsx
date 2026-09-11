@@ -1,3 +1,4 @@
+import { localizeTernary } from '../../l10n';
 import React from 'react';
 import { 
   AlertOctagon, 
@@ -15,7 +16,7 @@ import {
 export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' }) {
   const isHindi = lang === 'hi';
 
-  const painPoints = isHindi ? [
+  const painPoints = (lang === 'hi' || lang === 'mr') ? [
     {
       title: 'प्रत्यक्ष आवेदन अस्वीकृत होना',
       desc: 'एनएसएफडीसी एवं मंत्रालय सीधे खुदरा ऋण वितरित नहीं करते हैं। कॉरपोरेट पोर्टल पर आवेदन करने वाले 80% से अधिक आवेदकों के फॉर्म बिना कारण बताए खारिज कर दिए जाते हैं।',
@@ -59,7 +60,7 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
     }
   ];
 
-  const solutions = isHindi ? [
+  const solutions = (lang === 'hi' || lang === 'mr') ? [
     {
       title: 'सक्रिय चैनल पार्टनर रूटिंग',
       desc: 'हम आपके व्यवसाय के पिन कोड को 0% अतिदेय और सक्रिय वितरण कोटा वाले उच्चतम प्रदर्शन करने वाले राज्य निगम (SCA) या क्षेत्रीय ग्रामीण बैंक (RRB) से मैप करते हैं।',
@@ -116,17 +117,13 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center space-x-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider">
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>{isHindi ? 'अंतिम मील रियायती ऋण चुनौती' : 'The Last-Mile Concessional Credit Challenge'}</span>
+            <span>{localizeTernary('अंतिम मील रियायती ऋण चुनौती', 'The Last-Mile Concessional Credit Challenge', lang)}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-            {isHindi 
-              ? '78% प्रत्यक्ष ऋण आवेदन क्यों खारिज होते हैं — और स्कीम रेडी इसे कैसे ठीक करता है' 
-              : 'Why 78% of Direct Loan Applications Fail — And How SchemeReady Fixes It'}
+            {localizeTernary('78% प्रत्यक्ष ऋण आवेदन क्यों खारिज होते हैं — और स्कीम रेडी इसे कैसे ठीक करता है', 'Why 78% of Direct Loan Applications Fail — And How SchemeReady Fixes It', lang)}
           </h2>
           <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed">
-            {isHindi 
-              ? 'भारत सरकार 4%–8% की अत्यधिक रियायती ब्याज सब्सिडी प्रदान करती है। फिर भी हजारों पात्र अनुसूचित जाति / अन्य पिछड़ा वर्ग के उद्यमियों को धन नहीं मिल पाता। जानिए यह प्रशासनिक रुकावट और हमारा संप्रभु एआई समाधान।' 
-              : 'The Government of India provides generous 4%–8% interest subsidies. Yet, thousands of deserving SC/OBC entrepreneurs never receive funds. Here is the operational bottleneck and our sovereign AI solution.'}
+            {localizeTernary('भारत सरकार 4%–8% की अत्यधिक रियायती ब्याज सब्सिडी प्रदान करती है। फिर भी हजारों पात्र अनुसूचित जाति / अन्य पिछड़ा वर्ग के उद्यमियों को धन नहीं मिल पाता। जानिए यह प्रशासनिक रुकावट और हमारा संप्रभु एआई समाधान।', 'The Government of India provides generous 4%–8% interest subsidies. Yet, thousands of deserving SC/OBC entrepreneurs never receive funds. Here is the operational bottleneck and our sovereign AI solution.', lang)}
           </p>
         </div>
 
@@ -142,15 +139,15 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-rose-200">
-                    {isHindi ? 'पारंपरिक प्रक्रिया' : 'The Traditional Process'}
+                    {localizeTernary('पारंपरिक प्रक्रिया', 'The Traditional Process', lang)}
                   </h3>
                   <p className="text-xs text-rose-400/80">
-                    {isHindi ? 'बैंक काउंटरों पर आवेदन क्यों खारिज होते हैं' : 'Why applications get rejected at bank counters'}
+                    {localizeTernary('बैंक काउंटरों पर आवेदन क्यों खारिज होते हैं', 'Why applications get rejected at bank counters', lang)}
                   </p>
                 </div>
               </div>
               <span className="bg-rose-950/80 text-rose-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-rose-800">
-                {isHindi ? '78% अस्वीकृति दर' : '78% Rejection Rate'}
+                {localizeTernary('78% अस्वीकृति दर', '78% Rejection Rate', lang)}
               </span>
             </div>
 
@@ -183,15 +180,15 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-emerald-200">
-                    {isHindi ? 'स्कीम रेडी एआई इंजन' : 'The SchemeReady AI Engine'}
+                    {localizeTernary('स्कीम रेडी एआई इंजन', 'The SchemeReady AI Engine', lang)}
                   </h3>
                   <p className="text-xs text-emerald-400/80">
-                    {isHindi ? 'सक्रिय तत्परता और गारंटीकृत बैंक योग्य डोजियर' : 'Proactive readiness & guaranteed bankable dossier'}
+                    {localizeTernary('सक्रिय तत्परता और गारंटीकृत बैंक योग्य डोजियर', 'Proactive readiness & guaranteed bankable dossier', lang)}
                   </p>
                 </div>
               </div>
               <span className="bg-emerald-950/80 text-emerald-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-emerald-600">
-                {isHindi ? '94% स्वीकृति तत्परता' : '94% Approval Readiness'}
+                {localizeTernary('94% स्वीकृति तत्परता', '94% Approval Readiness', lang)}
               </span>
             </div>
 
@@ -228,9 +225,7 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
                   : "Don't apply blindly and face a 6-month rejection cooldown."}
               </h4>
               <p className="text-xs text-slate-300">
-                {isHindi 
-                  ? 'अपना तत्परता स्कोर जांचें, डिजिलॉकर के साथ छूटे प्रमाणपत्रों को ठीक करें, और 5 मिनट में अपना बैंक डोजियर डाउनलोड करें।' 
-                  : 'Check your readiness score, remediate missing certificates with DigiLocker, and download your bank dossier in 5 minutes.'}
+                {localizeTernary('अपना तत्परता स्कोर जांचें, डिजिलॉकर के साथ छूटे प्रमाणपत्रों को ठीक करें, और 5 मिनट में अपना बैंक डोजियर डाउनलोड करें।', 'Check your readiness score, remediate missing certificates with DigiLocker, and download your bank dossier in 5 minutes.', lang)}
               </p>
             </div>
           </div>
@@ -239,7 +234,7 @@ export default function ProblemSolutionSection({ onStartOnboarding, lang = 'en' 
             onClick={onStartOnboarding}
             className="inline-flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 cursor-pointer active:scale-95"
           >
-            <span>{isHindi ? 'निःशुल्क तत्परता जांच शुरू करें' : 'Start Free Readiness Check'}</span>
+            <span>{localizeTernary('निःशुल्क तत्परता जांच शुरू करें', 'Start Free Readiness Check', lang)}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

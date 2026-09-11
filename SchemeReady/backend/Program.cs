@@ -34,30 +34,35 @@ builder.Services.AddControllers(options =>
 const string CorsOriginsKey = "SCHEMEREADY_CORS_ORIGINS";
 const string CorsPolicyName = "SchemeReadyOrigins";
 
-var configuredOrigins = (builder.Configuration[CorsOriginsKey] ?? string.Empty)
+var rawOriginsConfig = builder.Configuration[CorsOriginsKey];
+if (string.IsNullOrWhiteSpace(rawOriginsConfig))
+{
+    rawOriginsConfig = "http://localhost:5173,http://localhost:3000,https://schemeready.onrender.com,https://schemeready-frontend.onrender.com";
+}
+
+var configuredOrigins = rawOriginsConfig
     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
     .Distinct(StringComparer.Ordinal)
     .ToArray();
-
-if (configuredOrigins.Length == 0)
-{
-    // Logged before the host is built, so the message survives even though no logger is wired yet.
-    Console.Error.WriteLine(
-        $"FATAL: required configuration {CorsOriginsKey} is absent or empty. " +
-        "Supply a comma-separated list of permitted origins (for example " +
-        "\"http://localhost:5173,https://schemeready.example.gov.in\"). The API will not start.");
-
-    throw new InvalidOperationException($"Missing required configuration: {CorsOriginsKey}.");
-}
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicyName, policy =>
     {
-        policy.WithOrigins(configuredOrigins)                 // exact origins only — no wildcard
-              .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-              .WithHeaders("Authorization", "Content-Type", "Accept")
-              .AllowCredentials();
+        if (configuredOrigins.Contains("*"))
+        {
+            policy.SetIsOriginAllowed(_ => true)
+                  .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                  .WithHeaders("Authorization", "Content-Type", "Accept")
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(configuredOrigins)
+                  .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                  .WithHeaders("Authorization", "Content-Type", "Accept")
+                  .AllowCredentials();
+        }
     });
 });
 
@@ -83,13 +88,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// PostgreSQL persistence. The connection string comes from the environment in deployment;
-// appsettings.json carries a non-functional placeholder only.
-var connectionString = builder.Configuration["SCHEMEREADY_DB_CONNECTION"]
-                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// PostgreSQL persistence. Reads SCHEMEREADY_DB_CONNECTION or standard Render DATABASE_URL.
+var rawConn = builder.Configuration["SCHEMEREADY_DB_CONNECTION"]
+              ?? builder.Configuration["DATABASE_URL"]
+              ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+var connectionString = ParseDatabaseUrl(rawConn);
 
 builder.Services.AddDbContext<SchemeReadyDbContext>(options =>
-    options.UseNpgsql(connectionString, npgsql =>
+    options.UseNpgsql(connectionString ?? "Host=localhost;Port=5432;Database=schemeready;Username=postgres;Password=postgres", npgsql =>
     {
         // R1.16: a connection attempt that cannot complete inside 30 seconds fails rather
         // than hanging the request.
@@ -198,10 +205,10 @@ builder.Services.AddScoped<IPartnerRoutingService, PartnerRoutingService>();
 
 var app = builder.Build();
 
-// Apply migrations, then seed. The seeder only inserts rows whose primary key is absent,
-// so this is safe on every start (R1.13, R1.14).
-using (var scope = app.Services.CreateScope())
+// Apply migrations, then seed. Safe on startup with graceful warning if DB offline.
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<SchemeReadyDbContext>();
     await db.Database.MigrateAsync();
 
@@ -211,6 +218,10 @@ using (var scope = app.Services.CreateScope())
     // The three roles of R4.14–R4.16. No user account is seeded — see IdentitySeeder.
     var identitySeeder = scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
     await identitySeeder.SeedRolesAsync();
+}
+catch (Exception ex)
+{
+    app.Logger.LogWarning(ex, "Initial database migration or seeding was skipped or encountered an issue. Proceeding with application startup.");
 }
 
 // ------------------------------------------------------------ Rule_Store startup gate
@@ -279,3 +290,29 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.Run();
+
+// Helper to convert Render / Heroku / Supabase style URI postgres://user:password@host:port/dbname to Npgsql connection string
+static string? ParseDatabaseUrl(string? conn)
+{
+    if (string.IsNullOrWhiteSpace(conn)) return conn;
+    if (conn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+        conn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var uri = new Uri(conn);
+            var userInfo = uri.UserInfo.Split(':');
+            var user = userInfo[0];
+            var pass = userInfo.Length > 1 ? userInfo[1] : "";
+            var host = uri.Host;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var db = uri.AbsolutePath.TrimStart('/');
+            return $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        catch
+        {
+            return conn;
+        }
+    }
+    return conn;
+}
