@@ -15,6 +15,19 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { matchSchemes } from '../api';
+import IllustrativeBadge from './IllustrativeBadge';
+
+/**
+ * Renders the scheme's own last-verified date. Replaces the previously hard-coded
+ * "10 September 2026 (NSFDC Portal)" string, which claimed a verification that had
+ * never happened and did not move when the underlying row changed.
+ */
+function formatVerifiedDate(value) {
+  if (!value) return 'Not recorded';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Not recorded';
+  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 export default function ExplainableSchemeResults({ 
   lang, 
@@ -99,6 +112,7 @@ export default function ExplainableSchemeResults({
                       </span>
                       <h3 className="text-lg font-bold text-slate-900 mt-0.5 leading-snug">
                         {scheme.schemeName}
+                        <IllustrativeBadge record={scheme} className="ml-2" />
                       </h3>
                       <span className="inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700">
                         {scheme.schemeType}
@@ -125,6 +139,7 @@ export default function ExplainableSchemeResults({
                     <div>
                       <span className="text-slate-500 block text-[10px] uppercase font-semibold">Interest Rate</span>
                       <span className="font-bold text-emerald-700">{scheme.interestRate}% p.a.</span>
+                      <IllustrativeBadge record={scheme} className="mt-1" />
                     </div>
                     <div>
                       <span className="text-slate-500 block text-[10px] uppercase font-semibold">Max Loan</span>
@@ -172,12 +187,14 @@ export default function ExplainableSchemeResults({
 
                   {/* Verified Date & Official Citation */}
                   <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center space-x-1 flex-wrap gap-y-1">
                       <Calendar className="w-3 h-3 text-emerald-600" />
-                      <span><strong>{t.schemes.verified}:</strong> 10 September 2026 (NSFDC Portal)</span>
+                      <span><strong>{t.schemes.verified}:</strong> {formatVerifiedDate(scheme.lastVerifiedDate)}</span>
+                      <IllustrativeBadge record={scheme} />
                     </div>
-                    <div className="flex items-center space-x-1 truncate text-slate-400">
+                    <div className="flex items-center space-x-1 flex-wrap gap-y-1 text-slate-400">
                       <span className="truncate">{scheme.sourceDocument}</span>
+                      <IllustrativeBadge record={scheme} />
                     </div>
                   </div>
                 </div>

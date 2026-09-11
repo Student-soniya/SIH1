@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateApplicationPack, handoffToSuraj } from '../api';
+import IllustrativeBadge, { anyIllustrative } from './IllustrativeBadge';
 
 export default function ApplicationPack({ 
   lang, 
@@ -31,24 +32,57 @@ export default function ApplicationPack({
   const [handoffResult, setHandoffResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       setLoading(true);
-      const data = await generateApplicationPack(profile);
-      setPack(data);
-      setLoading(false);
+      try {
+        const data = await generateApplicationPack(profile);
+        if (!cancelled) {
+          setPack(data);
+          setError(null);
+        }
+      } catch (err) {
+        // Protected endpoint with no fallback (R5.11): the previously loaded dossier stays on
+        // screen and the banner says so, rather than a fabricated pack being presented as real.
+        if (!cancelled) {
+          setError(err?.status === 401
+            ? 'Your session ended. Please sign in again to generate your application pack.'
+            : 'The application pack could not be generated. Nothing has been submitted.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     load();
+    return () => { cancelled = true; };
   }, [profile]);
 
   const handleSurajHandoff = async () => {
+    if (!pack?.applicationId) {
+      setError('Generate your application pack before requesting the PM-SURAJ handoff.');
+      return;
+    }
+
     setSubmitting(true);
-    const res = await handoffToSuraj(pack?.applicationId || 'APP-2026-BLR-0941');
-    setTimeout(() => {
+    try {
+      const res = await handoffToSuraj(pack.applicationId);
       setHandoffResult(res);
-      setSubmitting(false);
+      setError(null);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
-    }, 1200);
+    } catch (err) {
+      // No fabricated success: the previous code reported a completed transfer even when the
+      // request never reached the server (R5.11).
+      setError(err?.status === 404
+        ? 'That application pack is not available for handoff from this account.'
+        : 'The PM-SURAJ handoff did not complete. Your dossier is unchanged.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleShareWhatsApp = () => {
@@ -57,6 +91,17 @@ export default function ApplicationPack({
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
+
+  if (!pack && error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-2">
+        <p className="text-sm font-semibold text-rose-800">{error}</p>
+        <p className="text-xs text-slate-500">
+          No dossier is shown, because none was generated — nothing has been sent to any agency.
+        </p>
+      </div>
+    );
+  }
 
   if (loading || !pack) {
     return (
@@ -69,6 +114,12 @@ export default function ApplicationPack({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      {error && (
+        <div role="alert" className="no-print bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl p-3">
+          {error}
+        </div>
+      )}
+
       {/* Top Banner Actions (Hidden on Print) */}
       <div className="no-print bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -170,9 +221,11 @@ export default function ApplicationPack({
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-emerald-950">
                 {pack.selectedScheme.name} ({pack.selectedScheme.id})
+                <IllustrativeBadge record={pack.selectedScheme} className="ml-2" />
               </span>
               <span className="text-xs font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
                 Interest: {pack.selectedScheme.interestRate}% p.a. | Tenure: {pack.selectedScheme.maximumTenureMonths} mo
+                <IllustrativeBadge record={pack.selectedScheme} className="ml-1.5" />
               </span>
             </div>
             <ul className="text-xs text-emerald-900 space-y-1">
@@ -237,6 +290,29 @@ export default function ApplicationPack({
             <strong className="block font-bold mb-0.5">Official Government Disclaimer:</strong>
             {pack.disclaimer}
           </div>
+
+          {/*
+            Shown in addition to — never instead of — the disclaimer above, whenever any
+            scheme in this dossier is still illustrative or omits the flag (R2.8). The
+            printed pack is what a beneficiary carries to a branch counter, so the
+            financial terms on it must be flagged as requiring confirmation there.
+          */}
+          {anyIllustrative([pack.selectedScheme]) && (
+            <div
+              className="bg-rose-50/70 border border-rose-200 rounded-xl p-3.5 text-[11px] text-rose-950 leading-relaxed"
+              data-testid="illustrative-pack-notice"
+            >
+              <strong className="block font-bold mb-0.5 flex items-center gap-1.5">
+                Confirm the financial terms before you submit
+                <IllustrativeBadge record={pack.selectedScheme} />
+              </strong>
+              The scheme financial terms shown in this pack — interest rate, tenure,
+              moratorium, loan ceiling, the cited source document and the last-verified
+              date — are illustrative sample values pending verification against current
+              official NSFDC guidelines. Confirm every one of them with the channel partner
+              named above before submitting this application.
+            </div>
+          )}
           <div className="flex justify-between items-center text-[10px] text-slate-400 pt-3 border-t border-slate-100">
             <span>Powered by SchemeReady GovTech Framework</span>
             <span>Ref: {pack.handoffReferenceNumber}</span>

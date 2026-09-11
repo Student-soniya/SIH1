@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SchemeReady.Baseline</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    References the API project directly. The recorder must exercise the real
+    SchemeMatchingService and the real SeedData rows: a reimplementation of the scoring
+    rules here would make the baseline a tautology instead of an oracle.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="../../../SchemeReady/backend/SchemeReady.Api.csproj" />
+  </ItemGroup>
+
+</Project>
