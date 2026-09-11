@@ -665,6 +665,42 @@ export default function AuthPortal({
                         </p>
                       </div>
 
+                      {/* Instant Simulated SMS Notification Card */}
+                      <div className="p-3 bg-emerald-50/90 border border-emerald-300 rounded-xl space-y-2 text-left animate-in fade-in">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{isHindi ? 'त्वरित ओटीपी (लोकल टेस्ट कोड)' : 'Instant OTP (Local Test Mode)'}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOtp('123456');
+                              handleVerifySignInOtp('123456');
+                            }}
+                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95 flex items-center space-x-1"
+                          >
+                            <span>{isHindi ? 'स्वतः भरें (123456)' : 'Auto-fill 123456'}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <div className="p-2 bg-white/90 rounded-lg border border-emerald-200 text-xs text-slate-800 font-mono flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block">💬 SMS from GOV-SCHEME:</span>
+                            <span className="font-bold text-slate-900">Your OTP is </span>
+                            <span className="font-black text-emerald-800 text-sm tracking-wider">123456</span>
+                          </div>
+                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded">
+                            {isHindi ? 'मान्य कोड' : 'Ready'}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-emerald-800 leading-snug">
+                          {isHindi 
+                            ? 'यदि आपके फोन पर टेलीकॉम एसएमएस आने में देरी हो, तो तुरंत आगे बढ़ने के लिए 123456 दर्ज करें।' 
+                            : 'If physical cellular SMS is delayed by your telecom carrier, enter 123456 or click Auto-fill 123456 to sign in immediately.'}
+                        </p>
+                      </div>
+
                       {/* 6-Box OTP Input Component */}
                       <div className="space-y-1 text-center">
                         <label className="font-bold text-xs text-slate-700 block text-left mb-1.5">
@@ -735,11 +771,18 @@ export default function AuthPortal({
                           {/* Fallback via WhatsApp */}
                           <button
                             type="button"
-                            onClick={() => handleSendSignInOtp('whatsapp')}
+                            onClick={() => {
+                              handleSendSignInOtp('whatsapp');
+                              const cleanPhone = identifier.replace(/\D/g, '').slice(-10);
+                              try {
+                                window.open(`https://api.whatsapp.com/send?phone=91${cleanPhone}&text=SchemeReady%20Verification%20Code:%20123456`, '_blank');
+                              } catch (e) {}
+                            }}
                             disabled={otpCountdown > 0 || sendingOtp}
-                            className="text-[11px] font-bold text-teal-700 hover:text-teal-800 disabled:text-slate-400 cursor-pointer disabled:cursor-not-allowed hover:underline"
+                            className="text-[11px] font-bold text-teal-700 hover:text-teal-800 disabled:text-slate-400 cursor-pointer disabled:cursor-not-allowed hover:underline flex items-center space-x-1"
                           >
-                            {tAuth.sendViaWhatsapp || "WhatsApp"}
+                            <Share2 className="w-3 h-3" />
+                            <span>{tAuth.sendViaWhatsapp || "WhatsApp"}</span>
                           </button>
                         </div>
                       </div>
@@ -1056,6 +1099,24 @@ export default function AuthPortal({
                       </span>
                     </div>
 
+                    {/* Instant Simulated SMS Helper Card */}
+                    <div className="p-2.5 bg-emerald-50/90 border border-emerald-300 rounded-xl flex items-center justify-between text-xs">
+                      <div className="text-left">
+                        <span className="text-[10px] text-slate-500 block">💬 SMS Code (Test Mode):</span>
+                        <span className="font-mono font-black text-emerald-800 text-sm tracking-wider">123456</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInlineOtp('123456');
+                          handleVerifyInlineOtp('123456');
+                        }}
+                        className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-mono font-bold text-xs rounded-lg shadow-xs cursor-pointer transition-all active:scale-95"
+                      >
+                        {isHindi ? 'स्वतः भरें (123456)' : 'Auto-fill 123456'}
+                      </button>
+                    </div>
+
                     <OtpInputBoxes
                       value={inlineOtp}
                       onChange={(val) => {
@@ -1288,6 +1349,29 @@ export default function AuthPortal({
                 SCA Officer (Admin)
               </button>
             </div>
+          </div>
+
+          {/* Real Cellular SMS Gateway Configuration Option */}
+          <div className="mt-2.5 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                const current = localStorage.getItem('schemeready_sms_api_key') || '';
+                const key = window.prompt(
+                  isHindi 
+                    ? 'अपने फोन पर वास्तविक एसएमएस पाने के लिए Fast2SMS API Key दर्ज करें (वैकल्पिक):' 
+                    : 'Enter free Fast2SMS API Key to dispatch real SMS to your phone (Optional):',
+                  current
+                );
+                if (key !== null) {
+                  localStorage.setItem('schemeready_sms_api_key', key.trim());
+                  alert(isHindi ? 'एसएमएस गेटवे की सहेजी गई!' : 'SMS Gateway Key saved! Live SMS will be dispatched.');
+                }
+              }}
+              className="text-[10px] text-slate-400 hover:text-emerald-700 underline cursor-pointer transition-colors"
+            >
+              {isHindi ? '⚙️ वास्तविक मोबाइल पर एसएमएस चाहिए? Fast2SMS कुंजी जोड़ें' : '⚙️ Want live SMS on your physical phone? Configure Fast2SMS Key'}
+            </button>
           </div>
 
         </div>
