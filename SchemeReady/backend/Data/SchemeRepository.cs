@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Cryptography;
+using System.Text;
 using SchemeReady.Api.Models;
 
 namespace SchemeReady.Api.Data;
@@ -14,6 +15,12 @@ public interface ISchemeRepository
     Task<List<ApplicationPack>> GetAllApplicationsAsync();
     Task<ApplicationPack> SaveApplicationAsync(ApplicationPack pack);
     Task<AdminStatsResponse> GetAdminStatsAsync();
+    
+    // Auth & Captcha
+    CaptchaResponse GenerateCaptcha();
+    bool ValidateCaptcha(string token, string answer);
+    AuthResponse AuthenticateUser(AuthRequest request);
+    AuthResponse RegisterUser(AuthRequest request);
 }
 
 public class SchemeRepository : ISchemeRepository
@@ -22,12 +29,42 @@ public class SchemeRepository : ISchemeRepository
     private static readonly List<Scheme> _schemes = new();
     private static readonly List<ChannelPartner> _partners = new();
     private static readonly List<ApplicationPack> _applications = new();
+    private static readonly List<UserAccount> _users = new();
+    private static readonly Dictionary<string, string> _activeCaptchas = new();
 
     static SchemeRepository()
     {
         SeedSchemes();
         SeedPartners();
         SeedSampleApplications();
+        SeedUsers();
+    }
+
+    private static void SeedUsers()
+    {
+        _users.Add(new UserAccount
+        {
+            UserId = "ravi.kumar",
+            Email = "ravi.kumar@example.gov.in",
+            FullName = "Ravi Kumar",
+            PasswordHash = HashPassword("Ravi@2026"),
+            Role = "Beneficiary"
+        });
+        _users.Add(new UserAccount
+        {
+            UserId = "admin",
+            Email = "admin@schemeready.gov.in",
+            FullName = "SIH Nodal Officer",
+            PasswordHash = HashPassword("Admin@2026"),
+            Role = "Admin"
+        });
+    }
+
+    private static string HashPassword(string password)
+    {
+        using var sha = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(password + "GovTechSalt2026");
+        return Convert.ToBase64String(sha.ComputeHash(bytes));
     }
 
     private static void SeedSchemes()
@@ -42,63 +79,88 @@ public class SchemeRepository : ISchemeRepository
                 TargetGroup = "Scheduled Caste / Micro Entrepreneurs",
                 MinimumAge = 18,
                 MaximumAge = 60,
-                IncomeLimit = 300000, // INR 3 Lakh annual family income
+                IncomeLimit = 500000, // SIH standard: up to Rs 5.00 Lakh
                 MinimumProjectCost = 10000,
-                MaximumProjectCost = 150000, // Up to 1.5 Lakh
-                EligibleBusinessTypes = new() { "tailoring", "mobile repair", "grocery", "tea stall", "carpentry", "leather craft", "barber shop", "vegetable vending", "handicrafts", "food cart" },
-                InterestRate = 5.0m, // 5% per annum
+                MaximumProjectCost = 140000, // SIH: up to 1.40 Lakh
+                EligibleBusinessTypes = new() { "tailoring", "mobile repair", "grocery", "tea stall", "carpentry", "leather craft", "barber shop", "vegetable vending", "food cart" },
+                InterestRate = 5.0m,
                 MaximumTenureMonths = 36,
                 MoratoriumMonths = 3,
                 RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Bank account proof", "Business quotation" },
-                SupportedDistricts = new() { "Bengaluru", "Bengaluru Rural", "Mysuru", "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Mangaluru", "Tumakuru" },
+                SupportedStates = new() { "Karnataka", "Maharashtra", "Uttar Pradesh", "Tamil Nadu", "Bihar", "West Bengal", "Rajasthan" },
                 ApplicationMode = "Offline",
                 OfficialUrl = "https://nsfdc.nic.in/schemes/micro-credit-scheme",
                 SourceDocument = "NSFDC Operational Guidelines 2024-26, Clause 4.2",
                 LastVerifiedDate = new DateTime(2026, 9, 10),
                 Status = "Verified",
-                Description = "Low-interest collateral-free micro credit up to Rs 1.5 Lakh tailored for quick disbursement through SCAs and NBFC-MFIs."
+                Description = "Low-interest collateral-free micro credit up to Rs 1.40 Lakh tailored for quick disbursement through SCAs and NBFC-MFIs."
             },
             new()
             {
                 Id = "NSFDC-TLS-02",
                 Name = "Term Loan Scheme (TLS)",
                 SchemeType = "Term Loan",
-                TargetGroup = "Scheduled Caste Entrepreneurs",
+                TargetGroup = "Scheduled Caste Entrepreneurs (Pan-India)",
                 MinimumAge = 18,
                 MaximumAge = 55,
-                IncomeLimit = 500000, // Up to 5 Lakh for term loans
+                IncomeLimit = 500000,
                 MinimumProjectCost = 200000,
-                MaximumProjectCost = 1500000, // Up to 15 Lakh
+                MaximumProjectCost = 5000000, // SIH: up to 50.00 Lakh
                 EligibleBusinessTypes = new() { "manufacturing", "transport", "mobile repair", "auto workshop", "food processing", "tailoring unit", "garment boutique", "dairy unit", "solar equipment" },
-                InterestRate = 6.0m, // 6% per annum
+                InterestRate = 6.5m,
                 MaximumTenureMonths = 60,
                 MoratoriumMonths = 6,
-                RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Bank account proof", "Business plan / DPR", "Equipment quotation", "Premises agreement" },
-                SupportedDistricts = new() { "Bengaluru", "Mysuru", "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Mangaluru" },
+                RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Bank account proof", "Detailed Project Report (DPR)", "Equipment quotation", "ITR Acknowledgement" },
+                SupportedStates = new() { "Karnataka", "Maharashtra", "Uttar Pradesh", "Tamil Nadu", "Gujarat", "Delhi", "Telangana" },
                 ApplicationMode = "Hybrid",
                 OfficialUrl = "https://nsfdc.nic.in/schemes/term-loan-scheme",
                 SourceDocument = "NSFDC Lending Policy Master Circular 2025-26",
                 LastVerifiedDate = new DateTime(2026, 9, 10),
                 Status = "Verified",
-                Description = "Medium-term capital financing for machinery, commercial vehicles, and established workshops requiring higher capital investment."
+                Description = "Medium to large capital financing up to Rs 50 Lakh for capital equipment, workshop setup, and commercial fleets."
             },
             new()
             {
-                Id = "NSFDC-MSY-03",
+                Id = "NSFDC-EDU-03",
+                Name = "Educational Loan Scheme (ELS)",
+                SchemeType = "Education & Skill",
+                TargetGroup = "Scheduled Caste Students & Scholars",
+                MinimumAge = 17,
+                MaximumAge = 35,
+                IncomeLimit = 500000,
+                MinimumProjectCost = 50000,
+                MaximumProjectCost = 2000000, // Up to 20 Lakh in India, 30 Lakh Abroad
+                EligibleBusinessTypes = new() { "student", "vocational training", "engineering", "medical", "it certification", "paramedical", "management" },
+                InterestRate = 4.0m, // Concessional 4% for students, 3.5% for female students
+                MaximumTenureMonths = 84,
+                MoratoriumMonths = 12, // Course duration + 1 year moratorium
+                MinAcademicPercentage = 60.0, // Academic eligibility benchmark
+                RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "10th Marksheet", "12th Marksheet", "College Admission Letter", "Fee Structure" },
+                SupportedStates = new() { "Karnataka", "Maharashtra", "Uttar Pradesh", "Tamil Nadu", "Bihar", "West Bengal", "Kerala" },
+                ApplicationMode = "Online",
+                OfficialUrl = "https://nsfdc.nic.in/schemes/educational-loan",
+                SourceDocument = "NSFDC Education Credit Scheme Mandate 2026",
+                LastVerifiedDate = new DateTime(2026, 9, 05),
+                Status = "Verified",
+                Description = "Concessional credit for professional higher education covering tuition, books, and living expenses with extended moratorium."
+            },
+            new()
+            {
+                Id = "NSFDC-MSY-04",
                 Name = "Mahila Samriddhi Yojana (MSY)",
                 SchemeType = "Women Entrepreneurship",
                 TargetGroup = "Scheduled Caste Women Entrepreneurs",
                 MinimumAge = 18,
                 MaximumAge = 60,
-                IncomeLimit = 300000,
+                IncomeLimit = 500000,
                 MinimumProjectCost = 10000,
                 MaximumProjectCost = 140000,
                 EligibleBusinessTypes = new() { "tailoring", "embroidery", "beauty parlour", "food stall", "handloom", "spices packaging", "dairy", "pottery" },
-                InterestRate = 4.0m, // Concessional 4% p.a.
+                InterestRate = 4.0m,
                 MaximumTenureMonths = 42,
                 MoratoriumMonths = 4,
                 RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Bank account proof", "Self-help group endorsement / Quotation" },
-                SupportedDistricts = new() { "Bengaluru", "Bengaluru Rural", "Mysuru", "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Kolar", "Mandya" },
+                SupportedStates = new() { "Karnataka", "Maharashtra", "Uttar Pradesh", "Tamil Nadu", "Bihar" },
                 ApplicationMode = "Offline",
                 OfficialUrl = "https://nsfdc.nic.in/schemes/mahila-samriddhi-yojana",
                 SourceDocument = "NSFDC Women Empowerment Window Guidelines 2026",
@@ -108,37 +170,13 @@ public class SchemeRepository : ISchemeRepository
             },
             new()
             {
-                Id = "NSFDC-LUY-04",
-                Name = "Laghu Udhyami Yojana (LUY)",
-                SchemeType = "Small Enterprise",
-                TargetGroup = "First-time & Youth SC Entrepreneurs",
-                MinimumAge = 20,
-                MaximumAge = 45,
-                IncomeLimit = 350000,
-                MinimumProjectCost = 100000,
-                MaximumProjectCost = 500000,
-                EligibleBusinessTypes = new() { "mobile repair", "digital printing", "fabrication", "electrical repairs", "catering", "two-wheeler repair", "plumbing enterprise" },
-                InterestRate = 5.5m,
-                MaximumTenureMonths = 48,
-                MoratoriumMonths = 3,
-                RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Technical certificate / Skill proof", "Equipment quotation" },
-                SupportedDistricts = new() { "Bengaluru", "Mysuru", "Hubballi-Dharwad", "Belagavi" },
-                ApplicationMode = "Hybrid",
-                OfficialUrl = "https://nsfdc.nic.in/schemes/laghu-udhyami",
-                SourceDocument = "Ministry of Social Justice & Empowerment Notification 2025",
-                LastVerifiedDate = new DateTime(2026, 8, 25),
-                Status = "Verified",
-                Description = "Bridging capital scheme targeted at technically qualified or experienced youth establishing small commercial service units."
-            },
-            new()
-            {
                 Id = "NSFDC-GBS-05",
                 Name = "Green Business Scheme (GBS)",
                 SchemeType = "Green Economy",
                 TargetGroup = "Scheduled Caste Individuals / Groups",
                 MinimumAge = 18,
                 MaximumAge = 55,
-                IncomeLimit = 350000,
+                IncomeLimit = 500000,
                 MinimumProjectCost = 50000,
                 MaximumProjectCost = 300000,
                 EligibleBusinessTypes = new() { "e-rickshaw", "battery charging station", "solar lighting kit", "solid waste composting", "polyhouse farming" },
@@ -146,37 +184,13 @@ public class SchemeRepository : ISchemeRepository
                 MaximumTenureMonths = 48,
                 MoratoriumMonths = 6,
                 RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Driving license (for vehicles)", "Equipment quotation" },
-                SupportedDistricts = new() { "Bengaluru", "Mysuru", "Hubballi-Dharwad", "Belagavi", "Kalaburagi" },
+                SupportedStates = new() { "Karnataka", "Maharashtra", "Uttar Pradesh", "Tamil Nadu", "Delhi" },
                 ApplicationMode = "Offline",
                 OfficialUrl = "https://nsfdc.nic.in/schemes/green-business",
                 SourceDocument = "National Climate Adaptation & Clean Tech Livelihoods Mandate 2025",
                 LastVerifiedDate = new DateTime(2026, 9, 05),
                 Status = "Verified",
                 Description = "Promotes environmentally sustainable micro-businesses such as electric passenger vehicles and solar installations."
-            },
-            new()
-            {
-                Id = "NSFDC-SLS-06",
-                Name = "Skill & Education Loan Scheme (SLS)",
-                SchemeType = "Education & Skill",
-                TargetGroup = "SC Students & Vocational Trainees",
-                MinimumAge = 17,
-                MaximumAge = 35,
-                IncomeLimit = 450000,
-                MinimumProjectCost = 50000,
-                MaximumProjectCost = 400000,
-                EligibleBusinessTypes = new() { "student", "vocational training", "it certification", "paramedical", "aviation technician" },
-                InterestRate = 4.0m,
-                MaximumTenureMonths = 60,
-                MoratoriumMonths = 12, // Course duration + 6 months
-                RequiredDocuments = new() { "Aadhaar/KYC", "Caste certificate", "Income certificate", "Admission letter", "Fee structure breakdown" },
-                SupportedDistricts = new() { "Bengaluru", "Mysuru", "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Mangaluru" },
-                ApplicationMode = "Online",
-                OfficialUrl = "https://nsfdc.nic.in/schemes/education-loan",
-                SourceDocument = "NSFDC Human Capital Development Guidelines 2025",
-                LastVerifiedDate = new DateTime(2026, 9, 01),
-                Status = "Verified",
-                Description = "Concessional education credit for professional and skill certification courses with extended moratorium."
             }
         });
     }
@@ -197,13 +211,15 @@ public class SchemeRepository : ISchemeRepository
                 ContactPerson = "Shri M. Nagaraj (District Manager)",
                 Address = "No. 9 & 10, Vishweshwaraiah Towers, 9th Floor, Dr. Ambedkar Veedhi, Bengaluru - 560001",
                 ApplicationMode = "Offline",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-MSY-03", "NSFDC-LUY-04", "NSFDC-GBS-05" },
-                DocumentRequirements = new() { "Aadhaar copy", "Caste certificate (RD number)", "Income certificate", "Bank passbook copy", "Two passport photos", "Quotation" },
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-EDU-03", "NSFDC-MSY-04", "NSFDC-GBS-05" },
+                DocumentRequirements = new() { "Aadhaar copy", "Caste certificate (RD number)", "Income certificate", "Bank passbook copy", "Quotation" },
                 LastVerifiedDate = new DateTime(2026, 9, 10),
                 IsOnlineSubmissionAvailable = false,
                 Pincode = "560001",
                 Latitude = 12.9791,
-                Longitude = 77.5913
+                Longitude = 77.5913,
+                FundUtilizationStatus = "High Fund Availability / 0% Overdue",
+                NpaHealthScore = "AAA (Zero Non-Performing Assets)"
             },
             new()
             {
@@ -217,17 +233,85 @@ public class SchemeRepository : ISchemeRepository
                 ContactPerson = "Ms. Sunita Rao (Chief Manager MSME)",
                 Address = "MG Road Branch, Near Trinity Metro Station, Bengaluru - 560001",
                 ApplicationMode = "Hybrid",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-LUY-04" },
-                DocumentRequirements = new() { "KYC docs", "Caste certificate", "ITR/Income declaration", "Business DPR", "Vendor quotation" },
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-EDU-03" },
+                DocumentRequirements = new() { "KYC docs", "Caste certificate", "Income declaration", "Business DPR", "Vendor quotation" },
                 LastVerifiedDate = new DateTime(2026, 9, 08),
                 IsOnlineSubmissionAvailable = true,
                 Pincode = "560001",
                 Latitude = 12.9734,
-                Longitude = 77.6200
+                Longitude = 77.6200,
+                FundUtilizationStatus = "Active Disbursing Partner",
+                NpaHealthScore = "AA+ (Compliant & Audited)"
             },
             new()
             {
-                Id = "PART-RRB-03",
+                Id = "PART-SCA-03",
+                InstitutionName = "Mahatma Phule Backward Class Development Corporation (MPBCDC)",
+                InstitutionType = "SCA",
+                District = "Mumbai",
+                State = "Maharashtra",
+                DistanceKm = 12.4,
+                ContactNumber = "+91 22 2202 5481",
+                ContactPerson = "Shri R. P. Shinde (Regional Director)",
+                Address = "Administrative Building, Chembur, Mumbai - 400071",
+                ApplicationMode = "Offline",
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-EDU-03", "NSFDC-MSY-04" },
+                DocumentRequirements = new() { "Aadhaar", "Caste validity certificate", "Income certificate", "Project DPR" },
+                LastVerifiedDate = new DateTime(2026, 9, 09),
+                IsOnlineSubmissionAvailable = false,
+                Pincode = "400071",
+                Latitude = 19.0600,
+                Longitude = 72.8900,
+                FundUtilizationStatus = "High Fund Availability / 0% Overdue",
+                NpaHealthScore = "AAA (Low NPA - Priority Disbursal)"
+            },
+            new()
+            {
+                Id = "PART-SCA-04",
+                InstitutionName = "UP Scheduled Castes Finance & Development Corporation (UPSCDC)",
+                InstitutionType = "SCA",
+                District = "Lucknow",
+                State = "Uttar Pradesh",
+                DistanceKm = 9.1,
+                ContactNumber = "+91 522 2287 410",
+                ContactPerson = "Shri Alok Verma (Joint Director)",
+                Address = "B-2, Picup Bhawan, Vibhuti Khand, Gomti Nagar, Lucknow - 226010",
+                ApplicationMode = "Offline",
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-EDU-03" },
+                DocumentRequirements = new() { "Aadhaar card", "Caste certificate", "Income cert", "Quotations" },
+                LastVerifiedDate = new DateTime(2026, 9, 07),
+                IsOnlineSubmissionAvailable = false,
+                Pincode = "226010",
+                Latitude = 26.8500,
+                Longitude = 80.9900,
+                FundUtilizationStatus = "High Fund Availability / 0% Overdue",
+                NpaHealthScore = "AAA (Zero Overdues)"
+            },
+            new()
+            {
+                Id = "PART-SCA-05",
+                InstitutionName = "Tamil Nadu Adi Dravidar Housing & Dev Corp (TAHDCO)",
+                InstitutionType = "SCA",
+                District = "Chennai",
+                State = "Tamil Nadu",
+                DistanceKm = 7.5,
+                ContactNumber = "+91 44 2827 8421",
+                ContactPerson = "Thiru K. Saravanan (Managing Director)",
+                Address = "TNHB Building, 2nd Floor, Anna Salai, Chennai - 600002",
+                ApplicationMode = "Hybrid",
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-EDU-03", "NSFDC-MSY-04" },
+                DocumentRequirements = new() { "Community certificate", "Family card/Aadhaar", "Income certificate", "Quotation" },
+                LastVerifiedDate = new DateTime(2026, 9, 10),
+                IsOnlineSubmissionAvailable = true,
+                Pincode = "600002",
+                Latitude = 13.0827,
+                Longitude = 80.2707,
+                FundUtilizationStatus = "High Fund Availability / 0% Overdue",
+                NpaHealthScore = "AAA (Priority Channel Partner)"
+            },
+            new()
+            {
+                Id = "PART-RRB-06",
                 InstitutionName = "Karnataka Gramin Bank (RRB Head Office Region)",
                 InstitutionType = "RRB",
                 District = "Bengaluru Rural",
@@ -237,17 +321,19 @@ public class SchemeRepository : ISchemeRepository
                 ContactPerson = "Shri Ramesh Kulkarni (Agri & Microcredit Officer)",
                 Address = "Doddaballapur Main Road, Yelahanka Sub-hub, Bengaluru - 560064",
                 ApplicationMode = "Offline",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-MSY-03", "NSFDC-GBS-05" },
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-MSY-04", "NSFDC-GBS-05" },
                 DocumentRequirements = new() { "Aadhaar", "Ration card", "Caste cert", "Local panchayat NOC", "Quotation" },
                 LastVerifiedDate = new DateTime(2026, 9, 05),
                 IsOnlineSubmissionAvailable = false,
                 Pincode = "560064",
                 Latitude = 13.1007,
-                Longitude = 77.5963
+                Longitude = 77.5963,
+                FundUtilizationStatus = "Active Disbursing Partner",
+                NpaHealthScore = "AA+ (Clean Balance Sheet)"
             },
             new()
             {
-                Id = "PART-MFI-04",
+                Id = "PART-MFI-07",
                 InstitutionName = "Grameen Koota Financial Services (NBFC-MFI Channel Partner)",
                 InstitutionType = "NBFC-MFI",
                 District = "Bengaluru",
@@ -257,53 +343,15 @@ public class SchemeRepository : ISchemeRepository
                 ContactPerson = "Ms. Kavitha Gowda (Branch Coordinator)",
                 Address = "Jayanagar 4th Block, Near BDA Complex, Bengaluru - 560011",
                 ApplicationMode = "Hybrid",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-MSY-03" },
+                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-MSY-04" },
                 DocumentRequirements = new() { "Aadhaar Card", "Voter ID", "Bank statement", "Self-declaration of income" },
                 LastVerifiedDate = new DateTime(2026, 9, 09),
                 IsOnlineSubmissionAvailable = true,
                 Pincode = "560011",
                 Latitude = 12.9299,
-                Longitude = 77.5824
-            },
-            new()
-            {
-                Id = "PART-SCA-05",
-                InstitutionName = "Dr. Babu Jagjivan Ram Leather Industries Development Corporation (LIDKAR)",
-                InstitutionType = "SCA",
-                District = "Bengaluru",
-                State = "Karnataka",
-                DistanceKm = 8.1,
-                ContactNumber = "+91 80 2334 0982",
-                ContactPerson = "Shri Suresh Babu (Marketing & Credit GM)",
-                Address = "LIDKAR Bhavan, 1st Cross, Sampige Road, Malleshwaram, Bengaluru - 560003",
-                ApplicationMode = "Offline",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02" },
-                DocumentRequirements = new() { "Aadhaar", "Caste certificate", "Artisan registration/Quotation" },
-                LastVerifiedDate = new DateTime(2026, 8, 30),
-                IsOnlineSubmissionAvailable = false,
-                Pincode = "560003",
-                Latitude = 12.9988,
-                Longitude = 77.5714
-            },
-            new()
-            {
-                Id = "PART-PSB-06",
-                InstitutionName = "State Bank of India - SME City Credit Center (SMECCC)",
-                InstitutionType = "PSB",
-                District = "Mysuru",
-                State = "Karnataka",
-                DistanceKm = 142.0,
-                ContactNumber = "+91 821 242 3311",
-                ContactPerson = "Shri Anand V. (Assistant General Manager)",
-                Address = "Devaraj Urs Road, Near Suburb Bus Stand, Mysuru - 570001",
-                ApplicationMode = "Hybrid",
-                SupportedSchemes = new() { "NSFDC-MCS-01", "NSFDC-TLS-02", "NSFDC-LUY-04" },
-                DocumentRequirements = new() { "KYC", "Caste cert", "Income proof", "Project estimate" },
-                LastVerifiedDate = new DateTime(2026, 9, 02),
-                IsOnlineSubmissionAvailable = true,
-                Pincode = "570001",
-                Latitude = 12.3051,
-                Longitude = 76.6552
+                Longitude = 77.5824,
+                FundUtilizationStatus = "High Fund Availability / 0% Overdue",
+                NpaHealthScore = "AAA (Low Default Rate)"
             }
         });
     }
@@ -317,10 +365,19 @@ public class SchemeRepository : ISchemeRepository
             Profile = new BeneficiaryProfile
             {
                 FullName = "Ravi Kumar",
+                ParentsName = "Anand Kumar & Lakshmi Devi",
+                Gender = "Male",
                 BusinessType = "Mobile repair shop",
+                ProjectDescription = "Mobile chip-level service and repair center",
                 Location = "Bengaluru",
+                State = "Karnataka",
                 EstimatedProjectCost = 180000,
                 AnnualFamilyIncome = 360000,
+                HouseholdAnnualIncome = 360000,
+                HasFiledItr = true,
+                ItrAckNumber = "ITR-V-2025-8891042",
+                TenthMarksPercentage = 78.5,
+                TwelfthMarksPercentage = 74.0,
                 UserType = "new_entrepreneur",
                 Category = "SC",
                 HasCasteCertificate = false,
@@ -332,9 +389,9 @@ public class SchemeRepository : ISchemeRepository
             EligibilityReasons = new()
             {
                 "Applicant belongs to the target Scheduled Caste community.",
-                "Declared family income (Rs 3.6L) is within the eligible threshold.",
-                "Project cost (Rs 1.8L) aligns with the micro-credit capital range.",
-                "Suitable verified State Channelizing Agency is available in Bengaluru."
+                "Declared family income (Rs 3.6L) is within the eligible threshold (Rs 5.0L).",
+                "Project cost aligns with concessional capital range.",
+                "Channel Partner possesses 0% overdue & priority fund availability."
             },
             TrackingStatus = "Ready for Handoff",
             HandoffReferenceNumber = "SURAJ-2026-DEMO-7729"
@@ -355,14 +412,8 @@ public class SchemeRepository : ISchemeRepository
                 scheme.Id = $"NSFDC-CUSTOM-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
             }
             var idx = _schemes.FindIndex(s => s.Id == scheme.Id);
-            if (idx >= 0)
-            {
-                _schemes[idx] = scheme;
-            }
-            else
-            {
-                _schemes.Add(scheme);
-            }
+            if (idx >= 0) _schemes[idx] = scheme;
+            else _schemes.Add(scheme);
             return Task.FromResult(scheme);
         }
     }
@@ -381,14 +432,8 @@ public class SchemeRepository : ISchemeRepository
                 partner.Id = $"PART-{partner.InstitutionType}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
             }
             var idx = _partners.FindIndex(p => p.Id == partner.Id);
-            if (idx >= 0)
-            {
-                _partners[idx] = partner;
-            }
-            else
-            {
-                _partners.Add(partner);
-            }
+            if (idx >= 0) _partners[idx] = partner;
+            else _partners.Add(partner);
             return Task.FromResult(partner);
         }
     }
@@ -409,14 +454,8 @@ public class SchemeRepository : ISchemeRepository
                 pack.HandoffReferenceNumber = $"SURAJ-2026-DEMO-{Random.Shared.Next(1000, 9999)}";
             }
             var idx = _applications.FindIndex(a => a.ApplicationId == pack.ApplicationId);
-            if (idx >= 0)
-            {
-                _applications[idx] = pack;
-            }
-            else
-            {
-                _applications.Insert(0, pack);
-            }
+            if (idx >= 0) _applications[idx] = pack;
+            else _applications.Insert(0, pack);
             return Task.FromResult(pack);
         }
     }
@@ -426,33 +465,134 @@ public class SchemeRepository : ISchemeRepository
         var response = new AdminStatsResponse
         {
             TotalSchemes = _schemes.Count,
-            TotalVerifiedPartners = _partners.Count(p => p.LastVerifiedDate.Year >= 2026),
-            TotalApplicationsPrepared = Math.Max(_applications.Count, 148), // realistic hackathon metric demo
+            TotalVerifiedPartners = _partners.Count,
+            TotalApplicationsPrepared = Math.Max(_applications.Count, 162),
             PopularBusinessCategories = new()
             {
-                { "Mobile Repair & Electronics", 52 },
+                { "Mobile Repair & Electronics", 58 },
                 { "Tailoring & Garments", 44 },
-                { "Food Stall & Catering", 28 },
-                { "Green Transport (E-Rickshaw)", 18 },
-                { "Leathercraft & Artisans", 12 }
+                { "Higher & Vocational Education", 35 },
+                { "Green Transport (E-Rickshaw)", 21 },
+                { "Food Stall & Catering", 18 }
             },
             ApplicationsByDistrict = new()
             {
                 { "Bengaluru Urban", 68 },
                 { "Bengaluru Rural", 29 },
-                { "Mysuru", 24 },
-                { "Hubballi-Dharwad", 18 },
-                { "Belagavi", 15 }
+                { "Mumbai Suburban", 26 },
+                { "Lucknow", 22 },
+                { "Chennai", 17 }
             },
             CommonMissingDocuments = new()
             {
                 { "Caste Certificate (RD No)", 58 },
                 { "Business Quotation", 42 },
                 { "Income Certificate", 29 },
+                { "10th / 12th Marksheet", 16 },
                 { "Bank Account Proof", 11 }
             }
         };
 
         return Task.FromResult(response);
+    }
+
+    // Auth & Captcha
+    public CaptchaResponse GenerateCaptcha()
+    {
+        int num1 = Random.Shared.Next(10, 50);
+        int num2 = Random.Shared.Next(1, 10);
+        string token = Guid.NewGuid().ToString("N")[..8];
+        string answer = (num1 + num2).ToString();
+
+        lock (_lock)
+        {
+            _activeCaptchas[token] = answer;
+        }
+
+        return new CaptchaResponse
+        {
+            Token = token,
+            Question = $"Solve: {num1} + {num2} = ?",
+            ImageOrText = $"{num1} + {num2}"
+        };
+    }
+
+    public bool ValidateCaptcha(string token, string answer)
+    {
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(answer)) return false;
+        lock (_lock)
+        {
+            if (_activeCaptchas.TryGetValue(token, out var expected))
+            {
+                _activeCaptchas.Remove(token);
+                return string.Equals(expected.Trim(), answer.Trim(), StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        return false;
+    }
+
+    public AuthResponse AuthenticateUser(AuthRequest request)
+    {
+        if (!ValidateCaptcha(request.CaptchaToken, request.CaptchaAnswer))
+        {
+            return new AuthResponse { Success = false, Message = "Invalid or expired Captcha security code." };
+        }
+
+        var hash = HashPassword(request.Password);
+        var user = _users.FirstOrDefault(u =>
+            (u.UserId.Equals(request.UserIdOrEmail, StringComparison.OrdinalIgnoreCase) ||
+             u.Email.Equals(request.UserIdOrEmail, StringComparison.OrdinalIgnoreCase)) &&
+            u.PasswordHash == hash);
+
+        if (user == null)
+        {
+            return new AuthResponse { Success = false, Message = "Invalid User ID/Email or Password." };
+        }
+
+        return new AuthResponse
+        {
+            Success = true,
+            Message = "Authentication successful.",
+            UserId = user.UserId,
+            FullName = user.FullName,
+            Token = $"SECURE-JWT-GOV-{Guid.NewGuid().ToString("N")}"
+        };
+    }
+
+    public AuthResponse RegisterUser(AuthRequest request)
+    {
+        if (!ValidateCaptcha(request.CaptchaToken, request.CaptchaAnswer))
+        {
+            return new AuthResponse { Success = false, Message = "Invalid Captcha security code." };
+        }
+
+        lock (_lock)
+        {
+            if (_users.Any(u => u.UserId.Equals(request.UserIdOrEmail, StringComparison.OrdinalIgnoreCase) ||
+                                u.Email.Equals(request.UserIdOrEmail, StringComparison.OrdinalIgnoreCase)))
+            {
+                return new AuthResponse { Success = false, Message = "User ID or Email is already registered." };
+            }
+
+            var newUser = new UserAccount
+            {
+                UserId = request.UserIdOrEmail.Contains("@") ? request.UserIdOrEmail.Split('@')[0] : request.UserIdOrEmail,
+                Email = request.UserIdOrEmail.Contains("@") ? request.UserIdOrEmail : $"{request.UserIdOrEmail}@user.gov.in",
+                FullName = string.IsNullOrWhiteSpace(request.FullName) ? "Citizen Beneficiary" : request.FullName,
+                PasswordHash = HashPassword(request.Password),
+                Role = "Beneficiary"
+            };
+
+            _users.Add(newUser);
+
+            return new AuthResponse
+            {
+                Success = true,
+                Message = "Account registered successfully.",
+                UserId = newUser.UserId,
+                FullName = newUser.FullName,
+                Token = $"SECURE-JWT-GOV-{Guid.NewGuid().ToString("N")}"
+            };
+        }
     }
 }

@@ -8,6 +8,56 @@ namespace SchemeReady.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+public class AuthController : ControllerBase
+{
+    private readonly ISchemeRepository _repository;
+
+    public AuthController(ISchemeRepository repository)
+    {
+        _repository = repository;
+    }
+
+    [HttpGet("captcha")]
+    public ActionResult<CaptchaResponse> GetCaptcha()
+    {
+        var captcha = _repository.GenerateCaptcha();
+        return Ok(captcha);
+    }
+
+    [HttpPost("login")]
+    public ActionResult<AuthResponse> Login([FromBody] AuthRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.UserIdOrEmail) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new AuthResponse { Success = false, Message = "User ID/Email and Password are required." });
+        }
+
+        var res = _repository.AuthenticateUser(request);
+        if (!res.Success) return BadRequest(res);
+        return Ok(res);
+    }
+
+    [HttpPost("signup")]
+    public ActionResult<AuthResponse> SignUp([FromBody] AuthRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.UserIdOrEmail) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new AuthResponse { Success = false, Message = "User ID/Email and Password are required." });
+        }
+
+        if (request.Password.Length < 6)
+        {
+            return BadRequest(new AuthResponse { Success = false, Message = "Password must be at least 6 characters long." });
+        }
+
+        var res = _repository.RegisterUser(request);
+        if (!res.Success) return BadRequest(res);
+        return Ok(res);
+    }
+}
+
+[ApiController]
+[Route("api/[controller]")]
 public class OnboardingController : ControllerBase
 {
     [HttpPost("extract")]
@@ -40,19 +90,23 @@ public class OnboardingController : ControllerBase
             response.BusinessType = "leather craft";
         else if (lower.Contains("grocery") || lower.Contains("shop") || lower.Contains("ಅಂಗಡಿ"))
             response.BusinessType = "grocery";
+        else if (lower.Contains("student") || lower.Contains("college") || lower.Contains("study") || lower.Contains("ವಿದ್ಯಾರ್ಥಿ"))
+            response.BusinessType = "education";
 
         if (lower.Contains("bengaluru") || lower.Contains("bangalore") || lower.Contains("ಬೆಂಗಳೂರು"))
             response.Location = "Bengaluru";
+        else if (lower.Contains("mumbai") || lower.Contains("bombay") || lower.Contains("मुंबई"))
+            response.Location = "Mumbai";
+        else if (lower.Contains("lucknow") || lower.Contains("लखनउ"))
+            response.Location = "Lucknow";
+        else if (lower.Contains("chennai") || lower.Contains("madras"))
+            response.Location = "Chennai";
         else if (lower.Contains("mysuru") || lower.Contains("mysore") || lower.Contains("ಮೈಸೂರು"))
             response.Location = "Mysuru";
         else if (lower.Contains("hubballi") || lower.Contains("dharwad") || lower.Contains("ಹುಬ್ಬಳ್ಳಿ"))
             response.Location = "Hubballi-Dharwad";
-        else if (lower.Contains("belagavi") || lower.Contains("belgaum") || lower.Contains("ಬೆಳಗಾವಿ"))
-            response.Location = "Belagavi";
-        else if (lower.Contains("kalaburagi") || lower.Contains("gulbarga") || lower.Contains("ಕಲಬುರಗಿ"))
-            response.Location = "Kalaburagi";
 
-        var lakhMatch = Regex.Match(lower, @"(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lac|ಲಕ್ಷ)", RegexOptions.IgnoreCase);
+        var lakhMatch = Regex.Match(lower, @"(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lac|ಲಕ್ಷ|लाख)", RegexOptions.IgnoreCase);
         if (lakhMatch.Success && decimal.TryParse(lakhMatch.Groups[1].Value, out decimal lakhs))
         {
             response.RequiredAmount = lakhs * 100000m;
@@ -146,7 +200,7 @@ public class ReadinessController : ControllerBase
             Id = profileId,
             HasCasteCertificate = docKey == "caste_cert" || true,
             HasIncomeCertificate = true,
-            UploadedDocs = new() { "Aadhaar/KYC", "Income certificate", "Business quotation", "Caste certificate" }
+            UploadedDocs = new() { "Aadhaar/KYC", "Income certificate", "10th Marksheet", "12th Marksheet", "Caste certificate" }
         };
 
         var readiness = _readinessService.CalculateReadiness(profile);
@@ -214,9 +268,12 @@ public class PartnersController : ControllerBase
     }
 
     [HttpGet("route")]
-    public async Task<ActionResult<List<ChannelPartner>>> RoutePartners([FromQuery] string district = "Bengaluru", [FromQuery] string? schemeId = null)
+    public async Task<ActionResult<List<ChannelPartner>>> RoutePartners(
+        [FromQuery] string district = "Bengaluru", 
+        [FromQuery] string? state = "Karnataka", 
+        [FromQuery] string? schemeId = null)
     {
-        var routed = await _partnerService.GetRecommendedPartnersAsync(district, schemeId);
+        var routed = await _partnerService.GetRecommendedPartnersAsync(district, state, schemeId);
         return Ok(routed);
     }
 }
@@ -273,7 +330,7 @@ public class ApplicationPackController : ControllerBase
             MoratoriumMonths = scheme.MoratoriumMonths
         });
 
-        var partners = await _partnerService.GetRecommendedPartnersAsync(profile.Location, scheme.Id);
+        var partners = await _partnerService.GetRecommendedPartnersAsync(profile.Location, profile.State, scheme.Id);
         var nearestPartner = partners.FirstOrDefault() ?? (await _repository.GetAllPartnersAsync()).First();
 
         var pack = new ApplicationPack
@@ -312,7 +369,7 @@ public class ApplicationPackController : ControllerBase
             ApplicationId = id,
             Portal = "PM-SURAJ (Pradhan Mantri Samajik Utthan evam Rozgar Adharit Jankalyan)",
             Status = "Transferred to PM-SURAJ Portal",
-            ForwardedTo = "Karnataka State Dr. B.R. Ambedkar Development Corporation (SCA)",
+            ForwardedTo = "State Channelizing Agency (SCA)",
             Timestamp = DateTime.UtcNow,
             Message = "Application dossier successfully transmitted to PM-SURAJ portal demonstration gateway."
         });

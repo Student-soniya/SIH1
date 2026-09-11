@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import ConversationalOnboarding from './components/ConversationalOnboarding';
+import BeneficiaryProfileView from './components/BeneficiaryProfileView';
 import ExplainableSchemeResults from './components/ExplainableSchemeResults';
 import ReadinessDashboard from './components/ReadinessDashboard';
 import BusinessPlanBuilder from './components/BusinessPlanBuilder';
@@ -9,25 +10,47 @@ import PartnerRouting from './components/PartnerRouting';
 import EmiSimulator from './components/EmiSimulator';
 import ApplicationPack from './components/ApplicationPack';
 import AdminPortal from './components/AdminPortal';
+import AuthModal from './components/AuthModal';
 import { translations } from './translations';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('onboarding');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState({
+    userId: 'ravi.kumar',
+    fullName: 'Ravi Kumar',
+    token: 'AUTH-DEMO-2026'
+  });
 
-  // Realistic default profile (Ravi Kumar - Persona from PRD)
+  // Realistic default profile (Ravi Kumar - Persona from PRD & SIH guidelines)
   const [profile, setProfile] = useState({
     id: 'APP-2026-BLR-0941',
     fullName: 'Ravi Kumar',
+    parentsName: 'Shri M. Venkataram & Smt. Lakshmi',
+    gender: 'Male',
     businessType: 'mobile repair',
+    businessScale: 'Micro (Up to ₹5 Lakhs)',
+    projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
     location: 'Bengaluru',
+    state: 'Karnataka',
     estimatedProjectCost: 180000,
     annualFamilyIncome: 360000,
+    householdAnnualIncome: 360000,
+    cibilScore: 745,
     userType: 'new_entrepreneur',
     category: 'SC',
-    hasCasteCertificate: false, // 72% readiness default
+    hasCasteCertificate: false, // 72% readiness default (remediated to true upon upload / DigiLocker)
+    casteCertificateNo: 'RD0038921029-SC',
+    digilockerVerified: false,
     hasIncomeCertificate: true,
+    hasFiledItr: true,
+    itrAckNumber: 'ITR-V-2025-8891042',
+    tenthMarksPercentage: 84.5,
+    tenthSchoolName: 'Government High School, Malleshwaram',
+    twelfthMarksPercentage: 79.2,
+    twelfthSchoolName: 'Government PU College, Rajajinagar',
     requiredLoanAmount: 150000,
     supportPreference: 'offline',
     preferredLanguage: 'kn',
@@ -67,14 +90,29 @@ export default function App() {
     setProfile({
       id: 'APP-2026-BLR-0941',
       fullName: 'Ravi Kumar',
+      parentsName: 'Shri M. Venkataram & Smt. Lakshmi',
+      gender: 'Male',
       businessType: 'mobile repair',
+      businessScale: 'Micro (Up to ₹5 Lakhs)',
+      projectDescription: 'Smartphone display repair, IC soldering, micro-component replacement lab with automated diagnostics and diagnostic microscopes.',
       location: 'Bengaluru',
+      state: 'Karnataka',
       estimatedProjectCost: 180000,
       annualFamilyIncome: 360000,
+      householdAnnualIncome: 360000,
+      cibilScore: 745,
       userType: 'new_entrepreneur',
       category: 'SC',
       hasCasteCertificate: false,
+      casteCertificateNo: 'RD0038921029-SC',
+      digilockerVerified: false,
       hasIncomeCertificate: true,
+      hasFiledItr: true,
+      itrAckNumber: 'ITR-V-2025-8891042',
+      tenthMarksPercentage: 84.5,
+      tenthSchoolName: 'Government High School, Malleshwaram',
+      twelfthMarksPercentage: 79.2,
+      twelfthSchoolName: 'Government PU College, Rajajinagar',
       requiredLoanAmount: 150000,
       supportPreference: 'offline',
       preferredLanguage: 'kn',
@@ -96,6 +134,9 @@ export default function App() {
         setActiveTab={setActiveTab}
         onLoadPersona={handleLoadPersona}
         readinessScore={readinessScore}
+        currentUser={currentUser}
+        onOpenAuth={() => setShowAuthModal(true)}
+        onLogout={() => setCurrentUser(null)}
       />
 
       {/* Main Content Area */}
@@ -106,6 +147,14 @@ export default function App() {
             profile={profile}
             setProfile={setProfile}
             onProceedToMatching={() => setActiveTab('schemes')}
+          />
+        )}
+
+        {activeTab === 'profile' && (
+          <BeneficiaryProfileView
+            profile={profile}
+            setProfile={setProfile}
+            onSaveDone={() => setActiveTab('schemes')}
           />
         )}
 
@@ -212,6 +261,16 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal (Login / Signup with Captcha & SHA-256 Hashing) */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }
