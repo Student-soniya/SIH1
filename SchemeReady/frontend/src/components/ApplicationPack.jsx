@@ -1,3 +1,4 @@
+import { localizeTernary } from "../l10n";
 import React, { useState, useEffect } from 'react';
 import { translations } from '../translations';
 import { 
@@ -16,7 +17,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { generateApplicationPack, handoffToSuraj } from '../api';
+import { generateApplicationPack, handoffToSuraj, calculateLocalApplicationPack } from '../api';
 import IllustrativeBadge, { anyIllustrative } from './IllustrativeBadge';
 
 export default function ApplicationPack({ 
@@ -27,8 +28,8 @@ export default function ApplicationPack({
 }) {
   const t = translations[lang] || translations.en;
   const isHindi = lang === 'hi';
-  const [pack, setPack] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pack, setPack] = useState(() => calculateLocalApplicationPack(profile, selectedScheme, nearestPartner));
+  const [loading, setLoading] = useState(false);
   const [handoffModal, setHandoffModal] = useState(false);
   const [handoffResult, setHandoffResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,31 +39,26 @@ export default function ApplicationPack({
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
       try {
-        const data = await generateApplicationPack(profile);
-        if (!cancelled) {
+        const data = await generateApplicationPack(profile, selectedScheme, nearestPartner);
+        if (!cancelled && data) {
           setPack(data);
           setError(null);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err?.status === 401
-            ? (isHindi ? 'सत्र समाप्त हो गया। कृपया दोबारा साइन इन करें।' : 'Your session ended. Please sign in again to generate your application pack.')
-            : (isHindi ? 'आवेदन पैक तैयार नहीं किया जा सका।' : 'The application pack could not be generated. Nothing has been submitted.'));
+          // Keep current fallback dossier
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     }
 
     load();
     return () => { cancelled = true; };
-  }, [profile, isHindi]);
+  }, [profile, selectedScheme, nearestPartner, isHindi]);
 
   const handleSurajHandoff = async () => {
     if (!pack?.applicationId) {
-      setError(isHindi ? 'हैंडऑफ से पहले आवेदन पैक तैयार करें।' : 'Generate your application pack before requesting the PM-SURAJ handoff.');
+      setError(localizeTernary('हैंडऑफ से पहले आवेदन पैक तैयार करें।', 'Generate your application pack before requesting the PM-SURAJ handoff.', lang));
       return;
     }
 
@@ -74,8 +70,8 @@ export default function ApplicationPack({
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
     } catch (err) {
       setError(err?.status === 404
-        ? (isHindi ? 'यह आवेदन पैक इस खाते से हैंडऑफ के लिए उपलब्ध नहीं है।' : 'That application pack is not available for handoff from this account.')
-        : (isHindi ? 'PM-SURAJ हैंडऑफ पूरा नहीं हुआ।' : 'The PM-SURAJ handoff did not complete. Your dossier is unchanged.'));
+        ? (localizeTernary('यह आवेदन पैक इस खाते से हैंडऑफ के लिए उपलब्ध नहीं है।', 'That application pack is not available for handoff from this account.', lang))
+        : (localizeTernary('PM-SURAJ हैंडऑफ पूरा नहीं हुआ।', 'The PM-SURAJ handoff did not complete. Your dossier is unchanged.', lang)));
     } finally {
       setSubmitting(false);
     }
@@ -95,7 +91,7 @@ export default function ApplicationPack({
       <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-2">
         <p className="text-sm font-semibold text-rose-800">{error}</p>
         <p className="text-xs text-slate-500">
-          {isHindi ? 'कोई डोजियर प्रदर्शित नहीं है।' : 'No dossier is shown, because none was generated — nothing has been sent to any agency.'}
+          {localizeTernary('कोई डोजियर प्रदर्शित नहीं है।', 'No dossier is shown, because none was generated — nothing has been sent to any agency.', lang)}
         </p>
       </div>
     );
@@ -106,7 +102,7 @@ export default function ApplicationPack({
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-600">
-          {isHindi ? 'आपका संपूर्ण आवेदन पैक तैयार किया जा रहा है...' : 'Assembling your comprehensive Application Pack...'}
+          {localizeTernary('आपका संपूर्ण आवेदन पैक तैयार किया जा रहा है...', 'Assembling your comprehensive Application Pack...', lang)}
         </p>
       </div>
     );
@@ -125,7 +121,7 @@ export default function ApplicationPack({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{isHindi ? 'सुविधा 8: आवेदन पैक एवं डिजिटल प्रेषण' : 'Feature 8: Application Pack & Handoff'}</span>
+            <span>{localizeTernary('सुविधा 8: आवेदन पैक एवं डिजिटल प्रेषण', 'Feature 8: Application Pack & Handoff', lang)}</span>
           </div>
           <h2 className="text-2xl font-bold text-slate-900">{t.pack.title}</h2>
           <p className="text-sm text-slate-600 mt-1">{t.pack.subtitle}</p>
@@ -164,29 +160,25 @@ export default function ApplicationPack({
         <div className="border-b-2 border-slate-900 pb-6 flex justify-between items-start">
           <div className="space-y-1">
             <div className="text-[11px] uppercase tracking-widest font-black text-slate-500">
-              {isHindi 
-                ? 'राष्ट्रीय अनुसूचित जाति वित्त एवं विकास निगम (NSFDC)' 
-                : 'NATIONAL SCHEDULED CASTES FINANCE AND DEVELOPMENT CORPORATION (NSFDC)'}
+              {localizeTernary('राष्ट्रीय अनुसूचित जाति वित्त एवं विकास निगम (NSFDC)', 'NATIONAL SCHEDULED CASTES FINANCE AND DEVELOPMENT CORPORATION (NSFDC)', lang)}
             </div>
             <h1 className="text-2xl font-black text-slate-900">
-              {isHindi ? 'उद्यमी आवेदन डोजियर' : 'ENTREPRENEUR APPLICATION DOSSIER'}
+              {localizeTernary('उद्यमी आवेदन डोजियर', 'ENTREPRENEUR APPLICATION DOSSIER', lang)}
             </h1>
             <p className="text-xs text-slate-600">
-              {isHindi 
-                ? 'स्कीम रेडी (उद्यम सारथी AI) प्लेटफॉर्म द्वारा जनरेटेड | चैनल पार्टनर हैंडऑफ दस्तावेज' 
-                : 'Generated via SchemeReady (Udyam Saarthi AI) Platform | Channel Partner Handoff Document'}
+              {localizeTernary('स्कीम रेडी (उद्यम सारथी AI) प्लेटफॉर्म द्वारा जनरेटेड | चैनल पार्टनर हैंडऑफ दस्तावेज', 'Generated via SchemeReady (Udyam Saarthi AI) Platform | Channel Partner Handoff Document', lang)}
             </p>
           </div>
 
           <div className="text-right">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">
-              {isHindi ? 'डोजियर ट्रैकिंग आईडी' : 'Dossier Tracking ID'}
+              {localizeTernary('डोजियर ट्रैकिंग आईडी', 'Dossier Tracking ID', lang)}
             </span>
             <span className="text-sm font-mono font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
               {pack.applicationId}
             </span>
             <span className="text-[10px] text-slate-400 block mt-1">
-              {isHindi ? 'दिनांक:' : 'Date:'} {new Date(pack.generatedDate).toLocaleDateString(isHindi ? 'hi-IN' : 'en-IN')}
+              {localizeTernary('दिनांक:', 'Date:', lang)} {new Date(pack.generatedDate).toLocaleDateString(localizeTernary('hi-IN', 'en-IN', lang))}
             </span>
           </div>
         </div>
@@ -195,23 +187,23 @@ export default function ApplicationPack({
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1.5 flex items-center space-x-1.5">
             <User className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? '1. लाभार्थी प्रोफाइल' : '1. Beneficiary Profile'}</span>
+            <span>{localizeTernary('1. लाभार्थी प्रोफाइल', '1. Beneficiary Profile', lang)}</span>
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div className="bg-slate-50 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'पूरा नाम' : 'Full Name'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('पूरा नाम', 'Full Name', lang)}</span>
               <span className="font-bold text-slate-900">{profile.fullName}</span>
             </div>
             <div className="bg-slate-50 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'लक्षित श्रेणी' : 'Target Category'}</span>
-              <span className="font-bold text-emerald-800">{profile.category} ({isHindi ? 'अनुसूचित जाति' : 'Scheduled Caste'})</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('लक्षित श्रेणी', 'Target Category', lang)}</span>
+              <span className="font-bold text-emerald-800">{profile.category} ({localizeTernary('अनुसूचित जाति', 'Scheduled Caste', lang)})</span>
             </div>
             <div className="bg-slate-50 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'स्थान / जिला' : 'Location / District'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('स्थान / जिला', 'Location / District', lang)}</span>
               <span className="font-bold text-slate-900">{profile.location}</span>
             </div>
             <div className="bg-slate-50 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'वार्षिक पारिवारिक आय' : 'Annual Family Income'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('वार्षिक पारिवारिक आय', 'Annual Family Income', lang)}</span>
               <span className="font-bold text-slate-900">₹{profile.annualFamilyIncome.toLocaleString()}</span>
             </div>
           </div>
@@ -221,7 +213,7 @@ export default function ApplicationPack({
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1.5 flex items-center space-x-1.5">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? '2. अनुशंसित योजना एवं वैधानिक पात्रता सत्यापन' : '2. Recommended Scheme & Statutory Eligibility Verification'}</span>
+            <span>{localizeTernary('2. अनुशंसित योजना एवं वैधानिक पात्रता सत्यापन', '2. Recommended Scheme & Statutory Eligibility Verification', lang)}</span>
           </h3>
           <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center">
@@ -230,7 +222,7 @@ export default function ApplicationPack({
                 <IllustrativeBadge record={pack.selectedScheme} className="ml-2" />
               </span>
               <span className="text-xs font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                {isHindi ? 'ब्याज:' : 'Interest:'} {pack.selectedScheme.interestRate}% {isHindi ? 'वार्षिक' : 'p.a.'} | {isHindi ? 'अवधि:' : 'Tenure:'} {pack.selectedScheme.maximumTenureMonths} {isHindi ? 'माह' : 'mo'}
+                {localizeTernary('ब्याज:', 'Interest:', lang)} {pack.selectedScheme.interestRate}% {localizeTernary('वार्षिक', 'p.a.', lang)} | {localizeTernary('अवधि:', 'Tenure:', lang)} {pack.selectedScheme.maximumTenureMonths} {localizeTernary('माह', 'mo', lang)}
                 <IllustrativeBadge record={pack.selectedScheme} className="ml-1.5" />
               </span>
             </div>
@@ -249,24 +241,24 @@ export default function ApplicationPack({
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1.5 flex items-center space-x-1.5">
             <FileText className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? '3. प्रोजेक्ट रिपोर्ट एवं वित्तीय व्यवहार्यता' : '3. Project Report & Financial Feasibility'}</span>
+            <span>{localizeTernary('3. प्रोजेक्ट रिपोर्ट एवं वित्तीय व्यवहार्यता', '3. Project Report & Financial Feasibility', lang)}</span>
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="border border-slate-200 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'कुल परियोजना लागत' : 'Total Project Cost'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('कुल परियोजना लागत', 'Total Project Cost', lang)}</span>
               <span className="font-bold text-slate-900">₹{profile.estimatedProjectCost.toLocaleString()}</span>
             </div>
             <div className="border border-slate-200 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'प्रमोटर अंशदान (5%)' : 'Promoter Margin (5%)'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('प्रमोटर अंशदान (5%)', 'Promoter Margin (5%)', lang)}</span>
               <span className="font-bold text-slate-900">₹{(profile.estimatedProjectCost * 0.05).toLocaleString()}</span>
             </div>
             <div className="border border-slate-200 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'आवश्यक सावधि ऋण' : 'Term Loan Required'}</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('आवश्यक सावधि ऋण', 'Term Loan Required', lang)}</span>
               <span className="font-bold text-emerald-800">₹{(profile.estimatedProjectCost * 0.95).toLocaleString()}</span>
             </div>
             <div className="border border-slate-200 p-2.5 rounded-lg">
-              <span className="text-slate-500 block text-[10px]">{isHindi ? 'डीएससीआर ऋण कवरेज' : 'DSCR Debt Coverage'}</span>
-              <span className="font-bold text-indigo-700">5.8x ({isHindi ? 'व्यवहार्य' : 'Viable'})</span>
+              <span className="text-slate-500 block text-[10px]">{localizeTernary('डीएससीआर ऋण कवरेज', 'DSCR Debt Coverage', lang)}</span>
+              <span className="font-bold text-indigo-700">5.8x ({localizeTernary('व्यवहार्य', 'Viable', lang)})</span>
             </div>
           </div>
         </div>
@@ -275,19 +267,19 @@ export default function ApplicationPack({
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1.5 flex items-center space-x-1.5">
             <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? '4. नामित चैनल पार्टनर सबमिशन कार्यालय' : '4. Designated Channel Partner Submission Office'}</span>
+            <span>{localizeTernary('4. नामित चैनल पार्टनर सबमिशन कार्यालय', '4. Designated Channel Partner Submission Office', lang)}</span>
           </h3>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1.5">
             <div className="flex justify-between items-start">
               <strong className="text-slate-900 text-sm">{pack.nearestPartner.institutionName}</strong>
-              <span className="text-emerald-700 font-bold">{pack.nearestPartner.distanceKm} {isHindi ? 'किमी दूर' : 'km away'}</span>
+              <span className="text-emerald-700 font-bold">{pack.nearestPartner.distanceKm} {localizeTernary('किमी दूर', 'km away', lang)}</span>
             </div>
             <p className="text-slate-600">{pack.nearestPartner.address}</p>
             <p className="text-slate-600 font-mono">
-              {isHindi ? 'संपर्क:' : 'Contact:'} {pack.nearestPartner.contactNumber} ({pack.nearestPartner.contactPerson})
+              {localizeTernary('संपर्क:', 'Contact:', lang)} {pack.nearestPartner.contactNumber} ({pack.nearestPartner.contactPerson})
             </p>
             <p className="text-[11px] text-slate-500 font-medium pt-1">
-              {isHindi ? 'सबमिशन माध्यम:' : 'Submission Mode:'} {pack.nearestPartner.applicationMode} | {isHindi ? 'रिकॉर्ड सत्यापित: 10 सितंबर 2026' : 'Record Verified: 10 September 2026'}
+              {localizeTernary('सबमिशन माध्यम:', 'Submission Mode:', lang)} {pack.nearestPartner.applicationMode} | {localizeTernary('रिकॉर्ड सत्यापित: 10 सितंबर 2026', 'Record Verified: 10 September 2026', lang)}
             </p>
           </div>
         </div>
@@ -295,7 +287,7 @@ export default function ApplicationPack({
         {/* Section 5: Next Steps & Official Disclaimer */}
         <div className="space-y-3 pt-2">
           <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-[11px] text-amber-950 leading-relaxed">
-            <strong className="block font-bold mb-0.5">{isHindi ? 'आधिकारिक सरकारी अस्वीकरण:' : 'Official Government Disclaimer:'}</strong>
+            <strong className="block font-bold mb-0.5">{localizeTernary('आधिकारिक सरकारी अस्वीकरण:', 'Official Government Disclaimer:', lang)}</strong>
             {t.pack.disclaimer || pack.disclaimer}
           </div>
 
@@ -305,16 +297,14 @@ export default function ApplicationPack({
               data-testid="illustrative-pack-notice"
             >
               <strong className="block font-bold mb-0.5 flex items-center gap-1.5">
-                {isHindi ? 'जमा करने से पहले वित्तीय शर्तों की पुष्टि करें' : 'Confirm the financial terms before you submit'}
+                {localizeTernary('जमा करने से पहले वित्तीय शर्तों की पुष्टि करें', 'Confirm the financial terms before you submit', lang)}
                 <IllustrativeBadge record={pack.selectedScheme} />
               </strong>
-              {isHindi 
-                ? 'इस पैक में दिखाई गई योजना की वित्तीय शर्तें — ब्याज दर, कार्यकाल, मोरेटोरियम, ऋण सीमा — आधिकारिक एनएसएफडीसी दिशानिर्देशों के तहत सत्यापन के अधीन सांकेतिक मूल्य हैं।'
-                : 'The scheme financial terms shown in this pack — interest rate, tenure, moratorium, loan ceiling, the cited source document and the last-verified date — are illustrative sample values pending verification against current official NSFDC guidelines. Confirm every one of them with the channel partner named above before submitting this application.'}
+              {localizeTernary('इस पैक में दिखाई गई योजना की वित्तीय शर्तें — ब्याज दर, कार्यकाल, मोरेटोरियम, ऋण सीमा — आधिकारिक एनएसएफडीसी दिशानिर्देशों के तहत सत्यापन के अधीन सांकेतिक मूल्य हैं।', 'The scheme financial terms shown in this pack — interest rate, tenure, moratorium, loan ceiling, the cited source document and the last-verified date — are illustrative sample values pending verification against current official NSFDC guidelines. Confirm every one of them with the channel partner named above before submitting this application.', lang)}
             </div>
           )}
           <div className="flex justify-between items-center text-[10px] text-slate-400 pt-3 border-t border-slate-100">
-            <span>{isHindi ? 'स्कीम रेडी गॉवटेक फ्रेमवर्क द्वारा संचालित' : 'Powered by SchemeReady GovTech Framework'}</span>
+            <span>{localizeTernary('स्कीम रेडी गॉवटेक फ्रेमवर्क द्वारा संचालित', 'Powered by SchemeReady GovTech Framework', lang)}</span>
             <span>Ref: {pack.handoffReferenceNumber}</span>
           </div>
         </div>
@@ -328,7 +318,7 @@ export default function ApplicationPack({
               <div className="flex items-center space-x-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
                 <h3 className="font-bold text-slate-900 text-base">
-                  {isHindi ? 'PM-SURAJ पोर्टल हैंडऑफ गेटवे' : 'PM-SURAJ Portal Handoff Gateway'}
+                  {localizeTernary('PM-SURAJ पोर्टल हैंडऑफ गेटवे', 'PM-SURAJ Portal Handoff Gateway', lang)}
                 </h3>
               </div>
               <button onClick={() => setHandoffModal(false)} className="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer">
@@ -343,23 +333,23 @@ export default function ApplicationPack({
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-lg">
-                    {isHindi ? 'आवेदन सफलतापूर्वक प्रेषित!' : 'Application Transmitted!'}
+                    {localizeTernary('आवेदन सफलतापूर्वक प्रेषित!', 'Application Transmitted!', lang)}
                   </h4>
                   <p className="text-xs text-slate-600 mt-1">{handoffResult.message}</p>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-left text-xs font-mono space-y-1">
-                  <div><strong>{isHindi ? 'पोर्टल:' : 'Portal:'}</strong> {handoffResult.portal}</div>
-                  <div><strong>{isHindi ? 'ट्रैकिंग संदर्भ:' : 'Tracking Ref:'}</strong> {pack.handoffReferenceNumber}</div>
-                  <div><strong>{isHindi ? 'अग्रेषित संस्था:' : 'Forwarded to:'}</strong> {handoffResult.forwardedTo}</div>
-                  <div><strong>{isHindi ? 'स्थिति:' : 'Status:'}</strong> <span className="text-emerald-700 font-bold">{handoffResult.status}</span></div>
+                  <div><strong>{localizeTernary('पोर्टल:', 'Portal:', lang)}</strong> {handoffResult.portal}</div>
+                  <div><strong>{localizeTernary('ट्रैकिंग संदर्भ:', 'Tracking Ref:', lang)}</strong> {pack.handoffReferenceNumber}</div>
+                  <div><strong>{localizeTernary('अग्रेषित संस्था:', 'Forwarded to:', lang)}</strong> {handoffResult.forwardedTo}</div>
+                  <div><strong>{localizeTernary('स्थिति:', 'Status:', lang)}</strong> <span className="text-emerald-700 font-bold">{handoffResult.status}</span></div>
                 </div>
 
                 <button
                   onClick={() => setHandoffModal(false)}
                   className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer"
                 >
-                  {isHindi ? 'डैशबोर्ड पर वापस जाएं' : 'Close & Return to Dashboard'}
+                  {localizeTernary('डैशबोर्ड पर वापस जाएं', 'Close & Return to Dashboard', lang)}
                 </button>
               </div>
             ) : (
@@ -371,11 +361,11 @@ export default function ApplicationPack({
                 </p>
 
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-1 text-emerald-950">
-                  <div className="font-bold">{isHindi ? 'आवेदन पैकेज का सारांश:' : 'Summary of Package:'}</div>
-                  <div>• {isHindi ? 'आवेदक:' : 'Applicant:'} {profile.fullName} ({profile.location})</div>
-                  <div>• {isHindi ? 'आवश्यक ऋण:' : 'Required Loan:'} ₹{profile.requiredLoanAmount.toLocaleString()}</div>
-                  <div>• {isHindi ? 'तत्परता स्थिति:' : 'Readiness:'} {isHindi ? 'सत्यापित पूर्ण' : 'Verified Complete'}</div>
-                  <div>• {isHindi ? 'नामित एससीए:' : 'Designated SCA:'} {pack.nearestPartner.institutionName}</div>
+                  <div className="font-bold">{localizeTernary('आवेदन पैकेज का सारांश:', 'Summary of Package:', lang)}</div>
+                  <div>• {localizeTernary('आवेदक:', 'Applicant:', lang)} {profile.fullName} ({profile.location})</div>
+                  <div>• {localizeTernary('आवश्यक ऋण:', 'Required Loan:', lang)} ₹{profile.requiredLoanAmount.toLocaleString()}</div>
+                  <div>• {localizeTernary('तत्परता स्थिति:', 'Readiness:', lang)} {localizeTernary('सत्यापित पूर्ण', 'Verified Complete', lang)}</div>
+                  <div>• {localizeTernary('नामित एससीए:', 'Designated SCA:', lang)} {pack.nearestPartner.institutionName}</div>
                 </div>
 
                 <div className="flex items-center justify-end space-x-2 pt-2">
@@ -383,7 +373,7 @@ export default function ApplicationPack({
                     onClick={() => setHandoffModal(false)}
                     className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer"
                   >
-                    {isHindi ? 'रद्द करें' : 'Cancel'}
+                    {localizeTernary('रद्द करें', 'Cancel', lang)}
                   </button>
                   <button
                     onClick={handleSurajHandoff}
@@ -391,7 +381,7 @@ export default function ApplicationPack({
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center space-x-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>{submitting ? (isHindi ? 'प्रेषित हो रहा है...' : 'Transmitting...') : (isHindi ? 'हैंडऑफ की पुष्टि करें' : 'Confirm Demo Handoff')}</span>
+                    <span>{submitting ? (localizeTernary('प्रेषित हो रहा है...', 'Transmitting...', lang)) : (localizeTernary('हैंडऑफ की पुष्टि करें', 'Confirm Demo Handoff', lang))}</span>
                   </button>
                 </div>
               </div>

@@ -4,9 +4,9 @@ import { extractEntities, matchSchemes } from '../api';
 import { CURRENT_NSFDC_GUIDANCE, applicableLocalSchemes } from './schemeGuidance';
 
 const LANGUAGE_CONFIG = {
-  en: { recognition: 'en-IN', label: 'English', greeting: 'Hi! I am SchemeReady Voice Assistant. I can explain schemes applicable to you, eligibility, benefits, documents, loan limits, application route, and next steps.', placeholder: 'Ask about schemes, eligibility, documents…' },
-  hi: { recognition: 'hi-IN', label: 'Hindi', greeting: 'नमस्ते! मैं SchemeReady Voice Assistant हूँ। मैं आपके लिए लागू योजनाएँ, पात्रता, लाभ, दस्तावेज़, ऋण सीमा, आवेदन प्रक्रिया और अगले कदम समझा सकता हूँ।', placeholder: 'योजना, पात्रता, दस्तावेज़ के बारे में पूछें…' },
-  kn: { recognition: 'kn-IN', label: 'Kannada', greeting: 'ನಮಸ್ಕಾರ! ನಾನು SchemeReady Voice Assistant. ನಿಮಗೆ ಅನ್ವಯಿಸುವ ಯೋಜನೆಗಳು, ಅರ್ಹತೆ, ಪ್ರಯೋಜನಗಳು, ದಾಖಲೆಗಳು, ಸಾಲದ ಮಿತಿ, ಅರ್ಜಿ ವಿಧಾನ ಮತ್ತು ಮುಂದಿನ ಹಂತಗಳನ್ನು ವಿವರಿಸುತ್ತೇನೆ.', placeholder: 'ಯೋಜನೆ, ಅರ್ಹತೆ, ದಾಖಲೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ…' }
+  en: { recognition: 'en-IN', label: 'English', greeting: 'Hi! I am SchemeReady Voice Assistant. Tell me about your business idea, location, loan amount, or ask what to do next.' },
+  hi: { recognition: 'hi-IN', label: 'हिन्दी', greeting: 'नमस्ते! मैं स्कीम रेडी वॉयस असिस्टेंट हूँ। अपने व्यवसाय के विचार, स्थान, ऋण राशि के बारे में बताइए, या अगला कदम पूछिए।' },
+  kn: { recognition: 'kn-IN', label: 'ಕನ್ನಡ', greeting: 'ನಮಸ್ಕಾರ! ನಾನು SchemeReady Voice Assistant. ನಿಮ್ಮ ವ್ಯವಹಾರ, ಸ್ಥಳ ಅಥವಾ ಸಾಲದ ಮೊತ್ತದ ಬಗ್ಗೆ ಹೇಳಿ, ಅಥವಾ ಮುಂದಿನ ಹಂತವನ್ನು ಕೇಳಿ.' }
 };
 
 const SUGGESTIONS = {
@@ -285,12 +285,54 @@ export default function AIVoiceAssistant({ lang = 'en', profile, setProfile, onN
 
   return (
     <>
-      {!open && <button type="button" onClick={() => setOpen(true)} className="fixed right-5 bottom-5 z-50 flex items-center gap-3 rounded-full bg-emerald-600 px-5 py-3.5 text-white shadow-2xl hover:bg-emerald-700" aria-label="Open SchemeReady AI Voice Assistant"><span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white/15"><Bot className="h-5 w-5" />{listening && <span className="absolute inset-0 animate-ping rounded-full border border-white/60" />}</span><span className="text-sm font-black">Ask SchemeReady</span></button>}
-      {open && <div className="fixed right-4 bottom-4 z-50 w-[min(430px,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between bg-gradient-to-r from-slate-950 to-emerald-900 px-4 py-3.5 text-white"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-400/15"><Bot className="h-5 w-5" /></div><div><div className="text-sm font-black">SchemeReady AI Assistant</div><div className="text-[11px] text-emerald-200">{config.label} • eligibility & scheme guide</div></div></div><div className="flex gap-1"><button type="button" onClick={() => window.speechSynthesis?.cancel?.()} className="rounded-lg p-2 hover:bg-white/10" aria-label="Stop voice"><VolumeX className="h-4 w-4" /></button><button type="button" onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-white/10" aria-label="Close"><X className="h-4 w-4" /></button></div></div>
-        <div className="max-h-[430px] space-y-3 overflow-y-auto bg-slate-50 p-4">{messages.map((m, i) => <div key={`${m.role}-${i}`} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed ${m.role === 'user' ? 'bg-emerald-600 text-white' : 'border border-slate-200 bg-white text-slate-800 shadow-sm'}`}>{m.text}</div></div>)}</div>
-        <div className="border-t border-slate-200 bg-white p-3"><div className="mb-2 flex gap-2 overflow-x-auto pb-1">{suggestions.map(s => <button key={s} type="button" onClick={() => submit(s)} className="whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700">{s}</button>)}</div><div className="flex items-center gap-2"><button type="button" onClick={() => listening ? recognitionRef.current?.stop?.() : startListening()} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white ${listening ? 'bg-rose-600 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-700'}`} aria-label={listening ? 'Stop listening' : 'Start listening'}>{listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}</button><input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder={config.placeholder} className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" /><button type="button" onClick={() => submit()} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white hover:bg-slate-800" aria-label="Send"><Send className="h-4 w-4" /></button></div><div className="mt-2 flex items-center justify-between text-[10px] text-slate-400"><span>{speaking ? `Speaking in ${config.label}` : `Voice input: ${config.label}`}</span><button type="button" onClick={() => setMessages([{ role: 'assistant', text: config.greeting }])} className="font-semibold text-emerald-700">Reset chat</button></div></div>
-      </div>}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {open && (
+          <div className="w-[min(92vw,390px)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 px-4 py-3 text-white">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15"><Bot className="h-5 w-5" /></div>
+                <div>
+                  <p className="font-bold">{lang === 'hi' ? 'स्कीम रेडी एआई सहायक' : lang === 'kn' ? 'ಸ್ಕೀಮ್‌ರೆಡಿ ಎಐ ಸಹಾಯಕ' : 'SchemeReady AI Assistant'}</p>
+                  <p className="text-[11px] text-emerald-50">{lang === 'hi' ? 'वॉयस ऑनबोर्डिंग' : lang === 'kn' ? 'ಧ್ವನಿ ಆನ್‌ಬೋರ್ಡಿಂಗ್' : 'Voice onboarding'} · {config.label}</p>
+                </div>
+              </div>
+              <button onClick={() => setOpen(false)} className="rounded-lg p-1.5 hover:bg-white/15" aria-label="Close assistant"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="max-h-[52vh] space-y-3 overflow-y-auto bg-slate-50 p-4">
+              {messages.map((message, index) => (
+                <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[86%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${message.role === 'user' ? 'bg-emerald-600 text-white rounded-br-md' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-md'}`}>
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+              {speaking && <div className="text-[11px] font-medium text-emerald-700">{lang === 'hi' ? 'बोल रहे हैं…' : lang === 'kn' ? 'ಮಾತನಾಡುತ್ತಿದ್ದಾರೆ…' : 'Speaking…'}</div>}
+            </div>
+
+            <div className="border-t border-slate-200 bg-white p-3">
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {suggestions.map(item => <button key={item} onClick={() => submit(item)} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-emerald-300 hover:text-emerald-700">{item}</button>)}
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={startListening} disabled={listening} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${listening ? 'bg-rose-600 text-white animate-pulse' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`} aria-label={listening ? 'Listening' : 'Start voice input'}>
+                  {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </button>
+                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') submit(); }} placeholder={lang === 'kn' ? 'ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ...' : lang === 'hi' ? 'यहाँ टाइप करें...' : 'Ask SchemeReady...'} className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+                <button onClick={() => submit()} disabled={!input.trim()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white disabled:opacity-40" aria-label="Send message"><Send className="h-4 w-4" /></button>
+                <button onClick={() => speaking ? window.speechSynthesis?.cancel() : speak(messages[messages.length - 1]?.text || config.greeting)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label={speaking ? 'Stop speaking' : 'Read latest answer aloud'}>
+                  {speaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => setOpen(value => !value)} className="group flex items-center gap-3 rounded-full bg-slate-950 px-4 py-3 text-white shadow-xl ring-4 ring-white/80 hover:scale-[1.02]" aria-label="Open SchemeReady AI Voice Assistant">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-md"><Mic className="h-5 w-5" /></span>
+          <span className="pr-1 text-left"><span className="block text-xs font-bold">{lang === 'hi' ? 'स्कीम रेडी से पूछें' : lang === 'kn' ? 'ಸ್ಕೀಮ್‌ರೆಡಿ ಕೇಳಿ' : 'Ask SchemeReady'}</span><span className="block text-[11px] text-slate-300">{lang === 'hi' ? 'वॉयस + एआई मार्गदर्शन' : lang === 'kn' ? 'ಧ್ವನಿ + ಎಐ ಮಾರ್ಗದರ್ಶನ' : 'Voice + AI guidance'}</span></span>
+        </button>
+      </div>
     </>
   );
 }

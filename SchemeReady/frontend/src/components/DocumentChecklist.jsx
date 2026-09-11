@@ -1,3 +1,4 @@
+import { localizeTernary } from "../l10n";
 import React, { useState, useRef } from 'react';
 import { translations } from '../translations';
 import { 
@@ -104,24 +105,70 @@ export default function DocumentChecklist({
 
   // Localization Helpers
   const getDocTitle = (id, fallback) => {
-    if (!isHindi) return fallback;
+    if (lang === 'en') return fallback;
     const map = {
-      'doc-aadhaar': 'आधार / मतदाता पहचान पत्र (KYC)',
-      'doc-caste': 'जाति प्रमाण पत्र (आरडी नंबर)',
-      'doc-income': 'आय प्रमाण पत्र (तहसीलदार प्रमाणित)',
-      'doc-bank': 'बैंक खाता पासबुक / प्रमाण',
-      'doc-quotation': 'व्यावसायिक मशीनरी / स्टॉक कोटेशन',
-      'doc-dpr': 'एक-पेज प्रोजेक्ट रिपोर्ट (डीपीआर)'
+      'doc-aadhaar': {
+        hi: 'आधार / मतदाता पहचान पत्र (KYC)',
+        kn: 'ಆಧಾರ್ / ಮತದಾರರ ಗುರುತಿನ ಚೀಟಿ (KYC)',
+        ta: 'ஆதார் / வாக்காளர் அடையாள அட்டை (KYC)',
+        te: 'ఆధార్ / ఓటర్ ఐడి (KYC)',
+        mr: 'आधार / मतदार ओळखपत्र (KYC)',
+        bn: 'আধার / ভোটার পরিচয়পত্র (KYC)'
+      },
+      'doc-caste': {
+        hi: 'जाति प्रमाण पत्र (आरडी नंबर)',
+        kn: 'ಜಾತಿ ಪ್ರಮಾಣಪತ್ರ (RD ಸಂಖ್ಯೆ)',
+        ta: 'சாதி சான்றிதழ் (RD எண்)',
+        te: 'కుల ధృవీకరణ పత్రం (RD నంబర్)',
+        mr: 'जातीचे प्रमाणपत्र (RD क्रमांक)',
+        bn: 'জাতিগত শংসাপত্র (RD নম্বর)'
+      },
+      'doc-income': {
+        hi: 'आय प्रमाण पत्र (तहसीलदार प्रमाणित)',
+        kn: 'ಆದಾಯ ಪ್ರಮಾಣಪತ್ರ (ತಹಶೀಲ್ದಾರ್ ದೃಢೀಕರಿಸಿದ)',
+        ta: 'வருமான சான்றிதழ் (வட்டாட்சியர் சான்றளித்தது)',
+        te: 'ఆదాయ ధృవీకరణ పత్రం (తహశీల్దార్ ధృవీకరించినది)',
+        mr: 'उत्पन्न प्रमाणपत्र (तहसीलदार प्रमाणित)',
+        bn: 'আয় শংসাপত্র (তহশিলদার প্রত্যয়িত)'
+      },
+      'doc-bank': {
+        hi: 'बैंक खाता पासबुक / प्रमाण',
+        kn: 'ಬ್ಯಾಂಕ್ ಖಾತೆ ಪಾಸ್‌ಬುಕ್ / ಪುರಾವೆ',
+        ta: 'வங்கி கணக்கு பாஸ்புக் / சான்று',
+        te: 'బ్యాంక్ ఖాతా పాస్‌బుక్ / రుజువు',
+        mr: 'बँक खाते पासबुक / पुरावा',
+        bn: 'ব্যাংক একাউন্ট পাসবই / প্রমাণ'
+      },
+      'doc-quotation': {
+        hi: 'व्यावसायिक मशीनरी / स्टॉक कोटेशन',
+        kn: 'ವ್ಯಾಪಾರ ಯಂತ್ರೋಪಕರಣ / ಸ್ಟಾಕ್ ಕೊಟೇಶನ್',
+        ta: 'வணிக இயந்திரங்கள் / இருப்பு விலைப்புள்ளி',
+        te: 'వ్యాపార యంత్రాలు / స్టాక్ కొటేషన్',
+        mr: 'व्यावसायिक यंत्रसामग्री / स्टॉक कोटेशन',
+        bn: 'বাণিজ্যিক যন্ত্রপাতি / স্টক কোটেশন'
+      },
+      'doc-dpr': {
+        hi: 'एक-पेज प्रोजेक्ट रिपोर्ट (डीपीआर)',
+        kn: 'ಒಂದು ಪುಟದ ಯೋಜನಾ ವರದಿ (DPR)',
+        ta: 'ஒரு பக்க திட்ட அறிக்கை (DPR)',
+        te: 'ఒక పేజీ ప్రాజెక్ట్ నివేదిక (DPR)',
+        mr: 'एक-पानी प्रकल्प अहवाल (DPR)',
+        bn: 'এক পৃষ্ঠার প্রকল্প প্রতিবেদন (DPR)'
+      }
     };
-    return map[id] || fallback;
+    if (map[id]) {
+      return map[id][lang] || map[id].hi || fallback;
+    }
+    return fallback;
   };
 
   const getStatusLabel = (statusType, rawStatus) => {
-    if (!isHindi) return rawStatus;
-    if (statusType === 'verified') return 'सत्यापित';
-    if (statusType === 'pending') return 'समीक्षाधीन';
-    if (statusType === 'missing') return 'अनुपलब्ध';
-    if (statusType === 'uploaded') return 'अपलोड किया गया';
+    const tCheck = t.checklist || {};
+    if (statusType === 'verified') return tCheck.statusVerified || 'Verified';
+    if (statusType === 'pending') return tCheck.statusPending || 'Pending review';
+    if (statusType === 'missing') return tCheck.statusMissing || 'Missing';
+    if (statusType === 'uploaded') return tCheck.statusUploaded || 'Uploaded';
+    if (statusType === 'generated') return tCheck.statusGenerated || 'Generated';
     return rawStatus;
   };
 
@@ -150,7 +197,7 @@ export default function DocumentChecklist({
       if (d.id === id) {
         return { 
           ...d, 
-          status: isHindi ? 'सत्यापित (अपलोड किया गया)' : 'Verified (Uploaded)', 
+          status: localizeTernary('सत्यापित (अपलोड किया गया)', 'Verified (Uploaded)', lang), 
           statusType: 'verified', 
           fileName: realFileName,
           fileSize: realFileSize,
@@ -207,7 +254,7 @@ export default function DocumentChecklist({
       setDigiLockerSyncing(false);
       setDocs(prev => prev.map(d => ({
         ...d,
-        status: isHindi ? 'सत्यापित (डिजिलॉकर)' : 'Verified (DigiLocker)',
+        status: localizeTernary('सत्यापित (डिजिलॉकर)', 'Verified (DigiLocker)', lang),
         statusType: 'verified',
         fileName: d.fileName || `${d.id}_digilocker.pdf`
       })));
@@ -241,10 +288,10 @@ export default function DocumentChecklist({
         <div>
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
             <FolderCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isHindi ? 'दस्तावेज चेकलिस्ट एवं सत्यापन' : 'Document Checklist & Verification'}</span>
+            <span>{localizeTernary('दस्तावेज चेकलिस्ट एवं सत्यापन', 'Document Checklist & Verification', lang)}</span>
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            {isHindi ? 'सरकारी दस्तावेज डोजियर' : 'Government Document Dossier'}
+            {localizeTernary('सरकारी दस्तावेज डोजियर', 'Government Document Dossier', lang)}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             {isHindi ? (
@@ -268,13 +315,13 @@ export default function DocumentChecklist({
             <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
             <span>
               {digiLockerSyncing 
-                ? (isHindi ? 'प्राप्त कर रहे हैं...' : 'Fetching...') 
-                : (isHindi ? '1-क्लिक डिजिलॉकर सिंक' : '1-Click DigiLocker Sync')}
+                ? (localizeTernary('प्राप्त कर रहे हैं...', 'Fetching...', lang)) 
+                : (localizeTernary('1-क्लिक डिजिलॉकर सिंक', '1-Click DigiLocker Sync', lang))}
             </span>
           </button>
           
           <div className="bg-slate-100 border border-slate-200 text-slate-700 text-xs px-3 py-2 rounded-xl font-medium">
-            <span>{isHindi ? '✓ पीडीएफ, जेपीजी, पीएनजी समर्थित' : '✓ PDF, JPG, PNG accepted'}</span>
+            <span>{localizeTernary('✓ पीडीएफ, जेपीजी, पीएनजी समर्थित', '✓ PDF, JPG, PNG accepted', lang)}</span>
           </div>
         </div>
       </div>
@@ -299,9 +346,7 @@ export default function DocumentChecklist({
             </span>
           </div>
           <p className="text-amber-800 text-[11px] leading-relaxed font-normal">
-            {isHindi 
-              ? 'ऋण मूल्यांकन से पहले चैनल पार्टनर्स को सत्यापित दस्तावेजों की आवश्यकता होती है। अपने कंप्यूटर से चुनने और अपलोड करने के लिए नीचे क्लिक करें:'
-              : 'Channel Partners require verified documentation before loan appraisal. Click below to select and upload from your computer:'}
+            {localizeTernary('ऋण मूल्यांकन से पहले चैनल पार्टनर्स को सत्यापित दस्तावेजों की आवश्यकता होती है। अपने कंप्यूटर से चुनने और अपलोड करने के लिए नीचे क्लिक करें:', 'Channel Partners require verified documentation before loan appraisal. Click below to select and upload from your computer:', lang)}
           </p>
           <div className="flex flex-wrap gap-2 pt-1">
             {pendingDocs.map(pd => (
@@ -313,7 +358,7 @@ export default function DocumentChecklist({
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all cursor-pointer inline-flex items-center space-x-1"
                 >
                   <UploadCloud className="w-3 h-3" />
-                  <span>{isHindi ? 'फ़ाइल चुनें' : 'Choose File'}</span>
+                  <span>{localizeTernary('फ़ाइल चुनें', 'Choose File', lang)}</span>
                 </button>
               </span>
             ))}
@@ -324,13 +369,11 @@ export default function DocumentChecklist({
           <div className="flex items-center space-x-2 text-emerald-900 font-bold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>
-              {isHindi 
-                ? 'सभी आवश्यक दस्तावेज सत्यापित! तत्काल चैनल पार्टनर सबमिशन के लिए तैयार।' 
-                : 'All Required Documents Verified! Ready for Immediate Channel Partner Submission.'}
+              {localizeTernary('सभी आवश्यक दस्तावेज सत्यापित! तत्काल चैनल पार्टनर सबमिशन के लिए तैयार।', 'All Required Documents Verified! Ready for Immediate Channel Partner Submission.', lang)}
             </span>
           </div>
           <span className="bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-            {isHindi ? '100% बैंक तैयार' : '100% Bank Ready'}
+            {localizeTernary('100% बैंक तैयार', '100% Bank Ready', lang)}
           </span>
         </div>
       )}
@@ -340,11 +383,11 @@ export default function DocumentChecklist({
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
-              <th className="p-4">{isHindi ? 'दस्तावेज शीर्षक' : 'Document Title'}</th>
-              <th className="p-4">{isHindi ? 'आवश्यकता' : 'Requirement'}</th>
-              <th className="p-4">{isHindi ? 'सत्यापन स्थिति' : 'Status'}</th>
-              <th className="p-4">{isHindi ? 'संलग्न फ़ाइल' : 'Attached File'}</th>
-              <th className="p-4 text-right">{isHindi ? 'कार्रवाई' : 'Actions'}</th>
+              <th className="p-4">{localizeTernary('दस्तावेज शीर्षक', 'Document Title', lang)}</th>
+              <th className="p-4">{localizeTernary('आवश्यकता', 'Requirement', lang)}</th>
+              <th className="p-4">{localizeTernary('सत्यापन स्थिति', 'Status', lang)}</th>
+              <th className="p-4">{localizeTernary('संलग्न फ़ाइल', 'Attached File', lang)}</th>
+              <th className="p-4 text-right">{localizeTernary('कार्रवाई', 'Actions', lang)}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -365,11 +408,11 @@ export default function DocumentChecklist({
                   <td className="p-4 text-slate-600">
                     {doc.mandatory ? (
                       <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                        {isHindi ? 'अनिवार्य' : 'Mandatory'}
+                        {localizeTernary('अनिवार्य', 'Mandatory', lang)}
                       </span>
                     ) : (
                       <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                        {isHindi ? 'वैकल्पिक / आवश्यक होने पर' : 'Optional / As Required'}
+                        {localizeTernary('वैकल्पिक / आवश्यक होने पर', 'Optional / As Required', lang)}
                       </span>
                     )}
                   </td>
@@ -393,7 +436,7 @@ export default function DocumentChecklist({
                         <button 
                           onClick={() => setViewingDoc(doc)}
                           className="text-emerald-700 hover:text-emerald-900 underline font-semibold cursor-pointer truncate max-w-[180px]"
-                          title={isHindi ? "दस्तावेज देखने के लिए क्लिक करें" : "Click to view document"}
+                          title={localizeTernary("दस्तावेज देखने के लिए क्लिक करें", "Click to view document", lang)}
                         >
                           {doc.fileName}
                         </button>
@@ -403,7 +446,7 @@ export default function DocumentChecklist({
                       </div>
                     ) : (
                       <span className="text-slate-400 italic">
-                        {isHindi ? 'कोई फ़ाइल अपलोड नहीं की गई' : 'No file uploaded'}
+                        {localizeTernary('कोई फ़ाइल अपलोड नहीं की गई', 'No file uploaded', lang)}
                       </span>
                     )}
                   </td>
@@ -415,7 +458,7 @@ export default function DocumentChecklist({
                         className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all inline-flex items-center space-x-1.5 shadow-xs cursor-pointer active:scale-95"
                       >
                         <UploadCloud className="w-3.5 h-3.5" />
-                        <span>{isHindi ? 'फ़ाइल अपलोड करें' : 'Upload File'}</span>
+                        <span>{localizeTernary('फ़ाइल अपलोड करें', 'Upload File', lang)}</span>
                       </button>
                     ) : (
                       <div className="inline-flex items-center space-x-1.5">
@@ -424,24 +467,24 @@ export default function DocumentChecklist({
                           className="bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-xl font-bold text-xs transition-all inline-flex items-center space-x-1 cursor-pointer"
                         >
                           <Eye className="w-3 h-3" />
-                          <span>{isHindi ? 'देखें' : 'View'}</span>
+                          <span>{localizeTernary('देखें', 'View', lang)}</span>
                         </button>
                         
                         {/* Re-upload / Replace file button */}
                         <button
                           onClick={() => triggerFileUpload(doc.id)}
                           className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all inline-flex items-center space-x-1 cursor-pointer"
-                          title={isHindi ? "इस दस्तावेज को बदलने के लिए नई फ़ाइल अपलोड करें" : "Upload a new file to replace this document"}
+                          title={localizeTernary("इस दस्तावेज को बदलने के लिए नई फ़ाइल अपलोड करें", "Upload a new file to replace this document", lang)}
                         >
                           <RefreshCw className="w-3 h-3" />
-                          <span className="hidden sm:inline">{isHindi ? 'बदलें' : 'Replace'}</span>
+                          <span className="hidden sm:inline">{localizeTernary('बदलें', 'Replace', lang)}</span>
                         </button>
 
                         {doc.actionType === 'download' && (
                           <button
                             onClick={() => window.print()}
                             className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer"
-                            title={isHindi ? "डीपीआर प्रिंट / सहेजें" : "Print / Save DPR"}
+                            title={localizeTernary("डीपीआर प्रिंट / सहेजें", "Print / Save DPR", lang)}
                           >
                             <FileDown className="w-3.5 h-3.5" />
                           </button>
@@ -461,7 +504,7 @@ export default function DocumentChecklist({
           onClick={onProceedToPack}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-2 cursor-pointer active:scale-95"
         >
-          <span>{isHindi ? 'आवेदन पैक देखें →' : 'View Application Pack →'}</span>
+          <span>{localizeTernary('आवेदन पैक देखें →', 'View Application Pack →', lang)}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -482,14 +525,12 @@ export default function DocumentChecklist({
               <div className="inline-flex items-center space-x-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 <Sparkles className="w-3 h-3 text-emerald-600" />
                 <span>
-                  {isHindi 
-                    ? 'सत्यापित लाभार्थी दस्तावेज | स्कीम रेडी पोर्टल' 
-                    : 'Verified Beneficiary Document | SchemeReady Portal'}
+                  {localizeTernary('सत्यापित लाभार्थी दस्तावेज | स्कीम रेडी पोर्टल', 'Verified Beneficiary Document | SchemeReady Portal', lang)}
                 </span>
               </div>
               <h3 className="text-lg font-black text-slate-900">{getDocTitle(viewingDoc.id, viewingDoc.name)}</h3>
               <p className="text-xs text-slate-500 font-mono">
-                {isHindi ? 'फ़ाइल:' : 'File:'} {viewingDoc.fileName} {viewingDoc.fileSize && `(${viewingDoc.fileSize})`}
+                {localizeTernary('फ़ाइल:', 'File:', lang)} {viewingDoc.fileName} {viewingDoc.fileSize && `(${viewingDoc.fileSize})`}
               </p>
             </div>
 
@@ -517,7 +558,7 @@ export default function DocumentChecklist({
               <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 bg-slate-50 relative overflow-hidden font-serif text-slate-800 space-y-4 shadow-inner">
                 {/* Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 rotate-[-25deg] select-none text-5xl font-black uppercase text-slate-900">
-                  {isHindi ? 'भारत सरकार द्वारा सत्यापित' : 'GOVERNMENT VERIFIED'}
+                  {localizeTernary('भारत सरकार द्वारा सत्यापित', 'GOVERNMENT VERIFIED', lang)}
                 </div>
 
                 <div className="flex justify-between items-start border-b border-slate-300 pb-3">
@@ -526,9 +567,7 @@ export default function DocumentChecklist({
                       {isHindi ? 'कर्नाटक सरकार' : `GOVERNMENT OF ${profile.state ? profile.state.toUpperCase() : 'KARNATAKA'}`}
                     </div>
                     <div className="text-[11px] text-slate-600 font-sans">
-                      {isHindi 
-                        ? 'राजस्व विभाग • रियायती वित्त चैनल प्रणाली' 
-                        : 'Revenue Department • Concessional Finance Channel System'}
+                      {localizeTernary('राजस्व विभाग • रियायती वित्त चैनल प्रणाली', 'Revenue Department • Concessional Finance Channel System', lang)}
                     </div>
                   </div>
                   <div className="w-12 h-12 bg-slate-200 border border-slate-300 rounded flex items-center justify-center font-mono text-[9px] text-slate-500 text-center">
@@ -540,7 +579,7 @@ export default function DocumentChecklist({
                   <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-lg border border-slate-200">
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                        {isHindi ? 'लाभार्थी का नाम' : 'Beneficiary Name'}
+                        {localizeTernary('लाभार्थी का नाम', 'Beneficiary Name', lang)}
                       </span>
                       <span className="font-bold text-slate-900">{profile.fullName}</span>
                     </div>
@@ -552,33 +591,29 @@ export default function DocumentChecklist({
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                        {isHindi ? 'प्रमाण पत्र / संदर्भ संख्या' : 'Reference / Certificate ID'}
+                        {localizeTernary('प्रमाण पत्र / संदर्भ संख्या', 'Reference / Certificate ID', lang)}
                       </span>
                       <span className="font-mono text-emerald-700 font-bold">{profile.casteCertificateNo || 'RD0038921029-SC'}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                        {isHindi ? 'वार्षिक पारिवारिक आय' : 'Annual Family Income'}
+                        {localizeTernary('वार्षिक पारिवारिक आय', 'Annual Family Income', lang)}
                       </span>
                       <span className="font-bold text-slate-900 font-mono">₹{profile.annualFamilyIncome.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
 
                   <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-[11px] text-emerald-900 font-medium">
-                    <strong>{isHindi ? 'सत्यापन विवरण:' : 'Verification Statement:'}</strong>{' '}
-                    {isHindi 
-                      ? 'डिजिटल रूप से प्रमाणित दस्तावेज। एनएसएफडीसी और मंत्रालय के दिशानिर्देशों के तहत रियायती ऋण ब्याज दरों (4.0% - 8.0%) के लिए सत्यापित।' 
-                      : 'Digitally authenticated document. Verified for concessional loan interest rates (4.0% - 8.0%) under NSFDC and Ministry guidelines.'}
+                    <strong>{localizeTernary('सत्यापन विवरण:', 'Verification Statement:', lang)}</strong>{' '}
+                    {localizeTernary('डिजिटल रूप से प्रमाणित दस्तावेज। एनएसएफडीसी और मंत्रालय के दिशानिर्देशों के तहत रियायती ऋण ब्याज दरों (4.0% - 8.0%) के लिए सत्यापित।', 'Digitally authenticated document. Verified for concessional loan interest rates (4.0% - 8.0%) under NSFDC and Ministry guidelines.', lang)}
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 pt-2 border-t border-slate-200">
                   <span>
-                    {isHindi 
-                      ? 'डिजिटल प्राधिकरण: प्रमाणित तहसीलदार / अधिकृत बैंक पार्टनर' 
-                      : 'Digital Authority: Certifying Tahsildar / Authorized Bank Partner'}
+                    {localizeTernary('डिजिटल प्राधिकरण: प्रमाणित तहसीलदार / अधिकृत बैंक पार्टनर', 'Digital Authority: Certifying Tahsildar / Authorized Bank Partner', lang)}
                   </span>
-                  <span>{isHindi ? 'समय: सितंबर 2026' : 'Timestamp: September 2026'}</span>
+                  <span>{localizeTernary('समय: सितंबर 2026', 'Timestamp: September 2026', lang)}</span>
                 </div>
               </div>
             )}
@@ -591,7 +626,7 @@ export default function DocumentChecklist({
                 className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center space-x-1 cursor-pointer"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
-                <span>{isHindi ? 'डिवाइस से दूसरी फ़ाइल अपलोड करें' : 'Upload different file from device'}</span>
+                <span>{localizeTernary('डिवाइस से दूसरी फ़ाइल अपलोड करें', 'Upload different file from device', lang)}</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -600,13 +635,13 @@ export default function DocumentChecklist({
                   className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer"
                 >
                   <FileDown className="w-3.5 h-3.5" />
-                  <span>{isHindi ? 'प्रिंट' : 'Print'}</span>
+                  <span>{localizeTernary('प्रिंट', 'Print', lang)}</span>
                 </button>
                 <button
                   onClick={() => setViewingDoc(null)}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs cursor-pointer"
                 >
-                  {isHindi ? 'संपन्न' : 'Done'}
+                  {localizeTernary('संपन्न', 'Done', lang)}
                 </button>
               </div>
             </div>

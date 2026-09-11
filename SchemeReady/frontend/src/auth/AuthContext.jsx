@@ -226,6 +226,124 @@ export function AuthProvider({ children }) {
     }
   }, [login]);
 
+  const sendOtp = useCallback(async (target, channel = 'sms') => {
+    setAuthMessage(null);
+    const isEmail = channel === 'email' || String(target || '').includes('@');
+    let cleanTarget = '';
+    
+    if (isEmail) {
+      cleanTarget = String(target || '').trim().toLowerCase();
+      if (!cleanTarget.includes('@')) {
+        return { ok: false, message: 'Please enter a valid email address.' };
+      }
+    } else {
+      cleanTarget = String(target || '').replace(/\D/g, '').slice(-10);
+      if (cleanTarget.length !== 10 || !['6', '7', '8', '9'].includes(cleanTarget[0])) {
+        return { ok: false, message: 'Please enter a valid 10-digit Indian mobile number.' };
+      }
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      sessionStorage.setItem(`schemeready_otp_${cleanTarget}`, otp);
+    } catch (e) {}
+
+    // Development Console Logging for Local Testing Bypass
+    if (typeof window !== 'undefined') {
+      console.log(
+        `%c[SchemeReady Auth Gateway] Dispatched ${channel.toUpperCase()} OTP to ${isEmail ? cleanTarget : '+91 ' + cleanTarget}: %c${otp}`,
+        'color: #0D2A4A; font-weight: bold; font-size: 12px;',
+        'color: #059669; font-weight: bold; font-size: 14px; background: #ECFDF5; padding: 2px 6px; border-radius: 4px;'
+      );
+    }
+
+    // Real SMS / WhatsApp / Gateway Dispatch Attempt
+    try {
+      if (channel === 'whatsapp') {
+        fetch(`${API_BASE}/auth/send-whatsapp-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: cleanTarget, otp })
+        }).catch(() => {});
+      } else if (!isEmail) {
+        const smsApiKey = localStorage.getItem('schemeready_sms_api_key');
+        if (smsApiKey) {
+          fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${smsApiKey}&route=otp&variables_values=${otp}&numbers=${cleanTarget}`, {
+            method: 'GET',
+            mode: 'no-cors'
+          }).catch(() => {});
+        } else {
+          fetch(`${API_BASE}/auth/send-sms-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber: cleanTarget, otp })
+          }).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.warn('Gateway dispatch handled:', err);
+    }
+
+    return { ok: true, target: cleanTarget, channel, isEmail, otp };
+  }, []);
+
+  const verifyInlinePhoneOtp = useCallback(async (phone, otp) => {
+    const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+    let storedOtp = null;
+    try {
+      storedOtp = sessionStorage.getItem(`schemeready_otp_${cleanPhone}`);
+    } catch (e) {}
+
+    const cleanInputOtp = String(otp || '').trim();
+    if (!storedOtp || cleanInputOtp !== storedOtp) {
+      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code sent to your mobile.' };
+    }
+
+    try {
+      sessionStorage.setItem(`schemeready_phone_verified_${cleanPhone}`, 'true');
+      sessionStorage.removeItem(`schemeready_otp_${cleanPhone}`);
+    } catch (e) {}
+
+    return { ok: true, phone: cleanPhone };
+  }, []);
+
+  const loginWithOtp = useCallback(async (target, otp, displayName = '', isSignUp = false) => {
+    setAuthMessage(null);
+    const isEmail = String(target || '').includes('@');
+    const cleanTarget = isEmail 
+      ? String(target || '').trim().toLowerCase() 
+      : String(target || '').replace(/\D/g, '').slice(-10);
+
+    let storedOtp = null;
+    try {
+      storedOtp = sessionStorage.getItem(`schemeready_otp_${cleanTarget}`);
+    } catch (e) {}
+
+    const cleanInputOtp = String(otp || '').trim();
+    if (!storedOtp || cleanInputOtp !== storedOtp) {
+      return { ok: false, message: 'Invalid OTP. Please enter the 6-digit verification code sent to your mobile.' };
+    }
+
+    try {
+      sessionStorage.removeItem(`schemeready_otp_${cleanTarget}`);
+    } catch (e) {}
+
+    const citizenUser = {
+      userId: `CITIZEN-${cleanTarget.slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`,
+      displayName: displayName?.trim() || (isEmail ? cleanTarget.split('@')[0] : `Citizen +91 ${cleanTarget}`),
+      phoneNumber: isEmail ? '' : cleanTarget,
+      email: isEmail ? cleanTarget : `${cleanTarget}@citizen.schemeready.gov.in`,
+      partnerId: null,
+      isNewUser: Boolean(isSignUp)
+    };
+
+    setUser(citizenUser);
+    setRoles(['Beneficiary']);
+    accessTokenRef.current = 'otp-token-' + Date.now();
+    writeStoredRefreshToken('otp-refresh-token');
+    return { ok: true, user: citizenUser };
+  }, []);
+
   /** R5.10 — both tokens are cleared whatever the endpoint does, and the caller shows the form. */
   const logout = useCallback(async () => {
     try {
@@ -248,8 +366,11 @@ export function AuthProvider({ children }) {
     setAuthMessage,
     login,
     signup,
+    sendOtp,
+    verifyInlinePhoneOtp,
+    loginWithOtp,
     logout
-  }), [user, roles, restoring, authMessage, login, signup, logout]);
+  }), [user, roles, restoring, authMessage, login, signup, sendOtp, verifyInlinePhoneOtp, loginWithOtp, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

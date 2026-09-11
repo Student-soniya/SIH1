@@ -1,10 +1,40 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, Sparkles } from 'lucide-react';
 
-export default function LandingFaq() {
+export default function LandingFaq({ lang = 'en' }) {
+  const isHindi = lang === 'hi';
   const [openIndex, setOpenIndex] = useState(0);
 
-  const faqs = [
+  const faqs = isHindi ? [
+    {
+      q: 'एनएसएफडीसी और सरकारी रियायती उद्यमिता योजनाओं के लिए कौन पात्र है?',
+      a: 'अनुसूचित जाति (SC), अन्य पिछड़ा वर्ग (OBC), विमुक्त जनजातियों या सफाई कर्मचारी परिवारों से संबंधित कोई भी भारतीय नागरिक, जिनकी कुल वार्षिक पारिवारिक आय ₹5.00 लाख तक है, वे रियायती वित्तीय सहायता के पात्र हैं।'
+    },
+    {
+      q: 'एनएसएफडीसी अपनी केंद्रीय वेबसाइट पर सीधे आवेदनों को क्यों खारिज करता है?',
+      a: 'राष्ट्रीय वैधानिक व्यवस्था के तहत, एनएसएफडीसी एक खुदरा बैंक के बजाय एक शीर्ष पुनर्वित्त निगम के रूप में कार्य करता है। सभी ऋण 100 से अधिक चैनल पार्टनर्स (राज्य एससीए, क्षेत्रीय ग्रामीण बैंक और सरकारी बैंक) के चैनल वित्त तंत्र के माध्यम से वितरित किए जाते हैं। स्कीम रेडी आपको पूर्व-योग्य बनाता है और आपके डोजियर को सीधे आपके जिले के सक्रिय चैनल पार्टनर तक पहुंचाता है।'
+    },
+    {
+      q: 'क्या मुझे अपने ऋण के लिए संपार्श्विक (गारंटी) या तीसरे पक्ष के गारंटर की आवश्यकता है?',
+      a: '₹1.50 लाख से कम के सूक्ष्म ऋणों (माइक्रो क्रेडिट योजना और महिला समृद्धि योजना) के लिए किसी संपार्श्विक सुरक्षा या तीसरे पक्ष की गारंटी की आवश्यकता नहीं होती है। ₹50 लाख तक के बड़े मियादी ऋणों के लिए ऋण से खरीदी गई संपत्तियां प्राथमिक बंधक के रूप में कार्य करती हैं, जिसे सीजीटीएमएसई क्रेडिट गारंटी का समर्थन प्राप्त होता है।'
+    },
+    {
+      q: 'डिजिलॉकर एकीकरण बैंक काउंटर पर होने वाली अस्वीकृति को कैसे रोकता है?',
+      a: 'बैंक ऋण अधिकारी संदिग्ध या असत्यापित फोटोकॉपी के कारण आवेदनों को अस्वीकार कर देते हैं। स्कीम रेडी सरकारी क्यूआर सत्यापन और वॉटरमार्क वाले डिजिटल रूप से हस्ताक्षरित प्रमाण पत्र प्राप्त करने के लिए सीधे डिजिलॉकर से जुड़ता है, जिससे 100% प्रामाणिकता सिद्ध होती है।'
+    },
+    {
+      q: 'ब्याज दरें और अधिस्थगन (मोरेटोरियम) अवधि क्या हैं?',
+      a: 'रियायती दरें अत्यधिक सब्सिडीयुक्त हैं: महिला समृद्धि योजना (केवल महिलाओं के लिए) हेतु 4.0% वार्षिक, माइक्रो क्रेडिट हेतु 5.0% वार्षिक, और मियादी ऋण हेतु 6.0%–8.0% वार्षिक। लाभार्थियों को 3 से 12 महीने का अधिस्थगन बफर मिलता है जिसके दौरान दुकान स्थापित करते समय कोई मूलधन नहीं चुकाना पड़ता।'
+    },
+    {
+      q: 'यदि मेरा जाति प्रमाण पत्र तहसीलदार कार्यालय में लंबित है तो क्या होगा?',
+      a: 'स्कीम रेडी आपकी गतिशील चेकलिस्ट पर लंबित प्रमाण पत्रों को चिह्नित करता है, राज्य-विशिष्ट ट्रैकिंग पोर्टल लिंक प्रदान करता है, और एक अंतरिम राजस्व पावती पर्ची अपलोड करने की अनुमति देता है ताकि प्रारंभिक मूल्यांकन बिना देरी के शुरू हो सके।'
+    },
+    {
+      q: 'एआई व्यवसाय उत्तरजीविता और व्यवहार्यता स्कोर कैसे काम करता है?',
+      a: 'हमारा मशीन लर्निंग मॉडल 10,000+ एमएसएमई उद्यमों के ऐतिहासिक डेटा के आधार पर आपकी परियोजना लागत, कार्यशील पूंजी और अपेक्षित दैनिक आय का विश्लेषण करता है। यह पुष्टि करता है कि आपका ऋण सेवा कवरेज अनुपात (DSCR) 1.50 से अधिक है और उच्च-मार्जिन उपकरणों की सिफारिश करता है ताकि व्यवसाय ऋण के बोझ में न फंसे।'
+    }
+  ] : [
     {
       q: 'Who is eligible for NSFDC and Government concessional entrepreneurship schemes?',
       a: 'Any Indian citizen belonging to Scheduled Castes (SC), Other Backward Classes (OBC), de-notified tribes, or Safai Karamchari families with total annual household income up to ₹5.00 Lakhs is eligible for concessional financial assistance.'
@@ -43,13 +73,15 @@ export default function LandingFaq() {
         <div className="text-center space-y-3">
           <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Beneficiary Assistance FAQs</span>
+            <span>{isHindi ? 'लाभार्थी सहायता संबंधी अक्सर पूछे जाने वाले प्रश्न' : 'Beneficiary Assistance FAQs'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Frequently Asked Questions
+            {isHindi ? 'अक्सर पूछे जाने वाले प्रश्न' : 'Frequently Asked Questions'}
           </h2>
           <p className="text-sm text-slate-600 font-normal">
-            Everything you need to know about eligibility, interest subsidies, Channel Partners, and document verification.
+            {isHindi 
+              ? 'पात्रता, ब्याज सब्सिडी, चैनल पार्टनर्स और दस्तावेज सत्यापन के बारे में आवश्यक सभी जानकारी।' 
+              : 'Everything you need to know about eligibility, interest subsidies, Channel Partners, and document verification.'}
           </p>
         </div>
 

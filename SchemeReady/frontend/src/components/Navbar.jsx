@@ -50,7 +50,10 @@ export default function Navbar({
 
   const handleLogout = async () => {
     await logout();
-    setActiveTab('profile');
+    try {
+      localStorage.removeItem('schemeready_profile');
+    } catch (e) {}
+    setActiveTab('login');
   };
 
   return (
@@ -72,9 +75,13 @@ export default function Navbar({
                 className="bg-transparent text-white font-medium focus:outline-none cursor-pointer text-xs"
                 aria-label={t.navbar?.languageLabel || 'Select website language'}
               >
-                {SUPPORTED_LANGUAGES.map(({ code, label }) => (
-                  <option key={code} value={code} className="text-slate-900">{label}</option>
-                ))}
+                <option value="en" className="text-slate-900">English (EN)</option>
+                <option value="kn" className="text-slate-900">ಕನ್ನಡ (Kannada)</option>
+                <option value="hi" className="text-slate-900">हिन्दी (Hindi)</option>
+                <option value="ta" className="text-slate-900">தமிழ் (Tamil)</option>
+                <option value="te" className="text-slate-900">తెలుగు (Telugu)</option>
+                <option value="mr" className="text-slate-900">मराठी (Marathi)</option>
+                <option value="bn" className="text-slate-900">বাংলা (Bengali)</option>
               </select>
             </div>
           </div>
@@ -100,19 +107,8 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Demo persona, then the session control in the top-right corner */}
+        {/* Header Actions & Session Control */}
         <div className="flex items-center space-x-3 ml-auto">
-
-          <button
-            onClick={onLoadPersona}
-            className="flex items-center space-x-2 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3.5 py-2 rounded-xl transition-all shadow-xs active:scale-95"
-            title={t.navbar?.demoPersonaTitle || "Auto-fill Ravi's persona (Bengaluru SC entrepreneur, Mobile repair shop, ₹1.8L cost)"}
-          >
-            <UserCheck className="w-4 h-4 text-emerald-600" />
-            <span className="hidden sm:inline">{t.demoPersonaBtn}</span>
-            <span className="sm:hidden">{t.navbar?.raviPersonaMobile || "Ravi Persona"}</span>
-          </button>
-
           {onGoToHome && (
             <button
               onClick={onGoToHome}
