@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { translations } from '../translations';
 import { 
   Mic, 
@@ -225,6 +225,68 @@ export default function ConversationalOnboarding({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      {/* Main Page: WHY & WHAT Section (SIH Hackathon Problem Context) */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 border border-emerald-800/40 shadow-xl space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center space-x-2">
+            <span className="bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-md font-black uppercase tracking-wider text-[11px]">
+              GovTech AI Platform
+            </span>
+            <span className="text-xs text-emerald-300 font-medium">
+              National Scheduled Castes Finance &amp; Development Corporation (NSFDC)
+            </span>
+          </div>
+          <span className="text-xs text-slate-400 font-mono">
+            Ministry of Social Justice &amp; Empowerment | SIH 2026
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          {/* WHY Section */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-7 h-7 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-black text-xs">
+                WHY
+              </span>
+              <h3 className="font-black text-base text-white">Why SchemeReady is Needed?</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              NSFDC empowers Scheduled Caste beneficiaries with family income up to <strong>₹5.00 Lakhs</strong> through concessional loans (4%–8% p.a.). However, <strong>direct loan applications are not entertained</strong>. Funds must route through 100+ Channel Partners (SCAs, Banks, RRBs).
+            </p>
+            <div className="text-[11px] text-rose-300 bg-rose-950/40 border border-rose-800/40 rounded-xl p-3 space-y-1">
+              <strong>The Bottleneck:</strong> First-time entrepreneurs face immediate rejection due to incomplete document dossiers, lack of viable project reports (DPRs), and approaching branches with exhausted credit allocations or high NPAs.
+            </div>
+          </div>
+
+          {/* WHAT Section */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs">
+                WHAT
+              </span>
+              <h3 className="font-black text-base text-white">What SchemeReady Delivers?</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              SchemeReady bridges the last-mile gap by transforming raw business ideas into 100% bank-appraised, viable loan applications with zero paperwork confusion.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-emerald-200">
+              <div className="bg-emerald-950/50 border border-emerald-800/30 rounded-lg p-2">
+                ✓ <strong>Conversational Onboarding:</strong> Local voice &amp; natural language entity extraction.
+              </div>
+              <div className="bg-emerald-950/50 border border-emerald-800/30 rounded-lg p-2">
+                ✓ <strong>Explainable Matching:</strong> Clear reason codes &amp; criteria verification.
+              </div>
+              <div className="bg-emerald-950/50 border border-emerald-800/30 rounded-lg p-2">
+                ✓ <strong>DigiLocker Integration:</strong> Instant fetch &amp; PDF preview for govt certs.
+              </div>
+              <div className="bg-emerald-950/50 border border-emerald-800/30 rounded-lg p-2">
+                ✓ <strong>Channel Partner Routing:</strong> 0% overdue &amp; low-NPA branches with AAA priority.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Header Info */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
