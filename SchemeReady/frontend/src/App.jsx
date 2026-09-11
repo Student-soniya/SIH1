@@ -229,6 +229,8 @@ function AppShell() {
         <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
           <AuthPortal
             lang={lang}
+            fontSize={fontSize}
+            highContrast={highContrast}
             notice={authPanelNotice || authMessage}
             initialMode={activeTab === 'login' ? 'login' : 'signup'}
             onSuccess={handleAuthSuccess}

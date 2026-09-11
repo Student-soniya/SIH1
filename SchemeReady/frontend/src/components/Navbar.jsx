@@ -78,7 +78,7 @@ export default function Navbar({
                 <option value="hi" className="text-slate-900">हिन्दी (Hindi)</option>
                 <option value="ta" className="text-slate-900">தமிழ் (Tamil)</option>
                 <option value="te" className="text-slate-900">తెలుగు (Telugu)</option>
-                <option value="mr" className="text-slate-900">ಮರಾಠಿ (Marathi)</option>
+                <option value="mr" className="text-slate-900">मराठी (Marathi)</option>
                 <option value="bn" className="text-slate-900">বাংলা (Bengali)</option>
               </select>
             </div>
