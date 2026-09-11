@@ -22,7 +22,7 @@ For deployment, provide `DigiLocker__ClientId` and `DigiLocker__ClientSecret` as
 1. Request `GET /api/digilocker/authorize?beneficiaryId=123` and redirect the browser to `authorizeUrl`.
 2. DigiLocker calls `/api/digilocker/callback` with `code` and `state`; the API exchanges the code for a token.
 3. Request `GET /api/digilocker/documents` with `X-DigiLocker-AccessToken` to list issued documents.
-4. Request `GET /api/digilocker/documents/{fileUri}/download` with the same header to retrieve a document.
+4. Request `GET /api/digilocker/documents/download/{fileUri}` with the same header to retrieve a document.
 
 ## Before production
 

@@ -60,7 +60,8 @@ public class DigiLockerController : ControllerBase
         }
     }
 
-    [HttpGet("documents/{*fileUri}/download")]
+    // A catch-all route parameter must be the final route segment.
+    [HttpGet("documents/download/{*fileUri}")]
     public async Task<IActionResult> DownloadDocument(
         string fileUri,
         [FromHeader(Name = "X-DigiLocker-AccessToken")] string accessToken,
