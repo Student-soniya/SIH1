@@ -1,0 +1,293 @@
+﻿export const translations = {
+  en: {
+    appTitle: "SchemeReady",
+    appSubtitle: "From Scheme Discovery to Application Readiness",
+    tagline: "Bridging marginalized entrepreneurs to verified government schemes & channel partners.",
+    demoPersonaBtn: "Load Demo Persona (Ravi - Bengaluru)",
+    tabs: {
+      onboarding: "1. Smart Onboarding",
+      schemes: "2. Scheme Matcher",
+      readiness: "3. Readiness Score",
+      businessPlan: "4. AI Project Report",
+      checklist: "5. Document Checklist",
+      partners: "6. Partner Routing",
+      emi: "7. EMI Simulator",
+      applicationPack: "8. Application Pack",
+      admin: "Admin Portal"
+    },
+    onboarding: {
+      title: "Smart Beneficiary Onboarding",
+      subtitle: "Answer a few simple questions or use voice input to discover matching schemes.",
+      voiceBtn: "Voice Input (Speak)",
+      listening: "Listening... Speak in English, Kannada, or Hindi",
+      extractedBadge: "Extracted Beneficiary Profile",
+      q1: "What do you want to start?",
+      q2: "Where is your business located?",
+      q3: "What is the estimated project cost?",
+      q4: "What is your annual family income?",
+      q5: "Are you a student, existing entrepreneur, or first-time entrepreneur?",
+      q6: "Do you have a caste certificate?",
+      q7: "Do you have an income certificate?",
+      q8: "How much loan do you need?",
+      q9: "Do you prefer online or offline support?",
+      q10: "Which language do you prefer?",
+      nextBtn: "Next Question",
+      prevBtn: "Back",
+      submitBtn: "Find Matching Schemes"
+    },
+    schemes: {
+      title: "Explainable Scheme Recommendations",
+      subtitle: "Transparent ranking with clear 'Why it matches' and 'Why not' explanations.",
+      matchScore: "Match Score",
+      whyMatches: "Why it matches:",
+      whyNot: "Why not / lower score:",
+      recommended: "Recommended Scheme",
+      interestRate: "Interest Rate",
+      maxLoan: "Max Project Cost",
+      tenure: "Max Tenure",
+      source: "Official Source",
+      verified: "Last Verified",
+      selectBtn: "Select & View Readiness"
+    },
+    readiness: {
+      title: "Application Readiness Score",
+      subtitle: "Track missing requirements before visiting the bank or SCA office.",
+      scoreLabel: "Application Readiness",
+      whyReq: "Why required:",
+      howTo: "How to obtain:",
+      accepted: "Accepted formats:",
+      uploadBtn: "Upload Document",
+      statusVerified: "Verified",
+      statusComplete: "Complete",
+      statusMissing: "Missing",
+      statusPending: "Pending Review"
+    },
+    businessPlan: {
+      title: "AI Business-Plan & Project Report Builder",
+      subtitle: "Generate a submission-ready one-page project viability report with deterministic financial ratios.",
+      generateBtn: "Generate Project Report",
+      dscr: "Debt Service Coverage Ratio (DSCR)",
+      monthlySurplus: "Net Monthly Surplus",
+      bankLoan: "Recommended Loan Amount"
+    },
+    partners: {
+      title: "Smart Partner Routing",
+      subtitle: "Locate verified SCAs, PSBs, RRBs, and NBFC-MFIs in your district.",
+      recommendedBadge: "Recommended Nearest Partner",
+      distance: "Distance",
+      mode: "Submission Mode",
+      verifiedDate: "Last Verified",
+      contact: "Contact Officer"
+    },
+    emi: {
+      title: "EMI & Repayment Simulator",
+      subtitle: "Calculate monthly installments, interest, and moratorium relief.",
+      monthlyEmi: "Monthly EMI",
+      totalInterest: "Total Interest",
+      totalRepayment: "Total Repayment",
+      moratoriumBuffer: "Moratorium Buffer"
+    },
+    pack: {
+      title: "Submission-Ready Application Pack",
+      subtitle: "Download, print, or hand off your complete dossier to PM-SURAJ / SCA.",
+      downloadPdf: "Download / Print Dossier",
+      shareWhatsApp: "Share via WhatsApp",
+      handoffBtn: "Proceed to PM-SURAJ Handoff",
+      disclaimer: "Official Disclaimer: This report is a preliminary assistance document. Final loan sanctioning and approval are determined by the authorized government agency or bank."
+    }
+  },
+  kn: {
+    appTitle: "ಸ್ಕೀಮ್ ರೆಡಿ (ಉದ್ಯಮ ಸಾರಥಿ AI)",
+    appSubtitle: "ಯೋಜನೆ ಅನ್ವೇಷಣೆಯಿಂದ ಅರ್ಜಿ ಸಿದ್ಧತೆಯವರೆಗೆ",
+    tagline: "ಅಂಚಿನಲ್ಲಿರುವ ಉದ್ಯಮಿಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು ಮತ್ತು ಚಾನಲ್ ಪಾಲುದಾರರಿಗೆ ಜೋಡಿಸುವುದು.",
+    demoPersonaBtn: "ಡೆಮೊ ವಿವರ ಲೋಡ್ ಮಾಡಿ (ರವಿ - ಬೆಂಗಳೂರು)",
+    tabs: {
+      onboarding: "1. ಸ್ಮಾರ್ಟ್ ಆನ್‌ಬೋರ್ಡಿಂಗ್",
+      schemes: "2. ಯೋಜನೆ ಹೊಂದಾಣಿಕೆ",
+      readiness: "3. ಅರ್ಜಿ ಸಿದ್ಧತಾ ಸ್ಕೋರ್",
+      businessPlan: "4. ಯೋಜನಾ ವರದಿ (DPR)",
+      checklist: "5. ದಾಖಲೆ ಪರಿಶೀಲನಾಪಟ್ಟಿ",
+      partners: "6. ಪಾಲುದಾರರ ಮಾರ್ಗ",
+      emi: "7. ಇಎಂಐ ಸಿಮ್ಯುಲೇಟರ್",
+      applicationPack: "8. ಅರ್ಜಿ ಪ್ಯಾಕ್",
+      admin: "ನಿರ್ವಾಹಕ ಪೋರ್ಟಲ್"
+    },
+    onboarding: {
+      title: "ಫಲಾನುಭವಿಗಳ ಸರಳ ಆನ್‌ಬೋರ್ಡಿಂಗ್",
+      subtitle: "ಕೆಲವು ಸರಳ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ ಅಥವಾ ಧ್ವನಿ ಮೂಲಕ ಮಾತನಾಡಿ ಯೋಜನೆಗಳನ್ನು ಕಂಡುಕೊಳ್ಳಿ.",
+      voiceBtn: "ಧ್ವನಿ ಇನ್‌ಪುಟ್ (ಮಾತನಾಡಿ)",
+      listening: "ಆಲಿಸುತ್ತಿದೆ... ಕನ್ನಡ, ಇಂಗ್ಲಿಷ್ ಅಥವಾ ಹಿಂದಿಯಲ್ಲಿ ಮಾತನಾಡಿ",
+      extractedBadge: "ಗುರುತಿಸಲಾದ ಫಲಾನುಭವಿ ವಿವರ",
+      q1: "ನೀವು ಯಾವ ವ್ಯಾಪಾರ/ಉದ್ಯಮವನ್ನು ಪ್ರಾರಂಭಿಸಲು ಬಯಸುತ್ತೀರಿ?",
+      q2: "ನಿಮ್ಮ ವ್ಯಾಪಾರ ಎಲ್ಲಿ ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತದೆ?",
+      q3: "ಅಂದಾಜು ಯೋಜನಾ ವೆಚ್ಚ ಎಷ್ಟು?",
+      q4: "ನಿಮ್ಮ ಕುಟುಂಬದ ವಾರ್ಷಿಕ ಆದಾಯ ಎಷ್ಟು?",
+      q5: "ನೀವು ವಿದ್ಯಾರ್ಥಿಯೇ, ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಉದ್ಯಮಿಯೇ ಅಥವಾ ಮೊದಲ ಬಾರಿಯ ಉದ್ಯಮಿಯೇ?",
+      q6: "ನಿಮ್ಮ ಬಳಿ ಜಾತಿ ಪ್ರಮಾಣಪತ್ರವಿದೆಯೇ?",
+      q7: "ನಿಮ್ಮ ಬಳಿ ಆದಾಯ ಪ್ರಮಾಣಪತ್ರವಿದೆಯೇ?",
+      q8: "ನಿಮಗೆ ಎಷ್ಟು ಸಾಲ ಬೇಕು?",
+      q9: "ಆನ್‌ಲೈನ್ ಅಥವಾ ಆಫ್‌ಲೈನ್ ಕಚೇರಿ ಬೆಂಬಲವನ್ನು ಬಯಸುತ್ತೀರಾ?",
+      q10: "ಯಾವ ಭಾಷೆಯನ್ನು ಆದ್ಯತೆ ನೀಡುತ್ತೀರಿ?",
+      nextBtn: "ಮುಂದಿನ ಪ್ರಶ್ನೆ",
+      prevBtn: "ಹಿಂದೆ",
+      submitBtn: "ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ"
+    },
+    schemes: {
+      title: "ವಿವರಣಾತ್ಮಕ ಯೋಜನೆ ಶಿಫಾರಸುಗಳು",
+      subtitle: "ಯೋಜನೆ ಏಕೆ ಸರಿಹೊಂದುತ್ತದೆ ಮತ್ತು ಏಕೆ ಸರಿಹೊಂದುವುದಿಲ್ಲ ಎಂಬ ಸ್ಪಷ್ಟ ವಿವರಣೆ.",
+      matchScore: "ಹೊಂದಾಣಿಕೆ ಶೇಕಡಾವಾರು",
+      whyMatches: "ಏಕೆ ಹೊಂದಾಣಿಕೆಯಾಗುತ್ತದೆ:",
+      whyNot: "ಕಡಿಮೆ ಅಂಕ ಅಥವಾ ಏಕೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ:",
+      recommended: "ಶಿಫಾರಸು ಮಾಡಿದ ಯೋಜನೆ",
+      interestRate: "ಬಡ್ಡಿ ದರ",
+      maxLoan: "ಗರಿಷ್ಠ ಯೋಜನಾ ವೆಚ್ಚ",
+      tenure: "ಮರುಪಾವತಿ ಅವಧಿ",
+      source: "ಅಧಿಕೃತ ಮೂಲ",
+      verified: "ಕೊನೆಯ ಪರಿಶೀಲನೆ",
+      selectBtn: "ಆಯ್ಕೆಮಾಡಿ & ಸಿದ್ಧತೆ ವೀಕ್ಷಿಸಿ"
+    },
+    readiness: {
+      title: "ಅರ್ಜಿ ಸಿದ್ಧತಾ ಸ್ಕೋರ್",
+      subtitle: "ಬ್ಯಾಂಕ್ ಅಥವಾ ನಿಗಮ ಕಚೇರಿಗೆ ಭೇಟಿ ನೀಡುವ ಮುನ್ನ ಬಾಕಿ ದಾಖಲೆಗಳನ್ನು ಸರಿಪಡಿಸಿ.",
+      scoreLabel: "ಅರ್ಜಿ ಸಿದ್ಧತೆ",
+      whyReq: "ಏಕೆ ಅಗತ್ಯ:",
+      howTo: "ಪಡೆಯುವುದು ಹೇಗೆ:",
+      accepted: "ಸ್ವೀಕೃತ ಸ್ವರೂಪಗಳು:",
+      uploadBtn: "ದಾಖಲೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+      statusVerified: "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+      statusComplete: "ಪೂರ್ಣಗೊಂಡಿದೆ",
+      statusMissing: "ಬಾಕಿ ಇದೆ",
+      statusPending: "ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ"
+    },
+    businessPlan: {
+      title: "AI ಯೋಜನಾ ವರದಿ (DPR) ಬಿಲ್ಡರ್",
+      subtitle: "ನಿಖರ ಆರ್ಥಿಕ ಲೆಕ್ಕಾಚಾರಗಳೊಂದಿಗೆ ಬ್ಯಾಂಕ್‌ಗೆ ಸಲ್ಲಿಸಲು ಒಂದು ಪುಟದ ವರದಿ ರಚಿಸಿ.",
+      generateBtn: "ಯೋಜನಾ ವರದಿ ರಚಿಸಿ",
+      dscr: "ಸಾಲ ಸೇವಾ ಅನುಪಾತ (DSCR)",
+      monthlySurplus: "ನಿವ್ವಳ ಮಾಸಿಕ ಲಾಭ",
+      bankLoan: "ಶಿಫಾರಸು ಮಾಡಲಾದ ಸಾಲ ಮೊತ್ತ"
+    },
+    partners: {
+      title: "ಸ್ಮಾರ್ಟ್ ಪಾಲುದಾರರ ಮಾರ್ಗ (SCA / ಬ್ಯಾಂಕ್‌ಗಳು)",
+      subtitle: "ನಿಮ್ಮ ಜಿಲ್ಲೆಯ ಪರಿಶೀಲಿಸಿದ ನಿಗಮಗಳು ಮತ್ತು ಬ್ಯಾಂಕ್ ಶಾಖೆಗಳನ್ನು ಗುರುತಿಸಿ.",
+      recommendedBadge: "ಶಿಫಾರಸು ಮಾಡಿದ ಹತ್ತಿರದ ಕಚೇರಿ",
+      distance: "ದೂರ",
+      mode: "ಅರ್ಜಿ ಸಲ್ಲಿಕೆ ವಿಧಾನ",
+      verifiedDate: "ಪರಿಶೀಲಿಸಿದ ದಿನಾಂಕ",
+      contact: "ಸಂಪರ್ಕ ಅಧಿಕಾರಿ"
+    },
+    emi: {
+      title: "ಇಎಂಐ ಮತ್ತು ಮರುಪಾವತಿ ಸಿಮ್ಯುಲೇಟರ್",
+      subtitle: "ಮಾಸಿಕ ಕಂತು, ಬಡ್ಡಿ ಮತ್ತು ಮೊರಟೋರಿಯಂ ರಿಯಾಯಿತಿಯನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ.",
+      monthlyEmi: "ಮಾಸಿಕ ಇಎಂಐ",
+      totalInterest: "ಒಟ್ಟು ಬಡ್ಡಿ",
+      totalRepayment: "ಒಟ್ಟು ಮರುಪಾವತಿ",
+      moratoriumBuffer: "ಮೊರಟೋರಿಯಂ ಅವಧಿ"
+    },
+    pack: {
+      title: "ಸಲ್ಲಿಕೆಗೆ ಸಿದ್ಧವಾಗಿರುವ ಅರ್ಜಿ ಪ್ಯಾಕ್",
+      subtitle: "ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಕಡತವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ಅಥವಾ PM-SURAJ ಗೆ ಸಲ್ಲಿಸಿ.",
+      downloadPdf: "ಕಡತ ಡೌನ್‌ಲೋಡ್ / ಪ್ರಿಂಟ್",
+      shareWhatsApp: "WhatsApp ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ",
+      handoffBtn: "PM-SURAJ ಪೋರ್ಟಲ್‌ಗೆ ಕಳುಹಿಸಿ",
+      disclaimer: "ಅಧಿಕೃತ ಹಕ್ಕುತ್ಯಾಗ: ಈ ವರದಿಯು ಪ್ರಾಥಮಿಕ ಸಹಾಯ ದಾಖಲೆಯಾಗಿದೆ. ಅಂತಿಮ ಸಾಲ ಅನುಮೋದನೆಯನ್ನು ಅಧಿಕೃತ ಸರ್ಕಾರಿ ಸಂಸ್ಥೆ ಅಥವಾ ಬ್ಯಾಂಕ್ ನಿರ್ಧರಿಸುತ್ತದೆ."
+    }
+  },
+  hi: {
+    appTitle: "स्कीम रेडी (उद्यम सारथी AI)",
+    appSubtitle: "योजना खोज से आवेदन तैयारी तक",
+    tagline: "वंचित वर्ग के उद्यमियों को सत्यापित सरकारी योजनाओं और चैनल पार्टनर्स से जोड़ना।",
+    demoPersonaBtn: "डेमो प्रोफाइल लोड करें (रवि - बेंगलुरु)",
+    tabs: {
+      onboarding: "1. स्मार्ट ऑनबोर्डिंग",
+      schemes: "2. योजना मिलान",
+      readiness: "3. तैयारी स्कोर",
+      businessPlan: "4. AI प्रोजेक्ट रिपोर्ट",
+      checklist: "5. दस्तावेज चेकलिस्ट",
+      partners: "6. पार्टनर रूटिंग",
+      emi: "7. EMI कैलकुलेटर",
+      applicationPack: "8. आवेदन पैक",
+      admin: "एडमिन पोर्टल"
+    },
+    onboarding: {
+      title: "स्मार्ट लाभार्थी ऑनबोर्डिंग",
+      subtitle: "सरल प्रश्नों के उत्तर दें या वॉयस इनपुट का उपयोग करके उपयुक्त योजनाएं खोजें।",
+      voiceBtn: "वॉयस इनपुट (बोलें)",
+      listening: "सुन रहे हैं... हिंदी, अंग्रेजी या कन्नड़ में बोलें",
+      extractedBadge: "निकाला गया लाभार्थी प्रोफाइल",
+      q1: "आप कौन सा व्यवसाय शुरू करना चाहते हैं?",
+      q2: "आपका व्यवसाय कहाँ स्थित है?",
+      q3: "अनुमानित परियोजना लागत क्या है?",
+      q4: "आपकी वार्षिक पारिवारिक आय कितनी है?",
+      q5: "क्या आप छात्र, मौजूदा उद्यमी या पहली बार उद्यमी हैं?",
+      q6: "क्या आपके पास जाति प्रमाण पत्र है?",
+      q7: "क्या आपके पास आय प्रमाण पत्र है?",
+      q8: "आपको कितने ऋण की आवश्यकता है?",
+      q9: "क्या आप ऑनलाइन या ऑफलाइन सहायता पसंद करते हैं?",
+      q10: "आप कौन सी भाषा पसंद करते हैं?",
+      nextBtn: "अगला प्रश्न",
+      prevBtn: "पीछे",
+      submitBtn: "योजनाएं खोजें"
+    },
+    schemes: {
+      title: "स्पष्टीकरण योग्य योजना सिफारिशें",
+      subtitle: "पारदर्शी रैंकिंग: 'यह क्यों मेल खाती है' और 'क्यों नहीं' का स्पष्ट विवरण।",
+      matchScore: "मिलान स्कोर",
+      whyMatches: "यह क्यों मेल खाती है:",
+      whyNot: "कम स्कोर या क्यों नहीं:",
+      recommended: "अनुशंसित योजना",
+      interestRate: "ब्याज दर",
+      maxLoan: "अधिकतम ऋण",
+      tenure: "अवधि",
+      source: "आधिकारिक स्रोत",
+      verified: "सत्यापित तिथि",
+      selectBtn: "चुनें और तैयारी देखें"
+    },
+    readiness: {
+      title: "आवेदन तत्परता स्कोर",
+      subtitle: "बैंक या एससीए कार्यालय जाने से पहले लापता आवश्यकताओं को पूरा करें।",
+      scoreLabel: "आवेदन तत्परता",
+      whyReq: "क्यों आवश्यक है:",
+      howTo: "कैसे प्राप्त करें:",
+      accepted: "स्वीकृत प्रारूप:",
+      uploadBtn: "दस्तावेज अपलोड करें",
+      statusVerified: "सत्यापित",
+      statusComplete: "पूर्ण",
+      statusMissing: "अनुपलब्ध",
+      statusPending: "समीक्षाधीन"
+    },
+    businessPlan: {
+      title: "AI बिजनेस प्लान और प्रोजेक्ट रिपोर्ट",
+      subtitle: "सटीक वित्तीय गणना और DSCR के साथ 1-पेज की व्यवहार्यता रिपोर्ट तैयार करें।",
+      generateBtn: "प्रोजेक्ट रिपोर्ट बनाएं",
+      dscr: "ऋण सेवा कवरेज अनुपात (DSCR)",
+      monthlySurplus: "शुद्ध मासिक लाभ",
+      bankLoan: "अनुशंसित ऋण राशि"
+    },
+    partners: {
+      title: "स्मार्ट चैनल पार्टनर रूटिंग",
+      subtitle: "अपने जिले में सत्यापित SCA, PSB, RRB और NBFC-MFI खोजें।",
+      recommendedBadge: "अनुशंसित निकटतम पार्टनर",
+      distance: "दूरी",
+      mode: "आवेदन मोड",
+      verifiedDate: "सत्यापित तिथि",
+      contact: "संपर्क अधिकारी"
+    },
+    emi: {
+      title: "EMI और पुनर्भुगतान सिम्युलेटर",
+      subtitle: "मासिक किस्त, कुल ब्याज और अधिस्थगन (मोरेटोरियम) की गणना करें।",
+      monthlyEmi: "मासिक ईएमआई",
+      totalInterest: "कुल ब्याज",
+      totalRepayment: "कुल पुनर्भुगतान",
+      moratoriumBuffer: "मोरेटोरियम राहत"
+    },
+    pack: {
+      title: "जमा करने हेतु तैयार आवेदन पैक",
+      subtitle: "अपना पूरा डोजियर डाउनलोड करें, प्रिंट करें या PM-SURAJ को सौंपें।",
+      downloadPdf: "डोजियर डाउनलोड / प्रिंट",
+      shareWhatsApp: "व्हाट्सएप पर शेयर करें",
+      handoffBtn: "PM-SURAJ पोर्टल पर आगे बढ़ें",
+      disclaimer: "आधिकारिक अस्वीकरण: यह रिपोर्ट एक प्रारंभिक सहायता दस्तावेज है। अंतिम ऋण स्वीकृति अधिकृत सरकारी एजेंसी या बैंक द्वारा निर्धारित की जाती है।"
+    }
+  }
+};
