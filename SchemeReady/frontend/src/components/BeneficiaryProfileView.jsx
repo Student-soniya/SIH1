@@ -10,7 +10,8 @@ import {
   ShieldCheck, 
   AlertCircle,
   MapPin,
-  HeartHandshake
+  HeartHandshake,
+  ArrowRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -474,14 +475,14 @@ export default function BeneficiaryProfileView({
           </div>
         </div>
 
-        {/* Submit & Save */}
+        {/* Submit & Save -> Navigates to Smart Onboarding */}
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="submit"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl text-xs uppercase tracking-wider flex items-center space-x-2 transition-all shadow-md shadow-emerald-600/20 active:scale-95"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black px-8 py-3 rounded-xl text-xs uppercase tracking-wider flex items-center space-x-2 transition-all shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>Save &amp; Update Eligibility Matches</span>
+            <span>Save &amp; Continue to Smart Onboarding</span>
+            <ArrowRight className="w-4 h-4 text-amber-300" />
           </button>
         </div>
       </form>

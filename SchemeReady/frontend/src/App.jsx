@@ -79,14 +79,17 @@ function AppShell() {
       supportPreference: 'offline', preferredLanguage: 'kn', age: 28, uploadedDocs: ['Aadhaar/KYC', 'Income certificate']
     });
     setLang('kn');
-    setActiveTab('onboarding');
+    setActiveTab('profile');
     confetti({ particleCount: 40, spread: 50, origin: { y: 0.2 } });
   };
 
   if (portalView === 'landing') {
     return (
       <EntrepreneurLanding 
-        onStartOnboarding={() => { setPortalView('app'); setActiveTab('onboarding'); }}
+        onStartOnboarding={() => { 
+          setPortalView('app'); 
+          setActiveTab(isAuthenticated ? 'profile' : 'login'); 
+        }}
         onExploreSchemes={(scheme) => { 
           if (scheme) setSelectedScheme(scheme); 
           setPortalView('app'); 
@@ -95,7 +98,7 @@ function AppShell() {
         onLoadPersona={() => { 
           handleLoadPersona(); 
           setPortalView('app'); 
-          setActiveTab('onboarding');
+          setActiveTab('profile');
         }}
         onOpenAuth={() => { setPortalView('app'); setActiveTab('login'); }}
         onQuickFind={(criteria) => {
@@ -157,7 +160,7 @@ function AppShell() {
           setHighContrast={setHighContrast}
           onBackToPortal={() => {
             setPortalView('landing');
-            setActiveTab('onboarding');
+            setActiveTab('profile');
           }}
         />
         <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
@@ -165,13 +168,11 @@ function AppShell() {
             notice={authPanelNotice || authMessage}
             initialMode={activeTab === 'login' ? 'login' : 'signup'}
             onSuccess={() => {
-              if (activeTab === 'login') {
-                setActiveTab(requiresAdmin ? 'admin' : 'readiness');
-              }
+              setActiveTab(requiresAdmin ? 'admin' : 'profile');
             }}
             onBackToPortal={() => {
               setPortalView('landing');
-              setActiveTab('onboarding');
+              setActiveTab('profile');
             }}
           />
         </main>
@@ -191,8 +192,8 @@ function AppShell() {
         onGoToHome={() => setPortalView('landing')}
       />
       <main className="flex-1 pb-16">
-        {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
-        {effectiveTab === 'profile' && <BeneficiaryProfileView profile={profile} setProfile={setProfile} onSaveDone={() => navigate('schemes')} />}
+        {effectiveTab === 'profile' && <BeneficiaryProfileView profile={profile} setProfile={setProfile} onSaveDone={() => navigate('onboarding')} />}
+        {effectiveTab === 'onboarding' && <ConversationalOnboarding lang={lang} setLang={setLang} profile={profile} setProfile={setProfile} onProceedToMatching={() => navigate('schemes')} />}
         {effectiveTab === 'schemes' && <ExplainableSchemeResults lang={lang} profile={profile} selectedScheme={selectedScheme} setSelectedScheme={setSelectedScheme} onProceedToReadiness={(s) => { setSelectedScheme(s); navigate('readiness'); }} />}
         {effectiveTab === 'readiness' && <ReadinessDashboard lang={lang} profile={profile} setProfile={setProfile} onProceedToBusinessPlan={() => navigate('businessPlan')} />}
         {effectiveTab === 'businessPlan' && <BusinessPlanBuilder lang={lang} profile={profile} onProceedToPartners={() => navigate('partners')} />}
