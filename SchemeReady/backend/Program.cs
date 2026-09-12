@@ -210,6 +210,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Root health & welcome redirect
+app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", service = "SchemeReady API" }));
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.Run();
 
